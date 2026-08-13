@@ -37,11 +37,17 @@ describe('the family table', () => {
     ])
   })
 
-  it('ships builders for exactly the four families M3 declares', () => {
-    // The other five are catalogued and marked planned. M3-R4: planned is never
+  it('ships builders for exactly the families the kit declares', () => {
+    // The rest are catalogued and marked planned. M3-R4: planned is never
     // rendered as supported, so the two sets must not drift.
+    //
+    // `Payment` joined the four M3 declared when M13-R2b built its request
+    // builder: the Smart Accounts MasterAccountController dispatches on
+    // `standardPaymentReference`, which only the chain-agnostic `Payment`
+    // response carries — an `XRPPayment` proof cannot drive an instruction.
     expect(ATTESTATION_FAMILIES.filter((f) => f.hasBuilder).map((f) => f.name).sort()).toEqual([
       'EVMTransaction',
+      'Payment',
       'Web2Json',
       'XRPPayment',
       'XRPPaymentNonexistence',
@@ -76,8 +82,15 @@ describe('status', () => {
   })
 
   it('reports a served family with no builder as planned, never as supported', () => {
-    const payment = familyFor('Payment')!
-    expect(claimedStatus(payment, 'coston2')).toBe('planned')
+    // This used `Payment` until M13-R2b built its builder. The invariant is the
+    // point, not the fixture, so it now stands on a family the kit still cannot
+    // build a request for — and it must keep standing on one, or the check goes
+    // vacuous the way the M12 review gate found elsewhere.
+    const noBuilder = ATTESTATION_FAMILIES.filter((f) => !f.hasBuilder && !f.deprecationNote)
+    expect(noBuilder.length).toBeGreaterThan(0)
+    for (const family of noBuilder) {
+      expect(claimedStatus(family, 'coston2'), family.name).toBe('planned')
+    }
   })
 })
 

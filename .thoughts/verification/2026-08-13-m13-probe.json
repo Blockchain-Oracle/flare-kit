@@ -1,0 +1,289 @@
+{
+  "milestone": "M13 — XRPL-controlled Smart Accounts (part one, proof-based flow)",
+  "probedAt": "2026-08-13T16:31:45.881Z",
+  "keyless": true,
+  "xrplOwner": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+  "networks": {
+    "coston2": {
+      "chainId": 114,
+      "registeredContractCount": 69,
+      "masterAccountController": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "matchesSnapshot": true,
+      "xrplProviderWallets": {
+        "value": [
+          "rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq"
+        ]
+      },
+      "sourceId": {
+        "raw": "0x7465737458525000000000000000000000000000000000000000000000000000",
+        "decoded": "testXRP"
+      },
+      "paymentProofValidityDurationSeconds": {
+        "value": "86400"
+      },
+      "defaultInstructionFee": {
+        "value": "1000"
+      },
+      "executorInfo": {
+        "value": [
+          "0x103b384064ae85577127097A7cCadfd6fb13f437",
+          "100000000000"
+        ]
+      },
+      "instructionFees": {
+        "0x00": {
+          "value": "1000"
+        },
+        "0x01": {
+          "value": "1000"
+        },
+        "0x02": {
+          "value": "1000"
+        },
+        "0x10": {
+          "value": "1000"
+        },
+        "0x11": {
+          "value": "1000"
+        },
+        "0x12": {
+          "value": "1000"
+        },
+        "0x13": {
+          "value": "1000"
+        },
+        "0x20": {
+          "value": "1000"
+        },
+        "0x21": {
+          "value": "1000"
+        },
+        "0x22": {
+          "value": "1000"
+        },
+        "0x23": {
+          "value": "1000"
+        }
+      },
+      "vaults": [
+        {
+          "vaultId": "4",
+          "address": "0xD91324A6e8884147F6425E9ddd60e11Aea060B5b",
+          "vaultType": 2,
+          "vaultTypeName": "upshift",
+          "symbol": "TESTstXRP"
+        },
+        {
+          "vaultId": "2",
+          "address": "0x9E63a5D282F2fBb7DcE822B98e363b2719D28319",
+          "vaultType": 2,
+          "vaultTypeName": "upshift",
+          "symbol": "TESTearnXRP"
+        },
+        {
+          "vaultId": "3",
+          "address": "0x4066A1363a04ce3B23eEcB53dEfa65f94A24355E",
+          "vaultType": 2,
+          "vaultTypeName": "upshift",
+          "symbol": "TESTstXRP"
+        },
+        {
+          "vaultId": "1",
+          "address": "0xC90D6847747b85d1fa2E07859869fb9fB72c0361",
+          "vaultType": 1,
+          "vaultTypeName": "firelight",
+          "symbol": "stXRP"
+        }
+      ],
+      "agentVaults": {
+        "value": [
+          [
+            "1"
+          ],
+          [
+            "0x55c815260cBE6c45Fe5bFe5FF32E3C7D746f14dC"
+          ]
+        ]
+      },
+      "personalAccount": {
+        "address": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
+        "xrplOwner": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+        "xrplOwnerHash": "0xa918f534967b6d670c4c86631384f65fc078c03943797c5c3353c4770501c0cc",
+        "deployed": false,
+        "nonce": {
+          "value": "0"
+        },
+        "pinnedExecutor": {
+          "value": "0x0000000000000000000000000000000000000000"
+        },
+        "nativeBalance": {
+          "value": "0"
+        },
+        "fasset": {
+          "symbol": "FTestXRP",
+          "token": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+          "balance": {
+            "value": "0"
+          }
+        }
+      },
+      "vaultNamespace": {
+        "controllerVaultCount": 4,
+        "m7VaultCount": 2,
+        "sharedAddresses": [],
+        "note": "the controller vault namespace DIVERGES from the M7 registry — resolve vault ids from getVaults(), never from vaults.ts"
+      },
+      "paymentAttestationRoute": {
+        "prepareRequestUrl": "https://fdc-verifiers-testnet.flare.network/verifier/xrp/Payment/prepareRequest",
+        "servesPayment": true,
+        "servesXrpPayment": true
+      }
+    },
+    "flare": {
+      "chainId": 14,
+      "registeredContractCount": 67,
+      "masterAccountController": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "matchesSnapshot": true,
+      "xrplProviderWallets": {
+        "value": [
+          "rM2LEysS4isvAJkZFfxKDL5z4aTfWcBTXV"
+        ]
+      },
+      "sourceId": {
+        "raw": "0x5852500000000000000000000000000000000000000000000000000000000000",
+        "decoded": "XRP"
+      },
+      "paymentProofValidityDurationSeconds": {
+        "value": "7200"
+      },
+      "defaultInstructionFee": {
+        "value": "500000"
+      },
+      "executorInfo": {
+        "value": [
+          "0x02954e158Be2b477E1C26F31e8AA0c21b378445C",
+          "10000000000000000000"
+        ]
+      },
+      "instructionFees": {
+        "0x00": {
+          "value": "950000"
+        },
+        "0x01": {
+          "value": "500000"
+        },
+        "0x02": {
+          "value": "950000"
+        },
+        "0x10": {
+          "value": "950000"
+        },
+        "0x11": {
+          "value": "500000"
+        },
+        "0x12": {
+          "value": "500000"
+        },
+        "0x13": {
+          "value": "500000"
+        },
+        "0x20": {
+          "value": "950000"
+        },
+        "0x21": {
+          "value": "500000"
+        },
+        "0x22": {
+          "value": "500000"
+        },
+        "0x23": {
+          "value": "500000"
+        }
+      },
+      "vaults": [
+        {
+          "vaultId": "1",
+          "address": "0x4C18Ff3C89632c3Dd62E796c0aFA5c07c4c1B2b3",
+          "vaultType": 1,
+          "vaultTypeName": "firelight",
+          "symbol": "stXRP"
+        },
+        {
+          "vaultId": "2",
+          "address": "0x373D7d201C8134D4a2f7b5c63560da217e3dEA28",
+          "vaultType": 2,
+          "vaultTypeName": "upshift",
+          "symbol": {
+            "unavailable": "Execution reverted for an unknown reason.",
+            "at": "symbol"
+          }
+        },
+        {
+          "vaultId": "3",
+          "address": "0x2439D4bb753A0f3777d4C9011AFacc475ba6B951",
+          "vaultType": 2,
+          "vaultTypeName": "upshift",
+          "symbol": {
+            "unavailable": "Execution reverted for an unknown reason.",
+            "at": "symbol"
+          }
+        }
+      ],
+      "agentVaults": {
+        "value": [
+          [
+            "1"
+          ],
+          [
+            "0x09011d2A11A40DB855Cb00B3AA5a0F5F3bd485FD"
+          ]
+        ]
+      },
+      "personalAccount": {
+        "address": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
+        "xrplOwner": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+        "xrplOwnerHash": "0xa918f534967b6d670c4c86631384f65fc078c03943797c5c3353c4770501c0cc",
+        "deployed": false,
+        "nonce": {
+          "value": "0"
+        },
+        "pinnedExecutor": {
+          "value": "0x0000000000000000000000000000000000000000"
+        },
+        "nativeBalance": {
+          "value": "0"
+        },
+        "fasset": {
+          "symbol": "FXRP",
+          "token": "0xAd552A648C74D49E10027AB8a618A3ad4901c5bE",
+          "balance": {
+            "value": "0"
+          }
+        }
+      },
+      "vaultNamespace": {
+        "controllerVaultCount": 3,
+        "m7VaultCount": 1,
+        "sharedAddresses": [
+          "0x373D7d201C8134D4a2f7b5c63560da217e3dEA28"
+        ],
+        "note": "the controller vault namespace DIVERGES from the M7 registry — resolve vault ids from getVaults(), never from vaults.ts"
+      },
+      "paymentAttestationRoute": {
+        "prepareRequestUrl": "https://fdc-verifiers-mainnet.flare.network/verifier/xrp/Payment/prepareRequest",
+        "servesPayment": true,
+        "servesXrpPayment": true
+      }
+    }
+  },
+  "crossNetworkIdentity": {
+    "coston2": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
+    "flare": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
+    "identical": true
+  },
+  "blockers": [],
+  "findings": [
+    "coston2: 4 of 4 controller vaults are NOT in the M7 registry",
+    "flare: 2 of 3 controller vaults are NOT in the M7 registry"
+  ]
+}

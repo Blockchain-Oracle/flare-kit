@@ -1,4 +1,5 @@
 import { XRP_PAYMENT_PROOF } from '../direct-minting-abi.js'
+import { PAYMENT_PROOF } from './payment-abi.js'
 
 /**
  * The contract fragments the FDC flow calls: request the attestation, price it,
@@ -195,21 +196,29 @@ const verifyFunction = (name: string, proof: AbiComponent) => ({
 })
 
 /**
- * `IFdcVerification`, for the four families this milestone builds requests for.
+ * `IFdcVerification`, for the families this kit builds requests for.
  *
  * `verifyXRPPayment` reuses `XRP_PAYMENT_PROOF` rather than restating it: it
  * takes the same struct `executeDirectMinting` does, and two transcriptions of
  * a fifteen-field struct are two chances for them to drift apart.
  *
- * These are the only on-chain verification available to three of the four
- * families. Nothing this project deploys consumes their proofs, and the
- * surfaces say so rather than implying a consumption step exists.
+ * `verifyPayment` (M13-R2b) is a DIFFERENT struct, not a variation: the
+ * chain-agnostic `IPayment.Proof` carries `standardPaymentReference`, which the
+ * Smart Accounts controller dispatches on and `IXRPPayment.Proof` does not have.
+ * Sharing one struct between them would silently produce a proof neither
+ * consumer accepts. See `payment-abi.ts`.
+ *
+ * These are the only on-chain verification available to most of these families.
+ * Nothing this project deploys consumes their proofs — except the Smart Accounts
+ * controller, which consumes `Payment` — and the surfaces say so rather than
+ * implying a consumption step exists.
  */
 export const fdcVerificationAbi = [
   verifyFunction('verifyXRPPayment', { ...XRP_PAYMENT_PROOF, name: '_proof' }),
   verifyFunction('verifyXRPPaymentNonexistence', XRP_PAYMENT_NONEXISTENCE_PROOF),
   verifyFunction('verifyEVMTransaction', EVM_TRANSACTION_PROOF),
   verifyFunction('verifyWeb2Json', WEB2_JSON_PROOF),
+  verifyFunction('verifyPayment', PAYMENT_PROOF),
 ] as const
 
 /** The `verify*` function on `FdcVerification` for a family, by family name. */
@@ -218,4 +227,5 @@ export const VERIFY_FUNCTIONS: Readonly<Record<string, string>> = Object.freeze(
   XRPPaymentNonexistence: 'verifyXRPPaymentNonexistence',
   EVMTransaction: 'verifyEVMTransaction',
   Web2Json: 'verifyWeb2Json',
+  Payment: 'verifyPayment',
 })
