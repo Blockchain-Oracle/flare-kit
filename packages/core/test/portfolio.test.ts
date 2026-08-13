@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { stakingFor } from '@flare-kit/contracts'
+import { governanceFor, stakingFor } from '@flare-kit/contracts'
 import { createAccountContext, supplyReadOnly, walletConnected } from '../src/account.js'
 import { unavailable } from '../src/observation.js'
 import {
   UNBUILT_POSITION_TYPES,
   assemblePortfolio,
   delegationPosition,
+  governancePosition,
   stakePosition,
 } from '../src/portfolio.js'
 import type { DelegationReads } from '../src/delegation-adapter.js'
@@ -35,6 +36,8 @@ describe('unbuilt position types', () => {
     expect(kinds).toContain('vault')
     expect(kinds).toContain('bridge-message')
     expect(kinds).toContain('stake')
+    // M12: governance is declared-unbuilt while governanceVerified is false.
+    expect(kinds).toContain('governance')
     // M10-R12: delegation is now BUILT — it no longer declares itself unbuilt.
     expect(kinds).not.toContain('delegation')
   })
@@ -233,6 +236,42 @@ describe('stakePosition (M11) — built mechanism, gated on stakeVerified', () =
       status: 'observed',
       stakes: [pos],
       mirroredVotePower: undefined,
+    })
+  })
+})
+
+// M12: the governance position mechanism is built (`governancePosition` produces the
+// M10-style `observed | unavailable` view), but the portfolio keeps `governance`
+// DECLARED-UNBUILT while `governanceVerified` is false — the surface must not claim to read
+// a governance position off a path no live run has confirmed. Honesty (M2 coverage): an
+// ABSENT read is `unavailable`, never a fabricated zero — and an observed read with 0 votes
+// and no delegate is a REAL observed-empty holding, distinct from unavailable.
+describe('governancePosition (M12) — built mechanism, gated on governanceVerified', () => {
+  const A = '0x00000000000000000000000000000000000000A1' as const
+  const ZERO = '0x0000000000000000000000000000000000000000' as const
+
+  it('governance stays declared-unbuilt while the deployment governanceVerified flag is false', () => {
+    expect(governanceFor('coston2').governanceVerified).toBe(false)
+    expect(UNBUILT_POSITION_TYPES.map((type) => type.kind)).toContain('governance')
+  })
+
+  it('an absent read is unavailable — never a fabricated zero', () => {
+    expect(governancePosition(undefined)).toEqual({ status: 'unavailable' })
+  })
+
+  it('an observed account with zero votes and no delegate is a REAL observed-empty, distinct from unavailable', () => {
+    expect(governancePosition({ votes: 0n, delegate: ZERO })).toEqual({
+      status: 'observed',
+      votes: 0n,
+      delegate: ZERO,
+    })
+  })
+
+  it('a present read is observed, carrying the votes and the current delegate', () => {
+    expect(governancePosition({ votes: 42n, delegate: A })).toEqual({
+      status: 'observed',
+      votes: 42n,
+      delegate: A,
     })
   })
 })
