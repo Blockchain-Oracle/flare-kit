@@ -11,8 +11,10 @@ coverage/
 !.env.example
 
 # Vendored reference clones — protocol source read during research, never ours.
-sources/
-developer-hub/
+# No trailing slash: a linked worktree reaches these through a SYMLINK, and git
+# treats a symlink as a file, so a directory-only pattern would not match it.
+sources
+developer-hub
 
 .playwright-mcp/
 
