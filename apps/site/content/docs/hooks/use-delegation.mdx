@@ -63,8 +63,9 @@ function Delegate({ account, provider }: { account: `0x${string}`; provider: `0x
 }
 ```
 
-`reconcile` and `adapter` are read as effect dependencies, so hold them steady —
-a closure rebuilt on every render restarts the poll on every render.
+`reconcile` is an effect dependency, so hold it steady — a closure rebuilt on
+every render restarts the poll on every render. `adapter` only shapes the next
+`buildPlan`, so its identity does not gate the poll.
 
 ## Parameters
 
@@ -83,7 +84,7 @@ a closure rebuilt on every render restarts the poll on every render.
   { name: 'operation', type: 'DelegationOperation | undefined', description: 'The tracked operation, advanced only by the confirmed read.' },
   { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state. False when there is no operation at all.' },
   { name: 'position', type: 'DelegationPositionView', description: 'observed (wrappedBalance, delegates, votePower, mode) or unavailable. An absent read is never a confident zero-delegation.' },
-  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed READING. It never moves the operation to failed, and it clears once a later poll succeeds.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed reading or wallet submit. It never moves the operation to failed, and a later successful poll clears it — a submit failure is visible for at most one poll interval.' },
   { name: 'buildPlan', type: '(intent: DelegationIntent) => DelegationPlanResult | undefined', description: 'Pure and synchronous once a read has landed; undefined before that, because the hook will not plan off reads it has not observed.' },
   { name: 'submit', type: '(plan: DelegationPlan) => Promise<DelegationOperation | undefined>', description: 'Forwards the plan to onSubmit and adopts the returned operation. Returns undefined when no onSubmit was given or the wallet threw.' },
 ]} />
@@ -104,7 +105,9 @@ a closure rebuilt on every render restarts the poll on every render.
 - **refusals** — `buildPlan` returns `{ kind: 'error' }` for `not-verified`
   (the deployment has no live round trip behind it), `too-many-delegates`
   (`max: 2`), `bips-over-100` (the targets sum past `10000`), `mode-conflict`
-  (percentage and explicit-amount delegation are exclusive — undelegate first)
+  (percentage and explicit-amount delegation are exclusive, and the mode never
+  resets — not even after undelegating — so the other style stays refused for
+  this account)
   and `insufficient-wrapped`.
 
 ## Mock to live

@@ -165,5 +165,7 @@ before it reads anything, and the card renders that refusal rather than a plan.
 
 Nor will it mint. The cross-chain mint — an XRPL payment, an FDC automint, then a
 bridge out through the shim — is configured but has not been driven live in this
-build. It ships present and reasoned, never faked, and the shim address is carried
-in the registry for the milestone that verifies it.
+build. It ships present and reasoned, never faked. The shim's address is recorded in
+the M8 spec, not in `@flare-kit/contracts` — it enters the registry with the
+milestone that verifies the path, because the registry carries only what a
+recorded run stands behind.

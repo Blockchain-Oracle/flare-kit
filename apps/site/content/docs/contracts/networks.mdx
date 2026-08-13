@@ -86,17 +86,22 @@ reality — the same class of error as rendering an unread balance as zero.
 
 ## Addresses live here, and nowhere else
 
-No address is hardcoded anywhere else in flare-kit. That rule is what makes the
-package worth having: one place to audit, one place to update, and no chance of
+No source outside this package declares a contract address (the core mocks
+replay observed fixtures, which carry addresses as recorded data). That rule
+is what makes the package worth having: one place to audit, one place to update, and no chance of
 a component holding a stale copy of an address the registry has moved on from.
 
 It is enforced inside the package as well. The delegation registry takes its
 WNat address as `registryFor(chainId).wrappedNative` rather than declaring a
 second literal, and the rewards registry does the same for
-`flareSystemsManager`. Where an address is pinned as a literal, it was resolved
-by name from the on-chain `FlareContractRegistry` by a recorded probe, and a
-parity test re-resolves it against the live registry so drift fails a test
-rather than reaching a user.
+`flareSystemsManager`. Where a Flare-system address is pinned as a literal, it was resolved by name
+from the on-chain `FlareContractRegistry` by a recorded probe. Seven of the
+Coston2 names are re-resolved against the live registry by a parity test, so
+their drift fails a test rather than reaching a user. The rest are pinned to
+their recorded probes only: the FAssets assertions run when a deployment
+manifest is present, and the DEX, vault, bridge and payment addresses are not
+in `FlareContractRegistry` at all — they came from capability-specific probes,
+and the recorded evidence in `.thoughts/verification/` is their authority.
 
 ## Public constants, not environment variables
 

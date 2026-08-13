@@ -92,7 +92,7 @@ function Attest({ intent, hasConsumer }) {
 <PropsTable rows={[
   { name: 'request', type: '(intent: AttestationIntent, hasConsumer: boolean) => AttestationOperation | undefined', description: 'Creates the record, persists it before anything is sent, and returns it immediately. Returns undefined when it refuses, and the reason lands in error — a refused request is a state to render, not an exception thrown at a component.' },
   { name: 'operation', type: 'AttestationOperation | undefined', description: 'The record, live from the registry. undefined until one is requested or adopted.' },
-  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class and evidence — never a bare string. Set by a refused request, or by a reconciliation read that threw.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class and evidence — never a bare string. Set by a refused request, or by a reconciliation read that threw a FlareKitError. A reader that throws anything else is swallowed silently — wrap a hand-written reader so its failures surface as FlareKitError.' },
   { name: 'isSettled', type: 'boolean', description: 'True only when the operation has reached a terminal state. False when there is no operation.' },
   { name: 'waitingReason', type: 'string | undefined', description: 'Why the operation is waiting, in words, when it is. Deliberately separate from error: a round that has not finalized is not a failure, and rendering it as one would be inventing a negative fact.' },
 ]} />
@@ -143,8 +143,11 @@ It will not block. `request` returns before anything is submitted, and no call
 on this hook awaits a round.
 
 It will not turn a failed reading into a failed attestation. When a reconcile
-throws, `error` is set and the operation stays exactly where the chain last put
-it: the round may be perfectly healthy and the request on its way to consensus.
+throws a `FlareKitError`, `error` is set and the operation stays exactly where
+the chain last put it: the round may be perfectly healthy and the request on
+its way to consensus. A reader that throws anything else is swallowed without
+setting `error` — so a hand-written reader should wrap its failures in
+`FlareKitError` if it wants them on screen.
 
 It will not render `submitted` as succeeded, and it will not render a wait or an
 unknown as a failure. `partially_succeeded` is where a verified proof stops.

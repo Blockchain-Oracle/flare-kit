@@ -122,7 +122,9 @@ docs:
 - **bips-over-100** — the shares sum past `10000` bips, refused before a call is
   built.
 - **mode-conflict** — the account is already in the other delegation mode, so the
-  card reads "undelegate first" rather than submitting a call the chain ignores.
+  card states the delegation style is fixed for the account rather than
+  submitting a call the chain ignores — `delegationModeOf` never resets, not
+  even after undelegating.
 - **not-verified** — the delegation path is declared unverified on this build and
   the kit will not sign against it.
 
@@ -146,5 +148,6 @@ It will not render an unavailable read as zero delegation, and it will not
 submit a delegate with no provider filled in. It will not offer a partial
 unwrap, because the reconciler cannot confirm one. And it will not switch you
 between percentage and amount delegation behind your back — the two are
-exclusive on chain, so a conflict says undelegate first instead of quietly
+exclusive on chain and the choice never resets, so a conflict says the style
+is fixed for this account instead of quietly
 doing nothing.

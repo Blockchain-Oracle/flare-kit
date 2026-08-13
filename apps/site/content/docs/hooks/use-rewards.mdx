@@ -75,8 +75,9 @@ function Rewards({ account }: { account: `0x${string}` }) {
 }
 ```
 
-`reconcile` and `adapter` are effect dependencies, so hold them steady — a
-closure rebuilt on every render restarts the poll on every render.
+`reconcile` is an effect dependency, so hold it steady — a closure rebuilt on
+every render restarts the poll on every render. `adapter` only shapes the next
+`buildPlan`, so its identity does not gate the poll.
 
 ## Parameters
 
@@ -95,7 +96,7 @@ closure rebuilt on every render restarts the poll on every render.
 
 <PropsTable rows={[
   { name: 'reads', type: 'RewardsReads | undefined', description: 'The claimable position: currentRewardEpoch, claimableEpochs, expireNextEpoch, ftso, rnat, flaredrop and staking. undefined until the first read lands.' },
-  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed position READING. It never fabricates an empty read, and it clears once a later poll succeeds.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed position reading or wallet submit. It never fabricates an empty read, and a later successful poll clears it — a submit failure is visible for at most one poll interval.' },
   { name: 'ftso', type: 'ClaimKindResult', description: 'The FTSO claim: its operation, isSettled, and its own read error.' },
   { name: 'rnat', type: 'ClaimKindResult', description: 'The rNat claim, tracked independently of the other three.' },
   { name: 'flaredrop', type: 'ClaimKindResult', description: 'The FlareDrop claim, tracked independently of the other three.' },

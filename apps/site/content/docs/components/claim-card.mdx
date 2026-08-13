@@ -25,8 +25,10 @@ in-flight states carry no transaction hash: there is no real one to show.
 ## Usage
 
 Drive it from `useRewards`, which polls the claimable position once and tracks
-each kind's operation independently. One card per kind; `kind` picks which slice
-of `reads` is rendered.
+the FTSO, rNat and FlareDrop operations independently. One card per kind;
+`kind` picks which slice of `reads` is rendered. The `staking` kind reads
+through `useStaking`, which carries no claim-operation slot — a host renders
+the staking card's operation from its own record.
 
 ```tsx
 import { useRewards } from '@flare-kit/react'
@@ -97,18 +99,18 @@ Every state in the switcher above is imported from
 `packages/react-ui/gallery/`, one source of truth for both the gallery and these
 docs:
 
-- **ftso-claimable** — a reward whose Merkle proof is present on the mirror.
+- **ftso-claimable** — a reward whose Merkle proof is present on the mirror. The line items reuse an observed epoch-5929 mirror tuple from a different beneficiary as a shape; no reward of this account's is being claimed.
 - **ftso-proof-unavailable** — an on-chain reward the mirror never proved. The
   epoch is named and the claim is declared unavailable, not shown as zero.
 - **ftso-empty** — the real observed no-entitlement read.
 - **ftso-expiring** — a reward at the on-chain expire-next boundary, inside the
   25-epoch window.
-- **rnat-claimable** — a funded RNat project account.
+- **rnat-claimable** — a funded RNat project account. A hypothetical shape — the observed account has no RNat project — mounted so the funded rendering is verifiable.
 - **rnat-locked-burn-warning** — `withdrawAll` with a locked balance. The exact
   amount that would be destroyed is on screen before anything is signed.
 - **rnat-empty** — the real observed "no RNat account" read. An account with no
   RNat project is an honest empty, not an error.
-- **flaredrop-month** — a historical month still claimable.
+- **flaredrop-month** — a historical month still claimable. Hypothetical: the live read observed the concluded archive, so this case exists to show the claimable rendering.
 - **flaredrop-concluded** — the real observed read. The archive states the
   conclusion date and offers no new drop.
 - **claiming** — a claim has been submitted and is in flight. Not success.
@@ -119,7 +121,8 @@ docs:
 - **staking-empty** — the observed reality for this account: earned equals
   claimed. Staking rewards are paid as a delayed leg, and they do not expire.
 - **staking-claimable** — a claimable staking delta, marked "Does not expire".
-  This kind never carries the 25-epoch line.
+  This kind never carries the 25-epoch line. Hypothetical: the observed account
+  earned nothing live, so the delta is a shape, not a recorded value.
 
 ## Mock to live
 

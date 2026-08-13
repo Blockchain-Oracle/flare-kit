@@ -19,8 +19,9 @@ import type { DelegationAdapter, DelegationCall, DelegationReads } from './deleg
  *
  *  2. Every invariant the protocol would silently no-op is caught BEFORE a call is built:
  *     the two-delegate cap, the 100% (10000 bips) ceiling, delegation-mode exclusivity
- *     (a percentage delegate is ignored/reverts under AMOUNT mode and vice-versa, so the
- *     account must undelegate first), and the wrapped-balance floor for explicit amounts
+ *     (a percentage delegate is ignored/reverts under AMOUNT mode and vice-versa — and the
+ *     mode never resets, not even after undelegating, so the conflict is permanent for
+ *     the account), and the wrapped-balance floor for explicit amounts
  *     and unwraps. We refuse rather than sign a call that burns gas to do nothing.
  *
  * `reads` is a snapshot passed in (Task 3's `DelegationAdapter.read`), so the builder is

@@ -24,7 +24,7 @@ The preview runs the gallery's own states. The block-latency readings are
 driven through the real `readFeeds` against `createMockFtsoReader()`. The anchor
 claims and the verification outcomes are conditions of the network rather than
 of the read — a reader cannot produce a proof that reverts — so those cases
-carry the figures the live Coston2 probes returned.
+carry figures shaped after the live Coston2 probes (the decimals — `8` at block latency against `6` on the anchor — are the real observed pair; the proof hashes are visibly synthetic fixtures).
 
 <FeedDetailDemo />
 
@@ -117,8 +117,10 @@ docs:
   chain and the note explaining why the two numbers are not the same claim.
 - **block latency only** — a current value with no anchor retrieved. The anchor
   side says so rather than being hidden.
-- **anchor only** — a committed, proven value with nothing read at block
-  latency.
+- **anchor only** — a committed value with nothing read at block latency, and
+  no verification run: the proof panel reads "not checked on chain". "We could
+  not check this" and "this is not proven" are different facts, and this state
+  is the first one.
 - **the two paths differ widely** — a visibly divergent pair. Still not a
   computed conflict: the surface shows both and resolves neither.
 - **renamed feed** — one feed carrying a former name. The old id still resolves

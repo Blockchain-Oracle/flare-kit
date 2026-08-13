@@ -12,9 +12,8 @@ identifiers. There is no per-capability vocabulary, and no display state that
 exists only in a component.
 
 ```ts
-import { OPERATION_STATES, type OperationState } from '@flare-kit/core'
-
-export const OPERATION_STATES = [
+// The full set, as `OPERATION_STATES` exports it from '@flare-kit/core':
+const STATES = [
   'draft',
   'discovering',
   'quoting',
@@ -81,9 +80,11 @@ canTransition('succeeded', 'failed') // false — terminal states are dead ends
 
 Two shapes are worth reading directly off it. `executing` cannot reach any
 success state: it goes to `submitted`, `awaiting_external` or
-`action_required`, or it fails. And `submitted` cannot go back to `executing` —
-once something is broadcast, the operation moves forward or waits, but it never
-pretends the broadcast did not happen.
+`action_required`, or it ends in `failed`, `cancelled` or `expired`. And
+`submitted` has no direct edge back to `executing` — though a recovery can
+route there through `awaiting_external` or `action_required`, which is exactly
+how a recovery action re-executes. What no path does is pretend the broadcast
+did not happen.
 
 ## Steps and actors
 
@@ -128,9 +129,13 @@ Three refusals, and they behave differently:
   Evidence is absorbed; the patch is dropped.
 - **`not_allowed`** — the table has no edge from here to there. Evidence is
   absorbed; **the patch is dropped**.
-- **`same_state`** — the target equals the current state. Evidence *and* the
-  patch are applied, which is what makes a repeated reconcile idempotent
-  rather than inert.
+- **`same_state`** — the target equals the current state *and the record is
+  not terminal*. Evidence and the patch are applied, which is what makes a
+  repeated reconcile of an in-flight record idempotent rather than inert. The
+  terminal check runs first: a same-target call on a settled record returns
+  `terminal` and drops its patch, so a reconciler must finish the spine and
+  clear `awaiting` in the same call that lands the terminal state — there is
+  no second pass.
 
 The middle case is the one that bites. On an illegal hop `applyTransition`
 returns a record with the new evidence and none of the `steps`, `recovery` or
@@ -146,7 +151,7 @@ starting one:
 ```ts
 import { pathTo } from '@flare-kit/core'
 
-pathTo('ready', 'succeeded') // the intermediate states, in order
+pathTo('ready', 'succeeded') // the states to walk, in order, ending with the target
 pathTo('succeeded', 'ready') // [] — unreachable, so the record stays put
 ```
 
@@ -162,8 +167,9 @@ These are properties of the state machine, not conventions a component is
 trusted to follow.
 
 **`submitted` is never rendered as succeeded.** `isSuccess` returns true for
-one state. Analytics names `submitted` as a funnel boundary and never counts it
-as a conversion to success. The direct mint reaches `succeeded` only from
+one state. Any future analytics must treat `submitted` as a funnel boundary,
+never a conversion — that requirement is scoped (R-OBS-004) and unbuilt, like
+everything else it would measure. The direct mint reaches `succeeded` only from
 `alreadySettled` — the AssetManager confirming the payment — and a bridge
 redeem reaches it only from the XRPL settlement read, never from the
 destination-chain event alone.

@@ -123,7 +123,7 @@ export const M8_BRIDGE_SECTIONS = [
             <div className="fk-unbuilt" aria-disabled="true">
               <p className="fk-unbuilt-title">Cross-chain mint not built this milestone</p>
               <p className="fk-unbuilt-reason">
-                The mint path (an XRPL payment → FDC automint → bridge out via the FxrpLzBridgeShim) is configured but not driven live in this build. It ships present and reasoned rather than faked; the shim address is carried in the registry for the milestone that verifies it.
+                The mint path (an XRPL payment → FDC automint → bridge out via the FxrpLzBridgeShim) is configured but not driven live in this build. It ships present and reasoned rather than faked; the shim address stays in the M8 spec record until the milestone that verifies the path admits it to the registry.
               </p>
             </div>
           </div>
