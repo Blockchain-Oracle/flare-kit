@@ -1,0 +1,75 @@
+/* ============================================================
+   @flare-kit/react-ui — the governance surface (M12).
+
+   GovernanceCard reuses the shared Panel / Note / DetailRow /
+   StateChip / ToneChip / card-chrome and the OperationTimeline
+   spine, so this file adds only the governance composer's own
+   chrome: the single-target delegate input, the vote-power +
+   eligibility readouts and the spine spacing. Governance vote
+   power is ALL-OR-NOTHING to one delegate — there is no bips
+   field and no second-provider row, so this file has no share
+   cell (the load-bearing difference from delegation.css).
+
+   Every value derives from a token in styles.css — nothing is a
+   raw literal. Theme is runtime, under data-theme.
+   ============================================================ */
+
+/* ---------- GovernanceCard (M12) ---------- */
+.fk.fk-gov-card {
+  max-width: 440px;
+}
+.fk-gov-card .fk-gov-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-gov-card .fk-gov-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* GOV-VP — the vote power + current delegate readout. */
+.fk-gov-card .fk-gov-vp {
+  margin-top: 12px;
+}
+
+/* GOV-01 — the SINGLE-TARGET delegate composer (one address, no bips, no second row). */
+.fk-gov-card .fk-gov-composer {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fk-gov-card .fk-gov-composer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fk-gov-card .fk-gov-composer-title {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-gov-card .fk-gov-target {
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  color: var(--fk-text);
+  font-size: 0.9rem;
+  min-width: 0;
+}
+.fk-gov-card .fk-gov-target:disabled {
+  color: var(--fk-text-muted);
+  background: var(--fk-surface);
+}
+
+/* GOV-ELIG — the eligibility readout. */
+.fk-gov-card .fk-gov-eligibility {
+  margin-top: 12px;
+}
+
+/* GOV-03 — the delegate/undelegate lifecycle spine. */
+.fk-gov-card .fk-gov-spine {
+  margin-top: 12px;
+}
