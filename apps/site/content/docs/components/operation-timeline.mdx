@@ -1,0 +1,51 @@
+---
+title: OperationTimeline
+description: The operation spine — every step, the actor being waited on, and the evidence gathered, for any operation the kit models.
+breadcrumb: ['Docs', 'Components', 'OperationTimeline']
+importLine: "import { OperationTimeline } from '@flare-kit/react-ui'"
+prev: { href: '/docs/quickstart', label: 'Quickstart' }
+---
+
+The hardest design problem in this product is time. A mint spans minutes across
+three actors, and any of them can be late. So a wait is never a spinner: it
+states the stage, the expected end, the actor being waited on, and the safe
+action, in that order.
+
+## Live
+
+The preview below runs the real mock state machine. Changing the scenario or the
+state walks the trace the machine actually produced — the states listed are the
+ones that exist, so nothing here can show a state the operation never reached.
+
+<OperationTimelineDemo />
+
+## Usage
+
+`OperationTimeline` renders a record it is handed. It holds no state and fetches
+nothing, so the same component serves a mint, a redemption and an attestation
+rather than three spines that drift apart.
+
+```tsx
+import { OperationTimeline } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Mint({ record }) {
+  return <OperationTimeline operation={record} onAction={handleAction} />
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'OperationRecord', required: true, description: 'The record to render. The spine reads state, steps, evidence and awaiting — all on the base record, so every capability shares one component.' },
+  { name: 'stepEvidence', type: 'Record<string, readonly string[]>', defaultValue: 'DIRECT_MINT_STEP_EVIDENCE', description: 'Which evidence sits beside which step. A capability with different steps passes its own, rather than getting a spine with no identifiers on it.' },
+  { name: 'onAction', type: '(actionId: string) => void', description: 'Called when the reader takes a recovery action. Omit it and the recovery panel renders read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the spine.' },
+]} />
+
+## What it will not do
+
+It will not render `submitted` as `succeeded`, and it will not render an unknown
+outcome as failed. If an operation's result is not yet known, the spine says the
+outcome is not confirmed yet and names who is being waited on.
