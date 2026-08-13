@@ -154,10 +154,12 @@ async function read() {
         source: detail.source,
         state: detail.state,
         proposer: detail.proposer,
-        voteStart: detail.voteStart.toString(),
-        voteStartIso: new Date(Number(detail.voteStart) * 1000).toISOString(),
-        voteEnd: detail.voteEnd.toString(),
-        voteEndIso: new Date(Number(detail.voteEnd) * 1000).toISOString(),
+        // Same `bigint | undefined` as `summaryOut` below: an absent window is null, not a
+        // 1970 ISO string (`new Date(NaN).toISOString()` would throw outright).
+        voteStart: detail.voteStart === undefined ? null : detail.voteStart.toString(),
+        voteStartIso: detail.voteStart === undefined ? null : new Date(Number(detail.voteStart) * 1000).toISOString(),
+        voteEnd: detail.voteEnd === undefined ? null : detail.voteEnd.toString(),
+        voteEndIso: detail.voteEnd === undefined ? null : new Date(Number(detail.voteEnd) * 1000).toISOString(),
         for: detail.for.toString(),
         forHuman: formatUnits(detail.for, 18),
         against: detail.against.toString(),
@@ -218,7 +220,15 @@ async function read() {
     selfDelegation: { ok: selfDelegation.ok, error: selfDelegation.ok ? null : selfDelegation.error.code },
     invalidTarget: { ok: invalidTarget.ok, error: invalidTarget.ok ? null : invalidTarget.error.code },
     noDelegate: { ok: noDelegate.ok, error: noDelegate.ok ? null : noDelegate.error.code },
-    alreadyDelegated: { ok: alreadyDelegated.ok, error: alreadyDelegated.ok ? null : alreadyDelegated.error.code },
+    alreadyDelegated: {
+      ok: alreadyDelegated.ok,
+      error: alreadyDelegated.ok ? null : alreadyDelegated.error.code,
+      currentDelegate: c2Votes.delegate,
+      // Whether THIS run actually reached the already_delegated guard, or stopped at the
+      // zero-target one first. The rendered evidence must not claim the former when it was the
+      // latter — see the note it produces.
+      reachedGuard: alreadyDelegatedExpected === 'already_delegated',
+    },
   }
   log('read:plan', plan)
 
@@ -293,9 +303,11 @@ const summaryOut = (p) => ({
   source: p.source,
   state: p.state,
   proposer: p.proposer,
+  // All three are `bigint | undefined` since M-h4 — an undecodable `voteTimes` stays absent
+  // rather than becoming a confident epoch-0 window, so none of them may be dereferenced blind.
   votePowerBlock: p.votePowerBlock === undefined ? null : p.votePowerBlock.toString(),
-  voteStart: p.voteStart.toString(),
-  voteEnd: p.voteEnd.toString(),
+  voteStart: p.voteStart === undefined ? null : p.voteStart.toString(),
+  voteEnd: p.voteEnd === undefined ? null : p.voteEnd.toString(),
 })
 const pickAddrs = (d) => ({
   governanceVotePower: d.governanceVotePower,
@@ -541,7 +553,9 @@ function writeEvidenceMd(e) {
     `- **self-delegation** (to = account) → refused \`${p.selfDelegation.error}\``,
     `- **invalid (zero) target** → refused \`${p.invalidTarget.error}\``,
     `- **undelegate with no current delegate** (live zero delegate) → refused \`${p.noDelegate.error}\``,
-    `- **re-delegate to the CURRENT delegate** → refused \`${p.alreadyDelegated.error}\` — never a plan whose read-back is already satisfied by pre-existing state`,
+    p.alreadyDelegated.reachedGuard
+      ? `- **re-delegate to the CURRENT delegate** (\`${p.alreadyDelegated.currentDelegate}\`) → refused \`${p.alreadyDelegated.error}\` — never a plan whose read-back is already satisfied by pre-existing state`
+      : `- **re-delegate to the CURRENT delegate**: NOT exercised by this run. The account is undelegated (\`getDelegateOfAtNow\` = the zero address), so re-delegating to it is a zero target and the \`invalid_target\` guard fires FIRST — this pass refused \`${p.alreadyDelegated.error}\`, not \`already_delegated\`. The \`already_delegated\` guard is covered by unit tests; no live run can reach it while the account holds no delegate.`,
     '',
     '## Carry',
     '',
