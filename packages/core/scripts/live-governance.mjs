@@ -3,9 +3,14 @@
  * M12 live governance verification. Two passes, mirroring live-delegation.mjs (M10) and
  * live-stake.mjs (M11):
  *
- *   node scripts/live-governance.mjs            # KEYLESS reads (default). Runs now, no key.
+ *   node scripts/live-governance.mjs            # KEYLESS reads (default). No key.
  *   node scripts/live-governance.mjs read       # same — explicit.
- *   node scripts/live-governance.mjs broadcast --broadcast   # GATED delegate/undelegate. HELD.
+ *   node scripts/live-governance.mjs precheck   # KEYLESS eth_call simulate of delegate (no broadcast).
+ *   node scripts/live-governance.mjs broadcast --broadcast    # GATED full round trip (delegate→flip→undelegate).
+ *   node scripts/live-governance.mjs delegate --broadcast     # GATED delegate + confirm only.
+ *   node scripts/live-governance.mjs flip --broadcast         # source-flip (coston2) — after a confirmed read-back.
+ *   node scripts/live-governance.mjs undelegate --broadcast   # GATED undelegate + confirm only (closes the trip).
+ * The write modes ALSO require the env token LIVE_GOV_BROADCAST + GOV_DELEGATE_TARGET.
  *
  * READ PASS (keyless, ALWAYS): drives the SHIPPED core read code — `readGovernanceVotes` +
  * `readEligibility` (governance-adapter.ts) on Coston2 (114, the write/verify target), and
@@ -38,6 +43,7 @@ import { createPublicClient, createWalletClient, formatUnits, getAddress, http, 
 import { privateKeyToAccount } from 'viem/accounts'
 import { chainFor, governanceFor } from '@flare-kit/contracts'
 import {
+  buildDelegateCall,
   discoverProposals,
   governancePosition,
   planGovernance,
@@ -286,6 +292,30 @@ const pickAddrs = (d) => ({
   chainId: d.chainId,
 })
 
+// ======================= PRECHECK (keyless read-only simulate) =======================
+// Read-only eth_call simulate of `delegate(target)` from the account ADDRESS (no key, no
+// broadcast) to learn whether the 0-VP account can set the delegate pointer directly, or whether
+// a minimal WNat wrap is needed first. `simulateContract` with `account` as the address does not
+// sign — it is a pure eth_call. Prints the result; never mutates anything.
+async function precheck() {
+  const targetRaw = process.env.GOV_DELEGATE_TARGET
+  if (!targetRaw || !isAddress(targetRaw, { strict: false })) throw new Error('set GOV_DELEGATE_TARGET to a well-formed address')
+  const target = getAddress(targetRaw)
+  const c2 = clientFor(114)
+  const govC2 = governanceFor('coston2')
+  const votes = await readGovernanceVotes(c2.client, govC2, ACCOUNT)
+  const call = buildDelegateCall(govC2, target)
+  let result
+  try {
+    await c2.client.simulateContract({ account: ACCOUNT, address: call.address, abi: call.abi, functionName: call.functionName, args: call.args })
+    result = { ok: true, wrapNeeded: false }
+  } catch (e) {
+    const reason = String(e.shortMessage || e.message || e).split('\n')[0].slice(0, 200)
+    result = { ok: false, reason, wrapNeeded: /vote power|balance|zero|amount/i.test(reason) }
+  }
+  log('precheck', { target, account: ACCOUNT, govVotePower: votes?.votes?.toString() ?? null, delegateSimulate: result })
+}
+
 // ======================= BROADCAST PASS (GATED — HELD today) =======================
 // A minimal OperationRecord carrying the plan's real spine, so reconcileGovernance walks the
 // actual wallet+flare steps (not a synthetic empty spine). Mirrors live-delegation's recordFor.
@@ -294,97 +324,136 @@ const recordFor = (plan, intent, id) => ({
   updatedAt: 0, createdAt: 0, id, capability: 'governance', network: 114, intent, schemaVersion: 1,
 })
 
-async function broadcast() {
-  const flagOk = process.argv.includes('--broadcast')
-  const envOk = process.env.LIVE_GOV_BROADCAST === BROADCAST_TOKEN
-  // DOUBLE GUARD: refuse unless BOTH the flag AND the env token are present. When either is
-  // missing (the default, and this run), record the refusal and STOP — before reading the
-  // secrets file, constructing a signer, or touching the private key.
-  if (!flagOk || !envOk) {
-    log('broadcast:REFUSED-held', {
-      flagPresent: flagOk,
-      envPresent: envOk,
-      note: 'HELD: the governance delegate/undelegate broadcast needs the --broadcast flag AND LIVE_GOV_BROADCAST set to the token. No key read, nothing signed, governanceVerified untouched.',
-    })
-    return
-  }
+// DOUBLE GUARD: true only when BOTH the --broadcast flag AND the LIVE_GOV_BROADCAST token are
+// present. A missing guard STOPS every write path before any key read — nothing is signed.
+const guardOk = () => process.argv.includes('--broadcast') && process.env.LIVE_GOV_BROADCAST === BROADCAST_TOKEN
+const guardState = () => ({ flagPresent: process.argv.includes('--broadcast'), envPresent: process.env.LIVE_GOV_BROADCAST === BROADCAST_TOKEN })
 
-  // ---- Everything below runs ONLY on Abu's explicit go (never in this task). ----
-  const targetRaw = process.env.GOV_DELEGATE_TARGET
-  if (!targetRaw || !isAddress(targetRaw, { strict: false }) || targetRaw.toLowerCase() === zeroAddress || targetRaw.toLowerCase() === ACCOUNT.toLowerCase()) {
+function resolveTarget() {
+  const raw = process.env.GOV_DELEGATE_TARGET
+  if (!raw || !isAddress(raw, { strict: false }) || raw.toLowerCase() === zeroAddress || raw.toLowerCase() === ACCOUNT.toLowerCase()) {
     throw new Error('set GOV_DELEGATE_TARGET to a well-formed, non-zero, non-self delegate address (recorded in evidence)')
   }
-  const target = getAddress(targetRaw)
+  return getAddress(raw)
+}
 
-  // The private key is read ONLY here, inside the guarded branch, to build the local signer.
-  // It is never logged, printed, put in --json output, or written to any evidence file.
+const loadEvidence = () => (existsSync(JSON_PATH) ? JSON.parse(readFileSync(JSON_PATH, 'utf8')) : {})
+const saveEvidence = (e) => writeFileSync(JSON_PATH, JSON.stringify(e, jsonify, 2))
+
+// Build the signer + clients. The private key is read ONLY here, inside a guarded write path,
+// solely to construct the local Account; it is never logged, printed, in --json, or in evidence.
+function makeSigner() {
   const account = privateKeyToAccount(JSON.parse(readFileSync(SECRETS_PATH, 'utf8')).evm.privateKey)
   if (getAddress(account.address) !== ACCOUNT) throw new Error('secrets signer address does not match the expected account')
-
   const c2 = chainFor(114)
   const chain = { id: 114, name: c2.name, nativeCurrency: c2.nativeCurrency, rpcUrls: { default: { http: [c2.rpcUrl] } } }
-  const publicClient = createPublicClient({ chain, transport: http(c2.rpcUrl) })
-  const walletClient = createWalletClient({ account, chain, transport: http(c2.rpcUrl) })
+  return { account, c2, publicClient: createPublicClient({ chain, transport: http(c2.rpcUrl) }), walletClient: createWalletClient({ account, chain, transport: http(c2.rpcUrl) }) }
+}
+
+// delegate(target): sign, then reach succeeded ONLY from the getDelegateOfAtNow read-back.
+async function doDelegate(ctx, target, evidence) {
+  const { account, c2, publicClient, walletClient } = ctx
   const govC2 = governanceFor('coston2')
-  // OVERRIDE lets the builder emit a signable plan for the round trip about to be driven live;
-  // the SOURCE flag stays false and flips only after the confirming read-back (flip()).
+  const verified = { ...govC2, governanceVerified: true } // signing OVERRIDE — the SOURCE flag flips only after the read-back
+  const pre = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
+  const intent = { kind: 'delegate', to: target }
+  const plan = planGovernance({ intent, deployment: verified, reads: { delegate: pre.delegate }, account: ACCOUNT })
+  if (!plan.ok) throw new Error(`delegate plan refused: ${plan.error.code}`)
+  const hash = await signCall(publicClient, walletClient, account, plan.plan.calls[0], 'delegate')
+  for (let i = 0; i < POLL_ATTEMPTS; i++) {
+    const now = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
+    const op = reconcileGovernance(recordFor(plan, intent, 'gov-delegate'), { delegate: now.delegate }, nowSec())
+    if (op.state === 'succeeded') {
+      evidence.broadcastRun.delegate = { tx: hash, explorer: `${c2.explorerUrl}/tx/${hash}`, target, delegateReadBack: now.delegate, opState: op.state, confirmedAt: new Date().toISOString() }
+      saveEvidence(evidence); log('broadcast:delegate:CONFIRMED', evidence.broadcastRun.delegate); return true
+    }
+    await sleep(POLL_MS)
+  }
+  evidence.broadcastRun.delegate = { tx: hash, target, staged: true, note: 're-run to observe getDelegateOfAtNow reflect the target' }
+  saveEvidence(evidence); log('broadcast:delegate:staged', evidence.broadcastRun.delegate); return false
+}
+
+// undelegate(): sign, then reach succeeded ONLY when getDelegateOfAtNow reads the zero address.
+async function doUndelegate(ctx, evidence) {
+  const { account, c2, publicClient, walletClient } = ctx
+  const govC2 = governanceFor('coston2')
   const verified = { ...govC2, governanceVerified: true }
-  const evidence = existsSync(JSON_PATH) ? JSON.parse(readFileSync(JSON_PATH, 'utf8')) : {}
+  const pre = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
+  if (pre.delegate.toLowerCase() === zeroAddress) {
+    // Nothing to clear — the round trip is already closed. Never send a gas-burning no-op.
+    evidence.broadcastRun.undelegate = { alreadyZero: true, delegateReadBack: pre.delegate, note: 'getDelegateOfAtNow already the zero address — no residual delegation to clear' }
+    saveEvidence(evidence); log('broadcast:undelegate:already-zero', evidence.broadcastRun.undelegate); return true
+  }
+  const intent = { kind: 'undelegate' }
+  const plan = planGovernance({ intent, deployment: verified, reads: { delegate: pre.delegate }, account: ACCOUNT })
+  if (!plan.ok) throw new Error(`undelegate plan refused: ${plan.error.code}`)
+  const hash = await signCall(publicClient, walletClient, account, plan.plan.calls[0], 'undelegate')
+  for (let i = 0; i < POLL_ATTEMPTS; i++) {
+    const now = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
+    const op = reconcileGovernance(recordFor(plan, intent, 'gov-undelegate'), { delegate: now.delegate }, nowSec())
+    if (op.state === 'succeeded') {
+      evidence.broadcastRun.undelegate = { tx: hash, explorer: `${c2.explorerUrl}/tx/${hash}`, delegateReadBack: now.delegate, opState: op.state, confirmedAt: new Date().toISOString() }
+      saveEvidence(evidence); log('broadcast:undelegate:CONFIRMED', evidence.broadcastRun.undelegate); return true
+    }
+    await sleep(POLL_MS)
+  }
+  evidence.broadcastRun.undelegate = { tx: hash, staged: true, note: 're-run to observe getDelegateOfAtNow reflect the zero address' }
+  saveEvidence(evidence); log('broadcast:undelegate:staged', evidence.broadcastRun.undelegate); return false
+}
+
+// Full atomic round trip: delegate → (on confirm) flip → undelegate. The discrete `delegate`,
+// `flip` and `undelegate` modes drive the same steps individually when tests must run between.
+async function broadcast() {
+  if (!guardOk()) { log('broadcast:REFUSED-held', { ...guardState(), note: 'HELD: needs --broadcast AND LIVE_GOV_BROADCAST token. No key read, nothing signed, governanceVerified untouched.' }); return }
+  const target = resolveTarget()
+  const ctx = makeSigner()
+  const evidence = loadEvidence()
   evidence.broadcastRun = { ranAt: new Date().toISOString(), account: ACCOUNT, target, delegate: {}, undelegate: {} }
-
-  // --- delegate(target): sign, then reach succeeded ONLY from the getDelegateOfAtNow read-back. ---
-  const preDelegate = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
-  const delegateIntent = { kind: 'delegate', to: target }
-  const delegatePlan = planGovernance({ intent: delegateIntent, deployment: verified, reads: { delegate: preDelegate.delegate }, account: ACCOUNT })
-  if (!delegatePlan.ok) throw new Error(`delegate plan refused: ${delegatePlan.error.code}`)
-  const delegateHash = await signCall(publicClient, walletClient, account, delegatePlan.plan.calls[0], 'delegate')
-  let delegateConfirmed = false
-  for (let i = 0; i < POLL_ATTEMPTS; i++) {
-    const now = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
-    const op = reconcileGovernance(recordFor(delegatePlan, delegateIntent, 'gov-delegate'), { delegate: now.delegate }, nowSec())
-    if (op.state === 'succeeded') {
-      evidence.broadcastRun.delegate = { tx: delegateHash, explorer: `${c2.explorerUrl}/tx/${delegateHash}`, delegateReadBack: now.delegate, opState: op.state, confirmedAt: new Date().toISOString() }
-      writeFileSync(JSON_PATH, JSON.stringify(evidence, jsonify, 2))
-      log('broadcast:delegate:CONFIRMED', evidence.broadcastRun.delegate)
-      delegateConfirmed = true
-      break
-    }
-    await sleep(POLL_MS)
-  }
-  if (!delegateConfirmed) {
-    evidence.broadcastRun.delegate = { tx: delegateHash, staged: true, note: 're-run to observe getDelegateOfAtNow reflect the target' }
-    writeFileSync(JSON_PATH, JSON.stringify(evidence, jsonify, 2))
-    log('broadcast:delegate:staged', evidence.broadcastRun.delegate)
-    return
-  }
-
-  // Flip governanceVerified (Coston2 only) — ONLY after the confirmed delegate read-back.
+  if (!(await doDelegate(ctx, target, evidence))) return // staged — do NOT flip on an unconfirmed read-back
   flip()
+  await doUndelegate(ctx, evidence)
+}
 
-  // --- undelegate(): sign, then reach succeeded ONLY when getDelegateOfAtNow reads the zero address. ---
-  const preUndelegate = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
-  const undelegateIntent = { kind: 'undelegate' }
-  const undelegatePlan = planGovernance({ intent: undelegateIntent, deployment: verified, reads: { delegate: preUndelegate.delegate }, account: ACCOUNT })
-  if (!undelegatePlan.ok) throw new Error(`undelegate plan refused: ${undelegatePlan.error.code}`)
-  const undelegateHash = await signCall(publicClient, walletClient, account, undelegatePlan.plan.calls[0], 'undelegate')
-  for (let i = 0; i < POLL_ATTEMPTS; i++) {
-    const now = await readGovernanceVotes(publicClient, govC2, ACCOUNT)
-    const op = reconcileGovernance(recordFor(undelegatePlan, undelegateIntent, 'gov-undelegate'), { delegate: now.delegate }, nowSec())
-    if (op.state === 'succeeded') {
-      evidence.broadcastRun.undelegate = { tx: undelegateHash, explorer: `${c2.explorerUrl}/tx/${undelegateHash}`, delegateReadBack: now.delegate, opState: op.state, confirmedAt: new Date().toISOString() }
-      writeFileSync(JSON_PATH, JSON.stringify(evidence, jsonify, 2))
-      log('broadcast:undelegate:CONFIRMED', evidence.broadcastRun.undelegate)
-      return
-    }
-    await sleep(POLL_MS)
+// `delegate` mode: delegate + confirm only (guarded). Leaves flip/undelegate to their own steps.
+async function delegateOnly() {
+  if (!guardOk()) { log('broadcast:REFUSED-held', { ...guardState(), note: 'HELD: needs --broadcast AND LIVE_GOV_BROADCAST token.' }); return }
+  const target = resolveTarget()
+  const ctx = makeSigner()
+  const evidence = loadEvidence()
+  evidence.broadcastRun = { ...(evidence.broadcastRun ?? {}), ranAt: new Date().toISOString(), account: ACCOUNT, target, delegate: {}, undelegate: evidence.broadcastRun?.undelegate ?? {} }
+  await doDelegate(ctx, target, evidence)
+}
+
+// `undelegate` mode: undelegate + confirm only (guarded). Closes the round trip.
+async function undelegateOnly() {
+  if (!guardOk()) { log('broadcast:REFUSED-held', { ...guardState(), note: 'HELD: needs --broadcast AND LIVE_GOV_BROADCAST token.' }); return }
+  const ctx = makeSigner()
+  const evidence = loadEvidence()
+  evidence.broadcastRun = { ...(evidence.broadcastRun ?? { account: ACCOUNT }), undelegate: {} }
+  await doUndelegate(ctx, evidence)
+}
+
+// `flip` mode: source-flip governanceVerified (Coston2 only) — GUARDED by the double guard AND a
+// keyless re-read confirming getDelegateOfAtNow still equals the recorded, confirmed target. It
+// touches no key and sends no tx; it only persists the flag AFTER the delegate read-back proved it.
+async function flipMode() {
+  if (!guardOk()) { log('flip:REFUSED-held', { ...guardState(), note: 'HELD: needs --broadcast AND LIVE_GOV_BROADCAST token.' }); return }
+  const target = resolveTarget()
+  const evidence = loadEvidence()
+  const rec = evidence.broadcastRun?.delegate
+  if (rec?.opState !== 'succeeded' || (rec?.delegateReadBack ?? '').toLowerCase() !== target.toLowerCase()) {
+    throw new Error('refusing to flip: evidence carries no confirmed delegate read-back equal to the target')
   }
-  evidence.broadcastRun.undelegate = { tx: undelegateHash, staged: true, note: 're-run to observe getDelegateOfAtNow reflect the zero address' }
-  writeFileSync(JSON_PATH, JSON.stringify(evidence, jsonify, 2))
-  log('broadcast:undelegate:staged', evidence.broadcastRun.undelegate)
+  // Keyless re-read: confirm the delegation is STILL live (getDelegateOfAtNow == target) right now.
+  const live = await readGovernanceVotes(clientFor(114).client, governanceFor('coston2'), ACCOUNT)
+  if (live.delegate.toLowerCase() !== target.toLowerCase()) {
+    throw new Error(`refusing to flip: live getDelegateOfAtNow ${live.delegate} != confirmed target ${target}`)
+  }
+  flip()
 }
 
 // Sign one built governance call: simulate (eth_call, pass the Account object) → writeContract →
-// wait for the receipt. ONLY the broadcast pass calls this; the keyless read pass never does.
+// wait for the receipt. ONLY the write paths call this; the keyless read/precheck never do.
 async function signCall(publicClient, walletClient, account, call, label) {
   const { request } = await publicClient.simulateContract({ account, address: call.address, abi: call.abi, functionName: call.functionName, args: call.args })
   const hash = await walletClient.writeContract(request)
@@ -394,16 +463,18 @@ async function signCall(publicClient, walletClient, account, call, label) {
 }
 
 // Source-flip governanceVerified false→true for COSTON2 ONLY (the write/verify net; mainnet is a
-// read lens and never flips). governance.ts carries the flag on both networks, so this flips the
-// FIRST occurrence — the coston2 block, which precedes `flare:` — after asserting that ordering.
-// GUARDED: reached only after a confirmed delegate read-back in broadcast(). Never runs now.
+// read lens and never flips). governance.ts carries the flag on BOTH networks, so this flips the
+// `governanceVerified: false` that sits inside the `coston2: {` block (before `flare: {`), located
+// by the object-key markers — NOT the `flare:` mention in the doc comment. GUARDED: reached only
+// after a confirmed delegate read-back (broadcast()/flipMode()).
 function flip() {
   const src = readFileSync(GOVERNANCE_TS, 'utf8')
   const needle = 'governanceVerified: false'
-  const idx = src.indexOf(needle)
-  const flareIdx = src.indexOf('flare:')
-  if (idx === -1) throw new Error(`no '${needle}' in governance.ts`)
-  if (flareIdx !== -1 && idx > flareIdx) throw new Error('first governanceVerified:false is not the coston2 one — refusing to flip')
+  const coston2Idx = src.indexOf('coston2: {')
+  const flareIdx = src.indexOf('flare: {')
+  if (coston2Idx === -1 || flareIdx === -1) throw new Error('could not locate the coston2/flare deployment blocks in governance.ts')
+  const idx = src.indexOf(needle, coston2Idx)
+  if (idx === -1 || idx > flareIdx) throw new Error('coston2 governanceVerified:false not found within the coston2 block — refusing to flip')
   const flipped = src.slice(0, idx) + 'governanceVerified: true' + src.slice(idx + needle.length)
   writeFileSync(GOVERNANCE_TS, flipped)
   log('flip', { file: GOVERNANCE_TS, network: 'coston2', governanceVerified: true })
@@ -472,8 +543,12 @@ function writeEvidenceMd(e) {
 async function main() {
   log('start', { mode: MODE, account: ACCOUNT, coston2Verified: governanceFor('coston2').governanceVerified, flareVerified: governanceFor('flare').governanceVerified })
   if (MODE === 'read') await read()
+  else if (MODE === 'precheck') await precheck()
   else if (MODE === 'broadcast') await broadcast()
-  else throw new Error(`unknown mode ${MODE} (use: read | broadcast)`)
+  else if (MODE === 'delegate') await delegateOnly()
+  else if (MODE === 'flip') await flipMode()
+  else if (MODE === 'undelegate') await undelegateOnly()
+  else throw new Error(`unknown mode ${MODE} (use: read | precheck | broadcast | delegate | flip | undelegate)`)
 }
 
 void main().then(() => process.exit(0)).catch((e) => { console.error(e); process.exit(1) })

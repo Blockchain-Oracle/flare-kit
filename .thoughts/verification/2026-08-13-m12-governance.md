@@ -2,8 +2,8 @@
 
 - Ran: 2026-08-13T12:11:52.335Z · account `0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9`
 - Networks: **Coston2** (114, write/verify target) + **Flare mainnet** (14, proposal read lens)
-- Broadcast: **none** — KEYLESS read pass. The delegate/undelegate round trip is HELD on Abu's go (see Carry).
-- `governanceVerified`: **false** on both networks (unchanged — no live round trip has confirmed it).
+- Keyless read pass: below. **Broadcast round trip subsequently RAN on Abu's explicit go — see "Live broadcast round trip" at the end.**
+- `governanceVerified`: **true on Coston2** (flipped by the live round trip below), **false on Flare** (mainnet is a read lens, never flips). The keyless read section below records the pre-flip state at the time it ran.
 
 ## Coston2 governance state (honest observed / undefined — nothing fabricated)
 
@@ -36,8 +36,29 @@
 - **invalid (zero) target** → refused `invalid_target`
 - **undelegate with no current delegate** (live zero delegate) → refused `no_delegate`
 
-## Carry
-
-- The delegate/undelegate round trip is HELD on Abu's explicit go. It is cheap and reversible (no funding floor) but moves real governance vote power, so it runs only on the double guard. governanceVerified stays FALSE on both networks; the governance-delegation write is declared-unbuilt, nothing faked. It flips (Coston2 only) exclusively after a live delegate lands and getDelegateOfAtNow reads back the target, then undelegate restores the zero address.
 - honest-read expectations all passed: **true**
-- Broadcast path: wired (`broadcast` subcommand) behind a DOUBLE guard — the `--broadcast` flag AND `LIVE_GOV_BROADCAST` token, both required. This run entered neither; the secrets file was never opened and no key was read.
+- Broadcast path: wired (`broadcast` / `delegate` / `flip` / `undelegate` subcommands) behind a DOUBLE guard — the `--broadcast` flag AND `LIVE_GOV_BROADCAST` token, both required. The keyless read pass entered none of them; the secrets file was not opened and no key was read during it.
+
+## Live broadcast round trip — Abu's GO (Task 6 Steps 2–4)
+
+- Ran: 2026-08-13 · network **Coston2** (chainId 114) · signer `0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9`
+- **Target delegate** (`GOV_DELEGATE_TARGET`): `0xDddF991858311597bFD3D125cb342a0d4B56ea0a` — the m9-payer **public** dev address (non-self, non-zero). Read from `.secrets/m9-payer.json` public `address` field only; its private key was never read.
+- **Wrap needed? NO.** A keyless read-only `eth_call` simulate confirmed `delegate(target)` succeeds at 0 governance VP — the `GovernanceVotePower.delegate` pointer sets regardless of balance — so no `WNat.deposit()` wrap was performed. The account's governance VP was 0 throughout (delegating 0-weight moves the delegate pointer only).
+
+### Step 1 — delegate(target)
+- tx `0xc0da39abf699242a1306c7ac659c59d7df98612940e8b4036ec6d0075d1419d7` · status success · block 34007574
+- explorer: https://coston2-explorer.flare.network/tx/0xc0da39abf699242a1306c7ac659c59d7df98612940e8b4036ec6d0075d1419d7
+- **read-back**: `getDelegateOfAtNow(account)` → `0xDddF991858311597bFD3D125cb342a0d4B56ea0a` (== target). `reconcileGovernance` → `succeeded` **only from this read-back**, never the submission.
+
+### Step 2 — flip governanceVerified (Coston2 only)
+- `packages/contracts/src/governance.ts`: coston2 `governanceVerified: true` (flare stays `false` — read lens). Flipped only AFTER the confirmed delegate read-back.
+- `packages/core/src/portfolio.ts`: the `governance` row is removed from `UNBUILT_POSITION_TYPES` (M12-R10 / M12-AC3) — governance is now a BUILT, observed position via `governancePosition`, exactly as delegation's row was removed in M10-R12.
+- Tests after the flip: `@flare-kit/contracts` **183 passed, 2 skipped** (the 2 skips are the pre-existing FAssets vendored-clone skips; the **M12 governance parity block RAN LIVE** — the four governance addresses match the live `getAllContracts()` registry on both networks and GovernorReject is absent). `@flare-kit/core` **1005 passed**. Contracts + core rebuilt so dist carries the flip + the surfaced position.
+
+### Step 3 — undelegate()
+- tx `0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d` · status success · block 34007843
+- explorer: https://coston2-explorer.flare.network/tx/0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d
+- **read-back**: `getDelegateOfAtNow(account)` → `0x0000000000000000000000000000000000000000` (zero address). Round trip **closed — no residual delegation**.
+
+### Secrets
+- The private key was read ONLY inside the guarded broadcast branch to construct the local signer; it was never logged, printed, in `--json`, or in any evidence file. Verified: neither the live-run key nor the m9-payer key appears in this file or the read JSON; the only 64-hex strings in evidence are the two public tx hashes above.

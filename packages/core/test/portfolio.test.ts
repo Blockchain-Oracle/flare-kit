@@ -36,8 +36,9 @@ describe('unbuilt position types', () => {
     expect(kinds).toContain('vault')
     expect(kinds).toContain('bridge-message')
     expect(kinds).toContain('stake')
-    // M12: governance is declared-unbuilt while governanceVerified is false.
-    expect(kinds).toContain('governance')
+    // M12 Task 6: governance is now BUILT (the live Coston2 round trip flipped
+    // governanceVerified) — like delegation, it no longer declares itself unbuilt.
+    expect(kinds).not.toContain('governance')
     // M10-R12: delegation is now BUILT — it no longer declares itself unbuilt.
     expect(kinds).not.toContain('delegation')
   })
@@ -240,19 +241,19 @@ describe('stakePosition (M11) — built mechanism, gated on stakeVerified', () =
   })
 })
 
-// M12: the governance position mechanism is built (`governancePosition` produces the
-// M10-style `observed | unavailable` view), but the portfolio keeps `governance`
-// DECLARED-UNBUILT while `governanceVerified` is false — the surface must not claim to read
-// a governance position off a path no live run has confirmed. Honesty (M2 coverage): an
-// ABSENT read is `unavailable`, never a fabricated zero — and an observed read with 0 votes
+// M12 Task 6: the governance position mechanism is built (`governancePosition` produces the
+// M10-style `observed | unavailable` view), and the live Coston2 delegate/undelegate round trip
+// flipped `governanceVerified` true — so the portfolio now SURFACES governance (it no longer
+// declares itself unbuilt), exactly as delegation was surfaced in M10-R12. Honesty (M2 coverage):
+// an ABSENT read is `unavailable`, never a fabricated zero — and an observed read with 0 votes
 // and no delegate is a REAL observed-empty holding, distinct from unavailable.
-describe('governancePosition (M12) — built mechanism, gated on governanceVerified', () => {
+describe('governancePosition (M12) — built mechanism, surfaced after the governanceVerified flip', () => {
   const A = '0x00000000000000000000000000000000000000A1' as const
   const ZERO = '0x0000000000000000000000000000000000000000' as const
 
-  it('governance stays declared-unbuilt while the deployment governanceVerified flag is false', () => {
-    expect(governanceFor('coston2').governanceVerified).toBe(false)
-    expect(UNBUILT_POSITION_TYPES.map((type) => type.kind)).toContain('governance')
+  it('governance is now BUILT — the live Coston2 round trip flipped governanceVerified, so it no longer declares itself unbuilt', () => {
+    expect(governanceFor('coston2').governanceVerified).toBe(true)
+    expect(UNBUILT_POSITION_TYPES.map((type) => type.kind)).not.toContain('governance')
   })
 
   it('an absent read is unavailable — never a fabricated zero', () => {

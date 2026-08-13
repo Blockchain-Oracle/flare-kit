@@ -65,7 +65,7 @@ const GOVERNANCE_INTERNAL: Readonly<Record<FlareNetworkKey, GovernanceDeployment
     chainId: FLARE_NETWORKS.coston2.id,
     // Starts false. Task 6 flips this after the confirmed on-chain round trip
     // (delegate → getDelegateOfAtNow read → undelegate). Never before.
-    governanceVerified: false,
+    governanceVerified: true,
   },
   flare: {
     // Resolved by NAME from FlareContractRegistry.getAllContracts() (probe, Flare block

@@ -40,15 +40,15 @@ function functionNames(abi: Abi): string[] {
 }
 
 describe('governanceFor — the two-network snapshot', () => {
-  it('coston2 returns the four probe-resolved addresses, chainId 114, unverified', () => {
+  it('coston2 returns the four probe-resolved addresses, chainId 114, verified (live round trip)', () => {
     const g = governanceFor('coston2')
     expect(g.governanceVotePower).toBe(COSTON2.governanceVotePower)
     expect(g.pollingFoundation).toBe(COSTON2.pollingFoundation)
     expect(g.pollingFtso).toBe(COSTON2.pollingFtso)
     expect(g.pollingManagementGroup).toBe(COSTON2.pollingManagementGroup)
     expect(g.chainId).toBe(114)
-    // Starts false — only a live Coston2 delegate/undelegate round trip (Task 6) flips it.
-    expect(g.governanceVerified).toBe(false)
+    // Flipped true by the live Coston2 delegate/undelegate round trip (Task 6, 2026-08-13).
+    expect(g.governanceVerified).toBe(true)
   })
 
   it('flare returns the mainnet read-lens addresses, chainId 14, unverified', () => {
