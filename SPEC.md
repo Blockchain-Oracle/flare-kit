@@ -1139,6 +1139,10 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   gate first, then the invariants the chain would otherwise enforce after the
   money has already left; the plan carries the whole chain for approval,
   including the proof-expiry deadline as a wall-clock instant.
+- `packages/core/src/smart-accounts/plan-types.ts` — M13-R5. The plan vocabulary,
+  split from `plan.ts` to stay under 300 lines and so react/react-ui can name a
+  refusal or a warning without the planner's logic. Every `RefusalCode` names a
+  controller revert that would land AFTER the XRP reached the operator.
 - `packages/core/src/smart-accounts/states.ts` — M13-R6. The four-leg durable
   lifecycle (xrpl → fdc → flare → effect) over the canonical states via the
   shared `reconcile.ts` helpers; `succeeded` only from the decoded
