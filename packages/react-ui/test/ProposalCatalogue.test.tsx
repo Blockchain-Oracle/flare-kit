@@ -134,6 +134,25 @@ describe('ProposalCatalogue — the three outcomes stay three (undefined ≠ [] 
     expect(container.textContent?.toLowerCase()).not.toContain('no active proposals on this network')
   })
 
+  // I4 (round 2): the hook->component PAIR. A `loading` catalogue that still holds rows cannot
+  // present them: the rows carry no provenance of their own, so the component cannot tell that
+  // they came from the PREVIOUS network — it would stamp mainnet proposal 1 with the new
+  // `networkLabel` and, with `error` undefined, render it as a fresh, successful read. A load in
+  // flight outranks whatever is still held.
+  it('loading with rows still held does NOT present them as a fresh read of networkLabel', () => {
+    const { container } = render(<ProposalCatalogue proposals={[ftsoDefeated]} loading={true} networkLabel="Coston2" />)
+
+    expect(availability(container)).toBe('loading')
+    // The mainnet row is NOT rendered under the Coston2 label.
+    expect(dataRows(container).length).toBe(0)
+    expect(row(container, '1')).toBeNull()
+    expect(container.querySelector('.fk-skeleton')).not.toBeNull()
+    // And no note claims the listing was read from Coston2.
+    expect(noteTitles(container)).not.toContain('Read from Coston2')
+    // Never the confirmed-empty claim either — this is a read in flight.
+    expect(container.textContent?.toLowerCase()).not.toContain('no active proposals on this network')
+  })
+
   it('while loading (undefined, no error) shows skeletons, never a fabricated row', () => {
     const { container } = render(<ProposalCatalogue proposals={undefined} loading={true} />)
     expect(availability(container)).toBe('loading')

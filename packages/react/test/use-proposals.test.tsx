@@ -191,6 +191,31 @@ describe('useProposals — a dep change returns to loading; stale rows are never
     // component stamp mainnet proposal 1 with the NEW network's label and call it fresh.
     rerender({ deployment: governanceFor('coston2') })
     expect(result.current.loading).toBe(true)
+    // `loading: true` alone is not enough — `ProposalCatalogue` only shows its pending state
+    // when `proposals` is undefined, so rows left in place would still render, stamped with the
+    // NEW network's label. The previous deps' answer must go with them.
+    expect(result.current.proposals).toBeUndefined()
+    expect(result.current.detailOf(1n, 'ftso')).toBeUndefined()
+    // `error` clears too: a stale error from the previous deps would make the catalogue render
+    // `unavailable` during a load that is actually in flight, and says nothing about the new
+    // network anyway.
+    expect(result.current.error).toBeUndefined()
+  })
+
+  it('a dep change clears a previous FAILURE too — the new read is loading, not unavailable', async () => {
+    const { result, rerender } = renderHook(({ client }) => useProposals({ readDeployment, publicClient: client, account: ACCOUNT }), {
+      initialProps: { client: makeThrowingClient() },
+    })
+
+    await waitFor(() => expect(result.current.error).toBeDefined())
+
+    rerender({ client: makeOneProposalClient() })
+    expect(result.current.loading).toBe(true)
+    expect(result.current.error).toBeUndefined()
+    expect(result.current.proposals).toBeUndefined()
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.proposals).toHaveLength(1)
   })
 
   it('a superseded run never writes its result over the newer one', async () => {

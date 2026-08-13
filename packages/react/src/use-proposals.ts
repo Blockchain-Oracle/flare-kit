@@ -92,10 +92,18 @@ export function useProposals(input: UseProposalsInput): UseProposalsResult {
     // so a run whose deps have changed is already flagged dead at every `await` boundary below
     // and can never write its result over the newer one.
     let live = true
-    // A dep change means what is held was read from the PREVIOUS deps. Go back to `loading` so
-    // the surface renders its pending state instead of stamping mainnet's rows with the new
-    // network's label and calling them a fresh result.
+    // A dep change means EVERYTHING held was read from the PREVIOUS deps, so all four slots
+    // reset together. `setLoading(true)` on its own is not enough: `ProposalCatalogue` only
+    // renders its pending state while `proposals` is undefined, so rows left in place would
+    // still be listed — stamped with the NEW network's label, under a note claiming they were
+    // read from it. `details` goes with them, or `detailOf` would answer a matching id from the
+    // wrong network. And `error` clears too: a failure from the previous deps says nothing about
+    // the new ones, and leaving it would make the catalogue render `unavailable` (its `error`
+    // branch outranks `loading`) during a read that is actually in flight.
     setLoading(true)
+    setProposals(undefined)
+    setDetails(new Map())
+    setError(undefined)
     const run = async () => {
       try {
         const found = await discoverProposals(publicClient, readDeployment, LOOKBACK_BLOCKS, MAX_RANGE)

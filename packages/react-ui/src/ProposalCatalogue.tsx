@@ -95,7 +95,14 @@ export function ProposalCatalogue({
   const rows = proposals ?? []
   const unavailable = proposals === undefined && error !== undefined
   const confirmedEmpty = proposals !== undefined && rows.length === 0
-  const stillLoading = loading && proposals === undefined && error === undefined
+  // A load in flight outranks whatever is still held. Rows carry no provenance of their own —
+  // only `networkLabel` says which chain this listing is from — so a component that renders
+  // held rows while a NEW read is running would stamp the previous network's proposals with the
+  // new label and, with no `error`, present them as a fresh successful read. It cannot tell the
+  // difference, so it must not make the claim. (`useProposals` also clears its slots on a dep
+  // change; both layers are correct on their own, and this one has to be, because the component
+  // is published and takes its props from any host.)
+  const stillLoading = loading && error === undefined
   // `undefined` with neither an error nor a load in flight: nothing has been read at all.
   // `useProposals` cannot produce it, but this is a PUBLISHED component and a host driving it
   // from its own read can — and falling through to 'listed' rendered a completely blank table
@@ -148,7 +155,8 @@ export function ProposalCatalogue({
           </EmptyRow>
         ) : null}
 
-        {rows.map((proposal) => (
+        {/* Held rows are never rendered beside the skeletons — see `stillLoading` above. */}
+        {(stillLoading ? [] : rows).map((proposal) => (
           <Row
             key={`${proposal.source}:${proposal.id}`}
             proposal={proposal}
