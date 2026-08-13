@@ -7,7 +7,7 @@ import {
   readDeploymentSettings,
   readPersonalAccount,
 } from '@flare-kit/core'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 /**
  * `useSmartAccount` — the identity read for one XRPL address, on one network.
@@ -59,13 +59,25 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
   const [loading, setLoading] = useState(true)
   const [loaded, setLoaded] = useState(false)
   const [tick, setTick] = useState(0)
-  const cancelled = useRef(false)
 
   const refresh = useCallback(() => setTick((value) => value + 1), [])
 
   useEffect(() => {
-    cancelled.current = false
+    // PER-EFFECT, not a ref shared across runs. With a shared ref, React runs the old
+    // cleanup and then the new effect body — which resets the flag — BEFORE the previous
+    // in-flight read resolves. That read then passes its own cancellation check and writes
+    // the PREVIOUS subject's account into state, and schedules a timer whose cleanup has
+    // already run, leaking one poll loop per dependency change. `use-governance.ts` uses
+    // this shape for the same reason.
+    let live = true
     let timer: ReturnType<typeof setTimeout> | undefined
+
+    // A new subject means the old answers are about somebody else. Holding them while the
+    // new read is in flight would show one XRPL owner's personal-account ADDRESS under
+    // another's name — an address a user can send funds to.
+    setSettings(undefined)
+    setAccount(undefined)
+    setLoaded(false)
 
     const read = async () => {
       setLoading(true)
@@ -73,7 +85,7 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
         readDeploymentSettings(publicClient, deployment),
         readPersonalAccount(publicClient, deployment, xrplOwner, fassetToken),
       ])
-      if (cancelled.current) return
+      if (!live) return
       // Both are written even when `undefined`: a read that stops succeeding must stop
       // showing its previous answer, or the surface presents stale data as current.
       setSettings(nextSettings)
@@ -85,7 +97,7 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
 
     void read()
     return () => {
-      cancelled.current = true
+      live = false
       if (timer) clearTimeout(timer)
     }
   }, [deployment, xrplOwner, publicClient, fassetToken, pollMs, tick])

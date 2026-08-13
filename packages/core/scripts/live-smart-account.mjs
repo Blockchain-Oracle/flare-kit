@@ -22,7 +22,14 @@
 // chicken-and-egg the M10/M12 live scripts resolved the same way. Everything the plan
 // checks is still checked below, out loud, before anything is signed.
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
-import { createPublicClient, createWalletClient, http, formatUnits, getAddress } from 'viem'
+import {
+  createPublicClient,
+  createWalletClient,
+  decodeEventLog,
+  http,
+  formatUnits,
+  getAddress,
+} from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import {
   buildExecuteInstructionCall,
@@ -245,15 +252,24 @@ async function pay() {
     body: JSON.stringify({ method: 'submit', params: [{ tx_blob }] }),
   }).then((r) => r.json())
 
+  const engineResult = submitted?.result?.engine_result
   record('pay', {
     xrplTransactionId: hash,
-    engineResult: submitted?.result?.engine_result,
+    engineResult,
     destination: unsigned.Destination,
     amountDrops: unsigned.Amount,
     reference,
     // The submission result is NOT validation. `verify` reads the ledger back.
     note: 'engine_result tesSUCCESS means accepted for processing, not validated.',
   })
+  // A tef/tec/tem rejection means the payment will never apply. Continuing to `attest`
+  // against a transaction that does not exist would waste the FDC request fee and produce
+  // a confusing failure two phases later, so stop here with the reason.
+  if (engineResult !== 'tesSUCCESS') {
+    throw new Error(
+      `the XRPL submission was rejected with ${engineResult ?? 'no engine_result'} — nothing was paid`,
+    )
+  }
 }
 
 function paymentClient() {
@@ -353,11 +369,35 @@ async function dispatch() {
   })
   const receipt = await publicClient.waitForTransactionReceipt({ hash })
   if (receipt.status !== 'success') throw new Error(`executeInstruction reverted: ${hash}`)
+
+  // Decode InstructionExecuted out of the receipt rather than asserting it happened. A
+  // successful receipt says the transaction did not revert; only the event says the
+  // controller dispatched THIS instruction for THIS payment.
+  let instructionExecuted
+  for (const log of receipt.logs) {
+    try {
+      const decoded = decodeEventLog({ abi: masterAccountControllerAbi, ...log })
+      if (decoded.eventName === 'InstructionExecuted') {
+        instructionExecuted = {
+          personalAccount: decoded.args.personalAccount,
+          transactionId: decoded.args.transactionId,
+          paymentReference: decoded.args.paymentReference,
+          instructionId: decoded.args.instructionId,
+        }
+      }
+    } catch {
+      // Not one of ours — the receipt carries the FAsset transfer's logs too.
+    }
+  }
+
   record('dispatch', {
     hash,
     blockNumber: receipt.blockNumber,
     status: receipt.status,
     standardPaymentReference: proof.data.responseBody.standardPaymentReference,
+    // Absent means the event was NOT found. The evidence must not imply otherwise.
+    instructionExecuted: instructionExecuted ?? null,
+    instructionExecutedDecoded: Boolean(instructionExecuted),
   })
 }
 
@@ -414,6 +454,9 @@ async function main() {
 }
 
 void main().catch((e) => {
-  console.error(e)
+  // Message and stack only. A thrown object could carry a wallet or a signed blob on its
+  // properties, and `console.error(e)` would print the lot — this is the one place in the
+  // script where key material could reach stdout.
+  console.error(e instanceof Error ? `${e.name}: ${e.message}\n${e.stack ?? ''}` : String(e))
   process.exit(1)
 })

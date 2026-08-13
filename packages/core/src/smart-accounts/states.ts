@@ -46,6 +46,15 @@ export interface InstructionObservation {
     readonly instructionId: number
   }
   /**
+   * Whether the look for `instructionExecuted` actually succeeded.
+   *
+   * Without this, an absent event means two different things — "the controller has not
+   * dispatched" and "the scan failed" — and `scanInstructionHistory`'s honest `undefined`
+   * has nowhere to go. Set it `false` when the dispatch read could not be completed;
+   * expiry then holds off rather than declaring the payment stranded.
+   */
+  readonly dispatchReadSucceeded?: boolean
+  /**
    * Whether the instruction's own consequence was observed — the recipient's balance for a
    * transfer, the share balance for a deposit.
    *
@@ -74,9 +83,15 @@ export function proofDeadlineMs(
 
 function expired(observation: InstructionObservation, clock: InstructionClock): boolean {
   const deadline = proofDeadlineMs(observation, clock.proofWindowSeconds)
-  // A proof already retrieved and submitted is past caring about the window; only an
-  // un-dispatched instruction can expire.
   if (deadline === undefined || observation.instructionExecuted) return false
+  // A dispatch that was SUBMITTED but whose event has not been read back is an unknown
+  // outcome, not a dead one: the transaction may already be mined and successful. Declaring
+  // it expired would tell a user the controller will refuse the proof forever and their XRP
+  // is stranded, on the strength of a read we have not done.
+  if (observation.submissionHash) return false
+  // Likewise a dispatch read that FAILED. Absence of the event is only evidence of
+  // non-dispatch when the look succeeded.
+  if (observation.dispatchReadSucceeded === false) return false
   return clock.now > deadline
 }
 

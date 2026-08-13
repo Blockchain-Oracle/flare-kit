@@ -97,6 +97,45 @@ describe('the proof window', () => {
     expect(record.steps.some((step) => step.state === 'failed')).toBe(true)
   })
 
+  it('does not expire a dispatch that was submitted but not yet read back', () => {
+    // Found by the M13 review gate. With the transaction submitted and its event not yet
+    // read, the outcome is UNKNOWN — the dispatch may already be mined and successful.
+    // Expiring here tells the user the controller will refuse the proof forever and their
+    // XRP is stranded, on the strength of a read that has not happened.
+    const past = NOW + Number(COSTON2_WINDOW) * 1000
+    const record = reconcileInstruction(
+      submittedInstructionRecord(),
+      { ...PAID, proofRetrieved: true, submissionHash: `0x${'cd'.repeat(32)}` },
+      clock(past),
+    )
+    expect(record.state).toBe('awaiting_external')
+    expect(record.state).not.toBe('expired')
+  })
+
+  it('does not expire when the dispatch read itself failed', () => {
+    // The backfill scan returns `undefined` for an incomplete scan. Absence of the event is
+    // evidence of non-dispatch ONLY when the look succeeded.
+    const past = NOW + Number(COSTON2_WINDOW) * 1000
+    const record = reconcileInstruction(
+      submittedInstructionRecord(),
+      { ...PAID, dispatchReadSucceeded: false },
+      clock(past),
+    )
+    expect(record.state).toBe('awaiting_external')
+  })
+
+  it('still expires when the dispatch read SUCCEEDED and found nothing', () => {
+    // The honest expiry case must survive the fixes above, or the terminal state becomes
+    // unreachable and R-SA-008 goes unrendered.
+    const past = NOW + Number(COSTON2_WINDOW) * 1000
+    const record = reconcileInstruction(
+      submittedInstructionRecord(),
+      { ...PAID, dispatchReadSucceeded: true },
+      clock(past),
+    )
+    expect(record.state).toBe('expired')
+  })
+
   it('does not expire an instruction that already dispatched', () => {
     // The window governs whether the controller will ACCEPT a proof. Once it has, a late
     // read must not retroactively declare the instruction dead.

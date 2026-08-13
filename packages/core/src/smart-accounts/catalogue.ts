@@ -32,8 +32,13 @@ export type InstructionAvailability =
 
 export interface InstructionRow {
   readonly instruction: BuiltInInstruction
-  /** In drops, from `getInstructionFee(id)` — the deployment's number, not a constant. */
-  readonly feeDrops: bigint
+  /**
+   * In drops, from `getInstructionFee(id)` — the deployment's number, not a constant, and
+   * `undefined` when that read failed. Never defaulted: the per-id fee and the default fee
+   * genuinely differ on mainnet, so a substituted number is a wrong price, and a renderer
+   * showing `0` or the default would be quoting a payment the controller will refuse.
+   */
+  readonly feeDrops: bigint | undefined
   readonly availability: InstructionAvailability
   /**
    * The controller vault ids this instruction may target, from `getVaults()`. `undefined`
@@ -93,7 +98,7 @@ export function buildInstructionCatalogue(
     if (!settings) {
       return {
         instruction,
-        feeDrops: 0n,
+        feeDrops: undefined,
         availability: {
           kind: 'unknown',
           reason: 'The deployment could not be read, so its fees and vaults are unknown.',
@@ -114,7 +119,7 @@ export function buildInstructionCatalogue(
 
     return {
       instruction,
-      feeDrops: settings.instructionFees[instruction.id] ?? settings.defaultInstructionFee,
+      feeDrops: settings.instructionFees[instruction.id],
       availability: availabilityFor(instruction, settings, eligibleVaultIds),
       eligibleVaultIds,
       eligibleAgentVaultIds: needsAgentVault

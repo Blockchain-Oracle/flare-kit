@@ -11,7 +11,7 @@ import {
   proofDeadlineMs,
   reconcileInstruction,
 } from '@flare-kit/core'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 /**
  * `useInstruction` — the plan and the durable four-leg lifecycle for one XRPL instruction.
@@ -56,6 +56,13 @@ export interface UseInstructionResult {
    * quietly invent a deadline.
    */
   readonly proofDeadline: number | undefined
+  /**
+   * Whether the reconcile poll is actually running. `false` while an operation is in
+   * flight means NOTHING is looking — the record keeps rendering its last leg ("waiting
+   * for the attestation round…") while no read is happening, so a surface must say so
+   * rather than let the wait speak for itself.
+   */
+  readonly reconciling: boolean
   /** Drive one reconcile immediately, rather than waiting for the next poll. */
   reconcileNow(): void
 }
@@ -65,7 +72,6 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
   const [record, setRecord] = useState<OperationRecord<InstructionIntent> | undefined>(input.operation)
   const [observation, setObservation] = useState<InstructionObservation>({})
   const [tick, setTick] = useState(0)
-  const cancelled = useRef(false)
 
   const reconcileNow = useCallback(() => setTick((value) => value + 1), [])
 
@@ -87,7 +93,9 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
 
   useEffect(() => {
     if (!record || !observe || !settings) return
-    cancelled.current = false
+    // Per-effect, not a shared ref — see `use-smart-account.ts` for why a shared one leaks
+    // a poll loop on every dependency change.
+    let live = true
     let timer: ReturnType<typeof setTimeout> | undefined
 
     const run = async () => {
@@ -100,7 +108,7 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
         timer = setTimeout(() => void run(), pollMs)
         return
       }
-      if (cancelled.current) return
+      if (!live) return
       setObservation(next)
       setRecord((current) =>
         current
@@ -115,7 +123,7 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
 
     void run()
     return () => {
-      cancelled.current = true
+      live = false
       if (timer) clearTimeout(timer)
     }
     // `record` is intentionally not a dependency: reconciling would otherwise restart the
@@ -125,6 +133,7 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
   return {
     plan,
     record,
+    reconciling: Boolean(record && observe && settings),
     proofDeadline: settings
       ? proofDeadlineMs(observation, settings.proofValidityDurationSeconds)
       : undefined,

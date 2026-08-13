@@ -60,8 +60,18 @@ export interface DeploymentSettings {
   readonly proofValidityDurationSeconds: bigint
   /** Drops. Applies to any instruction with no per-id override. */
   readonly defaultInstructionFee: bigint
-  /** Per instruction id, in drops. */
-  readonly instructionFees: Readonly<Record<number, bigint>>
+  /**
+   * Per instruction id, in drops. `undefined` for an id whose fee READ FAILED.
+   *
+   * It must not fall back to `defaultInstructionFee`, and the deployment proves why: on
+   * Flare mainnet the default is 500 000 drops while ids 0x00, 0x02, 0x10, 0x20 and 0x23
+   * charge 950 000 (probe, 2026-08-13). `getInstructionFee` already resolves the override
+   * internally, so a SUCCESSFUL read never yields `undefined` — the only meaning left for
+   * it is "we could not read the fee", and quoting the default there would ask a user to
+   * sign a payment 450 000 drops short of what the controller requires. The proof would be
+   * refused forever with the XRP already at the operator.
+   */
+  readonly instructionFees: Readonly<Record<number, bigint | undefined>>
   /** `undefined` when the vault registry could not be read — never an empty list. */
   readonly vaults: readonly ControllerVault[] | undefined
   readonly agentVaults: readonly ControllerAgentVault[] | undefined
@@ -117,9 +127,10 @@ export async function readDeploymentSettings(
   const feeEntries = await Promise.all(
     BUILT_IN_INSTRUCTIONS.map(async (instruction) => {
       const fee = await attempt(() => read('getInstructionFee', [BigInt(instruction.id)]))
-      // Falling back to the default mirrors the contract, which applies the default to any
-      // id with no override. It is not a guess standing in for an unread value.
-      return [instruction.id, (fee as bigint | undefined) ?? defaultFee] as const
+      // No fallback. See the `instructionFees` doc comment — the default is a DIFFERENT
+      // number from the per-id fee on a live deployment, so substituting it here would
+      // fabricate a price the controller does not charge.
+      return [instruction.id, fee as bigint | undefined] as const
     }),
   )
 

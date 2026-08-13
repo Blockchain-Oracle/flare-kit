@@ -37,6 +37,7 @@ export type RefusalCode =
   | 'not_composable'
   | 'no_operator_wallet'
   | 'fee_unmet'
+  | 'fee_unreadable'
   | 'vault_not_registered'
   | 'vault_type_mismatch'
   | 'agent_vault_not_registered'
@@ -51,7 +52,12 @@ export interface InstructionRefusal {
 
 /** Something the user should see before signing that is NOT a reason to refuse. */
 export interface PlanWarning {
-  readonly code: 'replay_unknown' | 'balance_unknown' | 'account_undeployed'
+  readonly code:
+    | 'replay_unknown'
+    | 'balance_unknown'
+    | 'balance_not_read'
+    | 'account_undeployed'
+    | 'deployment_state_unknown'
   readonly message: string
 }
 
@@ -63,6 +69,7 @@ export interface InstructionPlan {
   /** A registered operator wallet, read live — never a constant. */
   readonly destination: string
   readonly amountDrops: bigint
+  /** Always a read number — the planner refuses rather than quote an unread fee. */
   readonly feeDrops: bigint
   /** The personal account this will act as, and whether it exists yet. */
   readonly personalAccount: PersonalAccountState
@@ -94,4 +101,9 @@ export interface PlanInstructionInput {
   readonly intent: InstructionIntent
   /** From `readTransactionIdUsed`. `undefined` means unread — never treated as `false`. */
   readonly replayed?: boolean | undefined
+  /**
+   * Whether the caller asked for the FAsset balance at all. `false` distinguishes "never
+   * requested" from "requested and failed", which otherwise share one `undefined`.
+   */
+  readonly balanceRequested?: boolean
 }

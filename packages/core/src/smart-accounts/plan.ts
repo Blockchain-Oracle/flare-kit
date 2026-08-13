@@ -99,8 +99,17 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
     )
   }
 
-  // 4. The controller requires `receivedAmount >= instructionFee`.
+  // 4. The controller requires `receivedAmount >= instructionFee`. An UNREAD fee cannot be
+  //    quoted: the default is a different number from the per-id fee on a live deployment,
+  //    so guessing produces a payment the controller refuses with the XRP already spent.
   const feeDrops = row.feeDrops
+  if (feeDrops === undefined) {
+    return refuse(
+      'fee_unreadable',
+      'This instruction’s fee could not be read from the controller. Quoting the default ' +
+        'instead would risk a payment the controller refuses, so no plan is offered.',
+    )
+  }
   const amountDrops = intent.amountDrops ?? feeDrops
   if (amountDrops < feeDrops) {
     return refuse(
@@ -145,12 +154,24 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
   const warnings: PlanWarning[] = []
   if (instruction.id === 0x01) {
     if (personalAccount.fassetBalance === undefined) {
-      warnings.push({
-        code: 'balance_unknown',
-        message:
-          'The personal account’s FAsset balance could not be read, so whether it can cover ' +
-          'this transfer is unknown. If it cannot, the instruction reverts and the payment is spent.',
-      })
+      // Two different situations wear the same `undefined`: the balance read FAILED, or the
+      // caller never supplied a token so it was never asked for. Reporting the second as a
+      // failed read would invent a failure.
+      warnings.push(
+        input.balanceRequested === false
+          ? {
+              code: 'balance_not_read',
+              message:
+                'The personal account’s FAsset balance was not read, so whether it can cover ' +
+                'this transfer is unknown.',
+            }
+          : {
+              code: 'balance_unknown',
+              message:
+                'The personal account’s FAsset balance could not be read, so whether it can cover ' +
+                'this transfer is unknown. If it cannot, the instruction reverts and the payment is spent.',
+            },
+      )
     } else if (personalAccount.fassetBalance < intent.value) {
       return refuse(
         'recipient_unfunded',
@@ -175,7 +196,16 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
     })
   }
 
-  if (personalAccount.deployed === false) {
+  if (personalAccount.deployed === undefined) {
+    // The third value of a deliberately three-valued field. Ignoring it here would let the
+    // planner treat "we could not look" exactly like "it is already deployed".
+    warnings.push({
+      code: 'deployment_state_unknown',
+      message:
+        'Whether this personal account is already deployed could not be read. It will be ' +
+        'deployed by CREATE2 if it is not.',
+    })
+  } else if (personalAccount.deployed === false) {
     warnings.push({
       code: 'account_undeployed',
       message:

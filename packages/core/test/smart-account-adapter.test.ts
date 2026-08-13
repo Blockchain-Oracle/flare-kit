@@ -1,4 +1,4 @@
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flare-kit/contracts'
 import type { PublicClient } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { readDeploymentSettings, readTransactionIdUsed } from '../src/smart-accounts/adapter.js'
@@ -250,6 +250,25 @@ describe('the catalogue is discovered from deployment state', () => {
     expect(instructionRow(catalogue, 0x21)?.availability.kind).toBe('available')
   })
 
+  it('never substitutes the default fee for an unread per-instruction fee', async () => {
+    // Found by the M13 review gate. The default and the per-id fee are DIFFERENT numbers on
+    // a live deployment: the 2026-08-13 probe read Flare mainnet's default at 500000 drops
+    // while ids 0x00/0x02/0x10/0x20/0x23 charge 950000. Quoting the default for an unread
+    // fee would have a user sign a payment 450000 drops short, the controller would refuse
+    // the proof forever, and the XRP would already be at the operator.
+    const settings = await readDeploymentSettings(
+      fakeClient({ failing: ['getInstructionFee'] }),
+      DEPLOYMENT,
+    )
+    expect(settings).toBeDefined()
+    expect(settings?.defaultInstructionFee).toBe(1000n)
+    for (const instruction of BUILT_IN_INSTRUCTIONS) {
+      expect(settings?.instructionFees[instruction.id], `0x${instruction.id.toString(16)}`).toBeUndefined()
+    }
+    const catalogue = buildInstructionCatalogue(settings)
+    expect(instructionRow(catalogue, 0x01)?.feeDrops).toBeUndefined()
+  })
+
   it('lists the whole vocabulary as unknown when the deployment cannot be read at all', () => {
     // Hiding the rows would imply the protocol has no such instruction, rather than that
     // we could not look.
@@ -257,5 +276,7 @@ describe('the catalogue is discovered from deployment state', () => {
     expect(catalogue).toHaveLength(11)
     expect(catalogue.every((row) => row.availability.kind === 'unknown')).toBe(true)
     expect(composableInstructions(catalogue)).toHaveLength(0)
+    // And the fee column is unread, not zero — a renderer must not print "0 drops".
+    expect(catalogue.every((row) => row.feeDrops === undefined)).toBe(true)
   })
 })

@@ -151,6 +151,15 @@ describe('refusals — each one is a payment a user would otherwise have lost', 
     expect(!result.ok && result.refusal.message).toMatch(/new payment, not a retry/)
   })
 
+  it('refuses rather than quote an unread fee', () => {
+    // Found by the M13 review gate. Quoting the default instead is how a user ends up
+    // signing a payment the controller refuses — see the adapter test for the live numbers.
+    const result = plan({
+      settings: { ...SETTINGS, instructionFees: { ...SETTINGS.instructionFees, 0x01: undefined } },
+    })
+    expect(!result.ok && result.refusal.code).toBe('fee_unreadable')
+  })
+
   it('refuses an instruction id the kit cannot build', () => {
     const result = plan({ intent: { ...TRANSFER, instructionId: 0x44 } })
     expect(!result.ok && result.refusal.code).toBe('unknown_instruction')
@@ -190,6 +199,29 @@ describe('warnings — things a user must see that are NOT grounds to refuse', (
   it('does not claim an account is undeployed when the code read failed', () => {
     const result = plan({ account: { ...ACCOUNT, deployed: undefined } })
     expect(result.ok).toBe(true)
-    expect(result.ok && result.plan.warnings.map((w) => w.code)).not.toContain('account_undeployed')
+    const codes = result.ok ? result.plan.warnings.map((w) => w.code) : []
+    expect(codes).not.toContain('account_undeployed')
+    // ...and it does not ignore the third value either. Found by the M13 review gate: the
+    // planner previously dropped it, treating "we could not look" like "already deployed".
+    expect(codes).toContain('deployment_state_unknown')
+  })
+
+  it('distinguishes a balance that FAILED to read from one never asked for', () => {
+    // Both arrive as `undefined`. Reporting the second as a failed read invents a failure.
+    const failed = plan({ account: { ...ACCOUNT, fassetBalance: undefined } })
+    expect(failed.ok && failed.plan.warnings.map((w) => w.code)).toContain('balance_unknown')
+
+    const neverAsked = planInstruction({
+      deployment: VERIFIED,
+      settings: SETTINGS,
+      catalogue: buildInstructionCatalogue(SETTINGS),
+      personalAccount: { ...ACCOUNT, fassetBalance: undefined },
+      intent: TRANSFER,
+      replayed: false,
+      balanceRequested: false,
+    })
+    const codes = neverAsked.ok ? neverAsked.plan.warnings.map((w) => w.code) : []
+    expect(codes).toContain('balance_not_read')
+    expect(codes).not.toContain('balance_unknown')
   })
 })

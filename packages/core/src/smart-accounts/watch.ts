@@ -37,11 +37,16 @@ export interface ObservedInstruction {
   readonly personalAccount: `0x${string}`
   readonly transactionId: `0x${string}`
   readonly paymentReference: `0x${string}`
-  readonly instructionId: number
+  /**
+   * `undefined` where the log carried no id. Not defaulted to `0`, which is a REAL
+   * built-in instruction (`collateralReservation`) rather than a null.
+   */
+  readonly instructionId: number | undefined
   /** The action name, where the kit recognises the instruction. */
   readonly action: string | undefined
-  readonly blockNumber: bigint
-  readonly transactionHash: `0x${string}`
+  /** `undefined` on a pending log, rather than an invented block 0 / zero hash. */
+  readonly blockNumber: bigint | undefined
+  readonly transactionHash: `0x${string}` | undefined
 }
 
 export interface ScanInput {
@@ -114,10 +119,10 @@ export async function scanInstructionHistory(
         personalAccount: log.args.personalAccount,
         transactionId,
         paymentReference: reference,
-        instructionId: Number(log.args.instructionId ?? 0n),
+        instructionId: log.args.instructionId === undefined ? undefined : Number(log.args.instructionId),
         action,
-        blockNumber: log.blockNumber ?? 0n,
-        transactionHash: log.transactionHash ?? '0x',
+        blockNumber: log.blockNumber ?? undefined,
+        transactionHash: log.transactionHash ?? undefined,
       })
     }
 
