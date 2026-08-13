@@ -19,7 +19,9 @@ colors:
   brand: "#E62058"
   brandText: "#C51B4B"
   success: "#00803F"
+  successText: "#006B34"
   attention: "#9F5F00"
+  attentionText: "#8A5200"
   danger: "#BC2E27"
   partial: "#794DB6"
   neutral: "#68625C"
@@ -36,7 +38,9 @@ colors:
   brandDark: "#FA5574"
   brandTextDark: "#FF6C84"
   successDark: "#5BCC80"
+  successTextDark: "#5BCC80"
   attentionDark: "#F0A646"
+  attentionTextDark: "#F0A646"
   dangerDark: "#F97163"
   partialDark: "#B995F6"
   neutralDark: "#999FA6"
@@ -194,7 +198,11 @@ a glyph and a word.
 Verified contrast against each token's own background, light / dark: `text`
 16.28 / 16.68; `textMuted` 5.86 / 7.65; `textFaint` 4.89 / 5.11; `primary`
 5.66 / 6.86; `success` 4.92 / 9.41; `attention` 4.98 / 9.28; `danger` 5.75 /
-6.85; `partial` 5.77 / 7.87. `borderControl` is 3.42 / 3.18, meeting the 3:1
+6.85; `partial` 5.77 / 7.87. On the soft state tints, `success` and `attention`
+fall to 4.34 / 4.40 at chip size — under AA — so small text on a tint carries
+`successText` / `attentionText` (5.71 / 5.51 on their tints), the same rule
+`brandText` already encodes. Dark needs no darker variant; the `-Text` values
+equal the dark hues so one declaration serves both themes. `borderControl` is 3.42 / 3.18, meeting the 3:1
 non-text minimum for control boundaries. `border` at 1.30 / 1.40 is a
 decorative hairline, never the sole boundary of an interactive control.
 

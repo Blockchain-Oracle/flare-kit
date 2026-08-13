@@ -114,6 +114,11 @@
   --fk-brand-text: #c51b4b;
   --fk-success: #00803f;
   --fk-attention: #9f5f00;
+  /* On the soft tints, success and attention fall to 4.34/4.40 at chip size —
+     under AA. Small text on a tint uses the -text variants, same rule as
+     --fk-brand-text. Measured 5.71/5.51 on their tints. */
+  --fk-success-text: #006b34;
+  --fk-attention-text: #8a5200;
   --fk-danger: #bc2e27;
   --fk-partial: #794db6;
   --fk-neutral: #68625c;
@@ -171,6 +176,10 @@
   --fk-brand-text: #ff6c84;
   --fk-success: #5bcc80;
   --fk-attention: #f0a646;
+  /* Dark's state hues already clear 9:1 on their tints; the -text variants
+     exist so the same declaration works in both themes. */
+  --fk-success-text: #5bcc80;
+  --fk-attention-text: #f0a646;
   --fk-danger: #f97163;
   --fk-partial: #b995f6;
   --fk-neutral: #999fa6;
