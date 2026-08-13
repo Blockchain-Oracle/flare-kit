@@ -21,7 +21,7 @@ import type { GovernanceIntent } from '../src/governance.js'
 
 function assertTransition<I>(record: OperationRecord<I>, to: OperationState, at: number, patch?: Record<string, unknown>) {
   const result = applyTransition(record, patch ? { to, at, patch } : { to, at })
-  if (result.rejection) throw new Error(`governance fixture: illegal transition ${record.state} -> ${to} (${result.rejection.reason})`)
+  if (result.rejection) throw new Error(`governance fixture: illegal transition ${record.state} -> ${to} (${result.rejection})`)
   return result.record
 }
 
