@@ -1121,6 +1121,12 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   personal-account reads (including deployment state by code size), plus the
   pure `executeInstruction` call builder. Every read is `undefined`-on-throw and
   surfaces as `unavailable`; a revert is never coerced to `0`, `[]` or `false`.
+- `packages/core/src/smart-accounts/personal-account.ts` — M13-R3. The
+  personal-account half of the reads, split from `adapter.ts` to keep both under
+  300 lines. Carries the `getCode` subtlety: viem answers `undefined` for an
+  address with no code, which is the same value a thrown read would produce, so
+  it is read through a result wrapper — "not deployed" and "we could not look"
+  must stay distinguishable.
 - `packages/core/src/smart-accounts/catalogue.ts` — M13-R4. The DISCOVERED
   instruction catalogue: availability derived from live deployment state, the
   three legacy collateral-reservation commands marked `superseded`, and the
