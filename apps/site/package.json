@@ -1,0 +1,29 @@
+{
+  "name": "@flare-kit/site",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@flare-kit/contracts": "workspace:^",
+    "@flare-kit/core": "workspace:^",
+    "@flare-kit/react": "workspace:^",
+    "@flare-kit/react-ui": "workspace:^",
+    "next": "^16.2.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.40.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^5.9.3"
+  }
+}
