@@ -1,0 +1,104 @@
+---
+title: MintFXRP
+description: The mint composer — quote FXRP against an XRPL payment, with every term on screen and a refusal below the protocol minimum that prevents an unrecoverable loss.
+breadcrumb: ['Docs', 'Components', 'MintFXRP']
+importLine: "import { MintFXRP } from '@flare-kit/react-ui'"
+prev: { href: '/docs/mock-mode', label: 'Mock mode' }
+next: { href: '/docs/components/operation-timeline', label: 'OperationTimeline' }
+---
+
+`MintFXRP` turns an XRPL payment into FXRP. It quotes through `useDirectMint`,
+shows the whole quote before you sign, and — this is the point — will not let
+you submit below the protocol minimum, where a payment mints nothing and cannot
+be recovered.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the composer never actually reaches.
+
+<MintFXRPDemo />
+
+## Usage
+
+Mount it under a `FlareProvider` and hand it the recipient and the XRPL account.
+It quotes on its own; you handle `onSubmit`.
+
+```tsx
+import { createMockKit } from '@flare-kit/core'
+import { FlareProvider } from '@flare-kit/react'
+import { MintFXRP } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Mint() {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <MintFXRP
+        recipient="0xDeaD…beEF"
+        xrplAccount="rPT1Sjq…bpAYe"
+        onSubmit={(amountXrp) => console.log('mint', amountXrp)}
+      />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'recipient', type: 'string', required: true, description: 'The EVM address that receives the FXRP.' },
+  { name: 'xrplAccount', type: 'string', required: true, description: 'The XRPL account the payment is sent from.' },
+  { name: 'defaultAmountXrp', type: 'string', description: 'Seeds the amount field. Uncontrolled — the initial value, not a binding, so typing still owns the field. Without it, only loading and the empty form are reachable from props, which is how the below-minimum refusal once shipped never rendered in a browser.' },
+  { name: 'xrplBalance', type: 'Amount', description: "The payer's XRPL balance, when the host knows it. Drives the exact-shortfall message on an over-balance amount." },
+  { name: 'executor', type: 'string', description: 'The executor to name once a quote exists. Shown only when there is a quote to attach it to.' },
+  { name: 'now', type: 'number', description: "The clock, for the quote's own expiry. Omit and expiry is simply not evaluated — a surface that guessed the time would be inventing one." },
+  { name: 'loading', type: 'boolean', description: 'True while the host is still fetching protocol state.' },
+  { name: 'onSubmit', type: '(amountXrp: string) => void', description: 'Called with the entered amount when the reader submits a quoted, in-window mint. Omit it and the composer is read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the composer.' },
+]} />
+
+## What it renders
+
+A single panel that owns the amount field, holds the quote it fetched, and calls
+`onSubmit` with the amount string. It signs nothing and broadcasts nothing —
+submitting is the host's job — so the same composer drops into a page, a modal or
+an embed without carrying a transaction layer with it.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — protocol state is still being fetched.
+- **empty** — no amount entered; the form, no quote.
+- **ready** — quoted, with every term on screen.
+- **below minimum** — the refusal. Nothing to sign, because a payment this small
+  mints nothing and cannot be recovered.
+- **insufficient balance** — states the shortfall exactly against `xrplBalance`.
+- **large-mint delay** — the wait is shown, and why.
+- **executor named** — the executor appears, because there is now a quote.
+- **quote expired** — terms the protocol will no longer honour; the mint is
+  blocked until you re-quote.
+
+## Mock to live
+
+`MintFXRP` reads everything through the kit on the provider, so moving from the
+mock to a live network swaps the kit, not the screen. Addresses come from
+`@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not offer a signable mint below the protocol minimum, and it will not
+present an expired quote as live. If it cannot quote, it says so and stays
+read-only rather than inviting a submit it knows the protocol will refuse.

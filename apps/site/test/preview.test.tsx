@@ -1,18 +1,15 @@
-import { createMockKit, type MockScenario } from '@flare-kit/core'
-import { render, screen, within } from '@testing-library/react'
+import { M1_SECTIONS } from '@gallery/m1-sections'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { OperationTimelineDemo } from '../components/docs/demos/operation-timeline-demo'
 import { Preview } from '../components/docs/preview'
 
-const RECIPIENT = '0xDeaDbeefDeAdbeefdEadbEEFdeadbeEFdEaDbeeF'
-const XRPL_ACCOUNT = 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe'
-
-function realStates(scenario: MockScenario): string[] {
-  const kit = createMockKit({ seed: `docs-${scenario}`, scenario })
-  return kit
-    .trace(kit.start({ amountXrp: '25.000000', recipient: RECIPIENT, xrplAccount: XRPL_ACCOUNT }))
-    .map((record) => record.state)
-}
+/**
+ * The gallery is the single source of fixtures (R6). Importing it here is
+ * itself a guard: m1-sections derives every case from the mock's own trace and
+ * throws at import time if a state it names was never produced.
+ */
+const TIMELINE_CASES = M1_SECTIONS.find((section) => section.id === 'm1-timeline')!.cases
 
 describe('Preview', () => {
   it('labels the surface as the mock', () => {
@@ -29,30 +26,26 @@ describe('Preview', () => {
 
 describe('OperationTimelineDemo', () => {
   /**
-   * The guard that matters: the state picker must be built from the trace the
-   * mock produced. If it ever drifts to a hand-written list, the docs could
-   * offer a state the machine never reaches — the exact failure the landing
-   * card's throw exists to prevent.
+   * The guard that matters: the state switcher must be built from the
+   * gallery's cases, one for one. If it ever drifts to a hand-written list,
+   * the docs could offer a state the machine never reaches — the exact
+   * failure the gallery's own loud `at()` throw exists to prevent.
    */
-  it('offers exactly the states the mock actually produced', () => {
+  it('offers exactly the gallery cases, never an authored list', () => {
     render(<OperationTimelineDemo />)
-    const selects = screen.getAllByRole('combobox')
-    const stateOptions = within(selects[1]!)
+    const options = within(screen.getByRole('combobox'))
       .getAllByRole('option')
       .map((option) => option.textContent?.replace(/^\d+\.\s*/, ''))
 
-    expect(stateOptions).toEqual(realStates('happy'))
+    expect(options).toEqual(TIMELINE_CASES.map((entry) => entry.name))
   })
 
-  it('never offers a succeeded-looking state the trace does not contain', () => {
+  it('switching states swaps the rendered record', () => {
     render(<OperationTimelineDemo />)
-    const selects = screen.getAllByRole('combobox')
-    const stateOptions = within(selects[1]!)
-      .getAllByRole('option')
-      .map((option) => option.textContent?.replace(/^\d+\.\s*/, ''))
+    const target = TIMELINE_CASES.findIndex((entry) => entry.name.startsWith('action required'))
+    expect(target).toBeGreaterThan(-1)
 
-    for (const state of stateOptions) {
-      expect(realStates('happy')).toContain(state)
-    }
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: String(target) } })
+    expect(screen.getByRole('status')).toHaveTextContent(/action required/i)
   })
 })

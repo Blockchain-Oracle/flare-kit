@@ -1,6 +1,8 @@
 'use client'
 
+import { CopyButton } from '@flare-kit/react-ui'
 import { useState, type ReactNode } from 'react'
+import { highlight } from '../../lib/highlight'
 
 /**
  * Preview / Code tabs over one demo.
@@ -70,8 +72,9 @@ export function Preview({
         className="preview-code"
         hidden={pane !== 'code'}
       >
+        <CopyButton value={code} label="the code" className="preview-copy" />
         <pre>
-          <code>{code}</code>
+          <code>{highlight(code, 'tsx')}</code>
         </pre>
       </div>
     </div>

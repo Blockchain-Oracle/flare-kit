@@ -1,5 +1,8 @@
 import type { MDXComponents } from 'mdx/types'
 import type { ReactNode } from 'react'
+import { Pre } from '../components/docs/code-block'
+import { InstallTabs } from '../components/docs/install-tabs'
+import { MintFXRPDemo } from '../components/docs/demos/mint-fxrp-demo'
 import { OperationTimelineDemo } from '../components/docs/demos/operation-timeline-demo'
 import { PropsTable } from '../components/docs/parts'
 import { Preview } from '../components/docs/preview'
@@ -29,11 +32,16 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     h2: heading('h2'),
     h3: heading('h3'),
     h4: heading('h4'),
+    // Every fenced ``` block renders through the real code window: syntax
+    // highlighting plus a copy control. Inline `code` is left untouched.
+    pre: Pre,
+    InstallTabs,
     PropsTable,
     Preview,
     // Live demos are registered here rather than imported per page, so an MDX
     // author writes <OperationTimelineDemo /> and cannot wire it to the wrong
     // component or a stale fixture.
+    MintFXRPDemo,
     OperationTimelineDemo,
     ...extra,
   }

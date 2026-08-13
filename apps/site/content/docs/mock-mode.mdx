@@ -1,0 +1,69 @@
+---
+title: Mock mode
+description: Every widget in these docs runs against createMockKit — a real seeded state machine, no wallet or chain. It is always labelled, and never a failure fallback.
+breadcrumb: ['Docs', 'Mock mode']
+prev: { href: '/docs/theming', label: 'Theming' }
+next: { href: '/docs/components/mint-fxrp', label: 'MintFXRP' }
+---
+
+Every preview in these docs runs on `createMockKit()`. No wallet, no chain, no
+testnet funds — and it is the same components and hooks you ship, driven by a
+real state machine rather than a set of fixtures.
+
+## A seeded state machine
+
+The mock reproduces the full operation lifecycle. It is seeded, so the same seed
+gives the same trace every time — which is what makes it usable in tests as well
+as in docs.
+
+```ts
+import { createMockKit } from '@flare-kit/core'
+
+const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
+
+// Drive it exactly like a live kit.
+const record = kit.start({
+  amountXrp: '25.000000',
+  recipient: '0xDeaDbeefDeAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+  xrplAccount: 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+})
+
+// Every state the operation passes through, in order.
+const trace = kit.trace(record)
+```
+
+## Scenarios
+
+Each scenario is a real path the operation can take, not a cosmetic flag:
+
+- `happy` — the operation settles.
+- `executor-late` — the executor is slow; the mint is recoverable, not failed.
+- `large-delayed` — a large amount takes the long road.
+- `protocol-unavailable` — a source is down, so the outcome is unknown, not failed.
+
+## Always labelled, never a fallback
+
+A mock surface is always labelled `mock kit`. Mock mode is explicit — it is never
+triggered by a failure, and a mock value is never dressed up as a live chain
+result. That rule is why a screenshot from these docs can be trusted.
+
+## Swap to live
+
+The provider takes a kit and asks nothing else of it, so moving from mock to live
+is a change of construction, not a rewrite of any screen.
+
+```tsx
+import { FlareProvider } from '@flare-kit/react'
+import { createMockKit } from '@flare-kit/core'
+
+// Mock: no wallet, no chain.
+const kit = createMockKit({ seed: 'demo' })
+
+export function App({ children }) {
+  return <FlareProvider kit={kit}>{children}</FlareProvider>
+}
+```
+
+Build against the mock, then hand `FlareProvider` a live kit — `createFlareKit`,
+pointed at Coston2 or Flare mainnet — instead. The components never branch on
+which one they were given.

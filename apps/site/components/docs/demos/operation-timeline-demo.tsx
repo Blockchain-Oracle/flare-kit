@@ -1,12 +1,16 @@
 'use client'
 
-import { createMockKit, type MockScenario } from '@flare-kit/core'
-import { OperationTimeline } from '@flare-kit/react-ui'
-import { useState } from 'react'
-import { Preview } from '../preview'
+import { M1_SECTIONS } from '@gallery/m1-sections'
+import { GalleryDemo } from './gallery-demo'
 
-const RECIPIENT = '0xDeaDbeefDeAdbeefdEadbEEFdeadbeEFdEaDbeeF'
-const XRPL_ACCOUNT = 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe'
+/**
+ * The operation spine, driven by the gallery's own `m1-timeline` cases — ready,
+ * submitted, confirming, awaiting external, succeeded, action-required (executor
+ * late) and the large delayed mint. Each is a record the mock state machine
+ * actually produced, imported rather than re-derived, so no control here can
+ * render a state the operation never reached (R6).
+ */
+const TIMELINE_CASES = M1_SECTIONS.find((section) => section.id === 'm1-timeline')!.cases
 
 const CODE = `import { createMockKit } from '@flare-kit/core'
 import { OperationTimeline } from '@flare-kit/react-ui'
@@ -25,63 +29,6 @@ export function Mint() {
   return <OperationTimeline operation={trace[2]} />
 }`
 
-/** Scenarios the mock actually ships. Each produces a different real trace. */
-const SCENARIOS: { id: MockScenario; label: string }[] = [
-  { id: 'happy', label: 'happy' },
-  { id: 'executor-late', label: 'executor-late' },
-  { id: 'large-delayed', label: 'large-delayed' },
-]
-
-function traceFor(scenario: MockScenario) {
-  const kit = createMockKit({ seed: `docs-${scenario}`, scenario })
-  return kit.trace(
-    kit.start({ amountXrp: '25.000000', recipient: RECIPIENT, xrplAccount: XRPL_ACCOUNT }),
-  )
-}
-
-/**
- * The spine, driven by the real mock. Stepping through states walks the trace
- * the machine produced — the states offered are the ones that exist, so no
- * control here can render a state the operation never reached.
- */
 export function OperationTimelineDemo() {
-  const [scenario, setScenario] = useState<MockScenario>('happy')
-  const [index, setIndex] = useState(2)
-
-  const trace = traceFor(scenario)
-  const record = trace[Math.min(index, trace.length - 1)]!
-
-  return (
-    <Preview code={CODE}>
-      <div className="demo-controls">
-        <label className="demo-control">
-          <span className="eyebrow">Scenario</span>
-          <select
-            value={scenario}
-            onChange={(event) => {
-              setScenario(event.target.value as MockScenario)
-              setIndex(0)
-            }}
-          >
-            {SCENARIOS.map((option) => (
-              <option key={option.id} value={option.id}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="demo-control">
-          <span className="eyebrow">State</span>
-          <select value={Math.min(index, trace.length - 1)} onChange={(e) => setIndex(Number(e.target.value))}>
-            {trace.map((entry, position) => (
-              <option key={`${entry.state}-${position}`} value={position}>
-                {position + 1}. {entry.state}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <OperationTimeline operation={record} />
-    </Preview>
-  )
+  return <GalleryDemo cases={TIMELINE_CASES} code={CODE} />
 }

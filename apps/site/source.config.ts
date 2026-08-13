@@ -23,4 +23,16 @@ export const docs = defineDocs({
   },
 })
 
-export default defineConfig()
+/**
+ * fumadocs-mdx applies Shiki (`rehypeCode`) to every fence by default, against a
+ * CSS-variable theme this site never defines — so code rendered flat and grey.
+ * Turn it off: fences compile to plain `<pre><code>`, and the `pre` MDX override
+ * runs them through the kit's own tokenizer (`lib/highlight.tsx`), so a fence and
+ * the live-preview Code tab share one palette — the `.tok-*` colours DESIGN.md
+ * fixes.
+ */
+export default defineConfig({
+  mdxOptions: {
+    rehypeCodeOptions: false,
+  },
+})

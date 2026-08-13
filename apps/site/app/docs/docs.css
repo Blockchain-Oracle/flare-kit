@@ -4,10 +4,14 @@
 
 .docs-shell {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr) 200px;
-  gap: 44px;
+  /* Widths from the accepted specimen `assets/docs.css` (236 / 1fr / 200,
+     gap 40, shell 1320). The built site had regressed to 1180/gap 44, which
+     starved the content column to ~596px; this restores it to ~748px so the
+     body, code windows and props table have room to breathe. */
+  grid-template-columns: 236px minmax(0, 1fr) 200px;
+  gap: 40px;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1320px;
   margin-inline: auto;
   padding: 40px 28px 80px;
   align-items: start;
@@ -159,6 +163,7 @@
   text-decoration: underline;
   text-underline-offset: 2px;
 }
+/* Inline code only — block code goes through the code window below. */
 .doc-body code {
   font-family: var(--fk-font-mono);
   font-size: 0.86em;
@@ -168,19 +173,12 @@
   background: var(--fk-surface);
   color: var(--fk-text);
 }
-.doc-body pre {
-  overflow-x: auto;
-  padding: 16px 18px;
-  border: 1px solid var(--fk-border);
-  border-radius: var(--fk-r-md);
-  background: var(--fk-surface);
-}
-.doc-body pre code {
-  border: 0;
-  padding: 0;
-  background: none;
-  font-size: 0.84rem;
-  line-height: 1.6;
+
+/* The code window (.win) and syntax tokens (.tok-*) live in globals.css — they
+   are shared with the landing, which does not load this stylesheet. Only the
+   doc-body spacing above a code block is docs-specific. */
+.doc-body .win {
+  margin-top: 18px;
 }
 .hash {
   margin-left: 9px;
@@ -219,7 +217,11 @@ h4:hover .hash,
   padding: 5px 11px;
   border-radius: var(--fk-r-sm);
   background: transparent;
-  border: 0;
+  /* A hairline that is normally transparent; the selected state turns it on.
+     In dark, `card` and `surface` collapse to the same value, so a background
+     alone leaves the active tab invisible against the bar — the border is what
+     carries the selection there. */
+  border: 1px solid transparent;
   color: var(--fk-text-muted);
   font-family: var(--fk-font-sans);
   font-size: 0.82rem;
@@ -230,6 +232,7 @@ h4:hover .hash,
   background: var(--fk-card);
   color: var(--fk-text);
   box-shadow: var(--fk-sh-1);
+  border-color: var(--fk-border-control);
 }
 .preview-chip {
   margin-left: auto;
@@ -242,10 +245,21 @@ h4:hover .hash,
   color: var(--fk-text-faint);
 }
 .preview-stage {
-  padding: 22px 20px;
+  padding: 26px 22px;
+  /* The dotted-grid well from the accepted specimen — a live preview reads as
+     a stage the component sits on, not just a padded box. */
+  background-image: radial-gradient(var(--fk-border) 1px, transparent 1px);
+  background-size: 16px 16px;
 }
 .preview-code {
+  position: relative;
   overflow-x: auto;
+}
+.preview-copy {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
 }
 .preview-code pre {
   margin: 0;
@@ -283,11 +297,39 @@ h4:hover .hash,
 /* ---------- Props table ---------- */
 .props-wrap {
   overflow-x: auto;
+  margin-top: 18px;
 }
 .props {
   width: 100%;
+  /* Fixed layout with explicit column shares. Without it the mono type/default
+     columns take whatever they want and the description collapses to an
+     unreadable vertical thread — the exact defect on the OperationTimeline
+     page. Description now holds ~44% of the row. */
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.88rem;
+  min-width: 560px;
+}
+.props th:nth-child(1),
+.props td:nth-child(1) {
+  width: 20%;
+}
+.props th:nth-child(2),
+.props td:nth-child(2) {
+  width: 24%;
+}
+.props th:nth-child(3),
+.props td:nth-child(3) {
+  width: 12%;
+}
+.props th:nth-child(4),
+.props td:nth-child(4) {
+  width: 44%;
+}
+/* Long mono type strings wrap instead of forcing the column wider. */
+.props .pn,
+.props .pt {
+  overflow-wrap: anywhere;
 }
 .props th {
   text-align: left;
@@ -378,9 +420,10 @@ h4:hover .hash,
   border-left-color: var(--fk-primary);
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1180px) {
   .docs-shell {
-    grid-template-columns: 210px minmax(0, 1fr);
+    grid-template-columns: 214px minmax(0, 1fr);
+    gap: 32px;
   }
   .toc {
     display: none;
