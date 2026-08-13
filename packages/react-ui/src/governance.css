@@ -73,3 +73,33 @@
 .fk-gov-card .fk-gov-spine {
   margin-top: 12px;
 }
+
+/* ---------- ProposalCatalogue + ProposalDetail (M12 T10) ----------
+   The mainnet-read proposal lens. Both reuse the shared DataTable / Panel /
+   Details / DetailRow / Note / ToneChip chrome, so these add only the two roots'
+   own stacking and the carried-vote action spacing. Every value is a token. */
+
+/* ProposalCatalogue root — stacks the table above its notes (mirrors the FTSO/
+   FDC catalogue roots, which computed to `display:block` when left undefined). */
+.fk.fk-gov-catalogue {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ProposalDetail root — stacks the panel and its notes. */
+.fk.fk-gov-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* The FTSO-absent voting record, set off from the tallies above it. */
+.fk-gov-detail .fk-gov-detail-record {
+  margin-top: 12px;
+}
+
+/* The CARRIED castVote affordance — present, gated, never a live cast. */
+.fk-gov-detail .fk-gov-actions {
+  margin-top: 12px;
+}
