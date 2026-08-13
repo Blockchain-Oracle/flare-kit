@@ -144,6 +144,21 @@ describe('GovernanceCard — the composer is SINGLE-TARGET (all-or-nothing, no b
     const noDelegate = render(<GovernanceCard position={observedBlank} />)
     expect(buttonByText(noDelegate.container, 'undelegate')).toBeUndefined()
   })
+
+  // T12-d: with NO plan the verified gate has not been evaluated, so the affordance must not
+  // present itself as live — the same stance the delegate CTA already takes.
+  it('Undelegate is verified-gated: disabled with no plan, live once a plan says it is legal', () => {
+    const noPlan = render(<GovernanceCard position={observedDelegated} />)
+    expect(buttonByText(noPlan.container, 'undelegate')?.hasAttribute('disabled')).toBe(true)
+
+    const unverifiedPlan = render(<GovernanceCard position={observedDelegated} planResult={planUnverified} />)
+    expect(buttonByText(unverifiedPlan.container, 'undelegate')?.hasAttribute('disabled')).toBe(true)
+
+    const undelegatePlan = planGovernance({ intent: UNDELEGATE_INTENT, deployment: coston2, reads: { delegate: DELEGATE }, account: ACCOUNT })
+    expect(undelegatePlan.ok).toBe(true)
+    const live = render(<GovernanceCard position={observedDelegated} planResult={undelegatePlan} />)
+    expect(buttonByText(live.container, 'undelegate')?.hasAttribute('disabled')).toBe(false)
+  })
 })
 
 describe('GovernanceCard — eligibility rendered honestly (isMember undefined ≠ No)', () => {
@@ -190,7 +205,7 @@ describe('GovernanceCard — the verified gate (false = declared-unbuilt, true =
   it('a self-delegation is refused honestly and the CTA is disabled', () => {
     expect(planSelf.ok).toBe(false)
     const { container } = render(
-      <GovernanceCard position={observedBlank} targetText={ACCOUNT} planResult={planSelf} account={ACCOUNT} />,
+      <GovernanceCard position={observedBlank} targetText={ACCOUNT} planResult={planSelf} />,
     )
     expect(govState(container)).toBe('self-delegation')
     expect(cta(container)?.hasAttribute('disabled')).toBe(true)
