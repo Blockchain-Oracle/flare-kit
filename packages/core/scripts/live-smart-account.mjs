@@ -77,6 +77,12 @@ const SIGNER = getAddress('0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9')
 // (a real account this project controls, so the effect read-back is unambiguous).
 const TRANSFER_RECIPIENT = getAddress('0xDddF991858311597bFD3D125cb342a0d4B56ea0a')
 const TRANSFER_DROPS = 1_000_000n
+// Run 2: the vault deposit. Vault id and type come from the CONTROLLER's registry, never
+// from the kit's own vaults.ts — on Coston2 the two namespaces point at different
+// deployments entirely, which is why the id is resolved live below rather than pinned.
+const DEPOSIT_VAULT_ID = 1
+const DEPOSIT_INSTRUCTION = 0x11
+const DEPOSIT_DROPS = 500_000n
 /** What the personal account is funded with before run 1 — the transfer amount plus slack. */
 const FUND_DROPS = 2_000_000n
 
@@ -218,16 +224,47 @@ async function fund() {
   })
 }
 
-async function pay() {
+/** The share token a controller vault issues, so the deposit's effect can be read back. */
+const VAULT_SHARE_ABI = [
+  {
+    type: 'function',
+    name: 'balanceOf',
+    stateMutability: 'view',
+    inputs: [{ type: 'address' }],
+    outputs: [{ type: 'uint256' }],
+  },
+]
+
+async function payDeposit() {
+  return pay({
+    instructionId: DEPOSIT_INSTRUCTION,
+    value: DEPOSIT_DROPS,
+    vaultId: DEPOSIT_VAULT_ID,
+    phase: 'payDeposit',
+  })
+}
+
+async function pay(options = {}) {
   const { xrpl: xrplSecret } = secrets()
   const settings = await readDeploymentSettings(publicClient, deployment)
   const catalogue = buildInstructionCatalogue(settings)
-  const row = instructionRow(catalogue, 0x01)
-  const reference = encodePaymentReference({
-    instructionId: 0x01,
-    value: TRANSFER_DROPS,
-    recipient: TRANSFER_RECIPIENT,
-  })
+  const instructionId = options.instructionId ?? 0x01
+  const row = instructionRow(catalogue, instructionId)
+  const reference = encodePaymentReference(
+    instructionId === 0x01
+      ? { instructionId, value: TRANSFER_DROPS, recipient: TRANSFER_RECIPIENT }
+      : { instructionId, value: options.value, vaultId: options.vaultId },
+  )
+
+  // The controller must actually register this vault, with the matching type. Checked here
+  // because the plan gate cannot run against a payment that has not been made yet.
+  if (options.vaultId !== undefined) {
+    const vault = settings.vaults?.find((v) => v.vaultId === options.vaultId)
+    if (!vault) throw new Error(`vault ${options.vaultId} is not registered on this controller`)
+    if (vault.vaultType !== 'firelight') {
+      throw new Error(`vault ${options.vaultId} is ${vault.vaultType}, not the firelight type this instruction needs`)
+    }
+  }
 
   const info = await xrplClient.getAccountInfo(XRPL_OWNER)
   const ledgerIndex = await xrplClient.getCurrentLedgerIndex()
@@ -238,13 +275,14 @@ async function pay() {
         'payment whose required amount is unknown',
     )
   }
-  // Re-assert what the plan would: the account must be able to cover the transfer, or the
+  // Re-assert what the plan would: the account must be able to cover the amount, or the
   // inner call reverts and the payment is spent for nothing. `fund` may have been skipped.
+  const needed = instructionId === 0x01 ? TRANSFER_DROPS : (options.value ?? 0n)
   const account = await readPersonalAccount(publicClient, deployment, XRPL_OWNER, fasset.token)
-  if ((account?.fassetBalance ?? 0n) < TRANSFER_DROPS) {
+  if ((account?.fassetBalance ?? 0n) < needed) {
     throw new Error(
       `the personal account holds ${account?.fassetBalance ?? 'an unreadable balance'} and this ` +
-        `instruction transfers ${TRANSFER_DROPS} — run \`fund\` first`,
+        `instruction needs ${needed} — run \`fund\` first`,
     )
   }
 
@@ -294,7 +332,8 @@ async function pay() {
     throw new Error(`XRPL payment ${hash} validated but did NOT succeed on the ledger`)
   }
 
-  record('pay', {
+  record(options.phase ?? 'pay', {
+    instructionId: `0x${instructionId.toString(16).padStart(2, '0')}`,
     xrplTransactionId: hash,
     engineResult,
     validated: state.validated,
@@ -321,7 +360,8 @@ function paymentClient() {
 async function attest() {
   const { evm } = secrets()
   const evidence = JSON.parse(readFileSync(EV_PATH, 'utf8'))
-  const transactionId = evidence.phases?.pay?.xrplTransactionId
+  const source = evidence.phases?.payDeposit ?? evidence.phases?.pay
+  const transactionId = source?.xrplTransactionId
   if (!transactionId) throw new Error('no XRPL payment recorded — run `pay` first')
 
   const client = paymentClient()
@@ -387,6 +427,25 @@ async function dispatch() {
   }
   if (!proof) throw new Error(`the proof for round ${round} was not retrievable within 10 minutes`)
 
+  // RACE CHECK, immediately before submitting. `executeInstruction` is permissionless, so
+  // the operator's own backend — which watches the wallet we paid — can dispatch the same
+  // payment first. It did, on the M13 deposit run: our proof reached a payment already
+  // consumed and the call reverted with TransactionAlreadyExecuted. The plan's replay gate
+  // cannot close this; it runs BEFORE the payment, and the race happens after.
+  const txId = `0x${transactionId.toLowerCase()}`
+  if ((await readTransactionIdUsed(publicClient, deployment, txId)) === true) {
+    record('dispatch', {
+      transactionId: txId,
+      dispatchedByUs: false,
+      note:
+        'Someone else dispatched this payment before we did — executeInstruction is ' +
+        'permissionless, and the operator backend watches the wallet we paid. The ' +
+        'instruction still executed; run `verify` to read its effect. Nothing was sent.',
+    })
+    console.log('already dispatched by another submitter — not sending. Run `verify`.')
+    return
+  }
+
   const wallet = createWalletClient({
     account: privateKeyToAccount(evm.privateKey),
     transport: http(RPC),
@@ -435,6 +494,30 @@ async function dispatch() {
   })
 }
 
+/** The deposit's own effect: shares the vault issued to the personal account. */
+async function verifyDeposit() {
+  const settings = await readDeploymentSettings(publicClient, deployment)
+  const vault = settings?.vaults?.find((v) => v.vaultId === DEPOSIT_VAULT_ID)
+  if (!vault) throw new Error(`vault ${DEPOSIT_VAULT_ID} is not registered`)
+  const account = await readPersonalAccount(publicClient, deployment, XRPL_OWNER, fasset.token)
+  const shares = await publicClient.readContract({
+    address: vault.address,
+    abi: VAULT_SHARE_ABI,
+    functionName: 'balanceOf',
+    args: [account.address],
+  })
+  record('verifyDeposit', {
+    vaultId: DEPOSIT_VAULT_ID,
+    vaultAddress: vault.address,
+    vaultType: vault.vaultType,
+    personalAccountFAssetBalance: account?.fassetBalance,
+    personalAccountShares: shares,
+    note:
+      'The deposit is confirmed by the SHARE balance the vault issued, not by the receipt. ' +
+      'A share balance of 0 after a successful dispatch would mean the deposit did not land.',
+  })
+}
+
 /** The only thing that may conclude the instruction worked. */
 async function verify() {
   const evidence = JSON.parse(readFileSync(EV_PATH, 'utf8'))
@@ -470,12 +553,12 @@ async function verify() {
   })
 }
 
-const MODES = { preflight, fund, pay, attest, dispatch, verify }
+const MODES = { preflight, fund, pay, payDeposit, attest, dispatch, verify, verifyDeposit }
 
 async function main() {
   const run = MODES[MODE]
   if (!run) throw new Error(`unknown mode "${MODE}" — one of ${Object.keys(MODES).join(', ')}`)
-  const writes = MODE === 'fund' || MODE === 'pay' || MODE === 'attest' || MODE === 'dispatch'
+  const writes = ['fund', 'pay', 'payDeposit', 'attest', 'dispatch'].includes(MODE)
   if (writes && !guardOk()) {
     console.log(
       `REFUSED: "${MODE}" moves real value. It needs BOTH the --broadcast flag and\n` +

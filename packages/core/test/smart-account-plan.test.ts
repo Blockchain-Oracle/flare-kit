@@ -12,8 +12,15 @@ import type { InstructionIntent } from '../src/smart-accounts/plan-types.js'
  * lost a payment without this check?
  */
 
-/** Coston2, but with the flag flipped, so the gate is not the thing under test. */
+/**
+ * EXPLICIT fixtures, never the registry default for either state.
+ *
+ * `smartAccountsVerified` flipped true for Coston2 when the live run landed, and a test
+ * that had taken the default as its "unverified" case broke the moment it did — the M10
+ * lesson, reproduced exactly. Both fixtures now say what they are.
+ */
 const VERIFIED = { ...smartAccountsFor('coston2'), smartAccountsVerified: true }
+const UNVERIFIED = { ...smartAccountsFor('coston2'), smartAccountsVerified: false }
 
 const SETTINGS: DeploymentSettings = {
   xrplProviderWallets: ['rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq'],
@@ -117,7 +124,7 @@ describe('the plan carries the whole chain before approval', () => {
 
 describe('refusals — each one is a payment a user would otherwise have lost', () => {
   it('refuses before anything is read when the network is unverified', () => {
-    const result = plan({ deployment: smartAccountsFor('coston2') as typeof VERIFIED })
+    const result = plan({ deployment: UNVERIFIED })
     expect(result.ok).toBe(false)
     expect(!result.ok && result.refusal.code).toBe('unverified')
   })

@@ -25,7 +25,9 @@ import { FLARE_NETWORKS, type FlareNetworkKey } from './chains.js'
  * `smartAccountsVerified` is the M13 analog of `governanceVerified` / `delegationVerified`:
  * the surface is trusted to emit an instruction plan — which commits a user to an XRPL
  * payment that leaves their wallet before anything on Flare is knowable — only after a live
- * run confirms the round trip on-chain. It starts `false` on both networks.
+ * run confirms the round trip on-chain. It started `false` on both networks and is now
+ * `true` on COSTON2 ONLY, flipped by the live run of 2026-08-13 (details at the flag).
+ * Flare mainnet stays `false`: a read lens, never a write target this milestone.
  */
 
 /**
@@ -53,8 +55,15 @@ const SMART_ACCOUNTS_INTERNAL: Readonly<Record<FlareNetworkKey, SmartAccountsDep
   coston2: {
     masterAccountController: MASTER_ACCOUNT_CONTROLLER,
     chainId: FLARE_NETWORKS.coston2.id,
-    // The write/verify target. Flips only from a live effect read-back (M13-AC4).
-    smartAccountsVerified: false,
+    // Flipped by the M13-AC4 live round trip, 2026-08-13. XRPL payment
+    // E4385C7AD4E316DF269BFBB96A15204CC68E549005228BB6B1808595DC04117D (validated) carried
+    // reference 0x0100…ea0a to the operator wallet; FDC round 1424618; executeInstruction
+    // 0xd23a2d66…abb1 (block 34018235, status success) deployed the personal account by
+    // CREATE2 at the predicted address and emitted FXrpTransferred + InstructionExecuted.
+    // Confirmed by BALANCE DELTAS across the dispatch block, not by the receipt:
+    // recipient +1000000, personal account -1000000, exact on both sides.
+    // Evidence: .thoughts/verification/2026-08-13-coston2-live-smart-account.json.
+    smartAccountsVerified: true,
   },
   flare: {
     masterAccountController: MASTER_ACCOUNT_CONTROLLER,
