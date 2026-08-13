@@ -19,13 +19,15 @@
  * current delegate / eligibility (with `isMember` UNDEFINED — it reverts, probe CONCERN A),
  * the real mainnet FTSO proposal #1 ("Block-latency parameter changes", Defeated) with its
  * full observed tallies / BIPS, and the Coston2 honest-empty discovery. Then it proves the
- * Task-4 `planGovernance` gate holds against the LIVE reads: with `governanceVerified:false`
- * the builder REFUSES a signable plan (`unverified`) — no plan is emitted while unverified —
- * while a verified OVERRIDE (NOT a source flip) shows the mechanism is built and the invariants
- * (self_delegation / invalid_target / no_delegate) fire against the real reads. No key is read,
- * nothing is signed, nothing is broadcast.
+ * Task-4 `planGovernance` gate holds against the LIVE reads. Since the Task-6 round trip landed
+ * (2026-08-13) Coston2 carries `governanceVerified: true` and Flare mainnet is still `false`, so
+ * the gate is now proven on MAINNET — the network no live run has driven, where the builder
+ * REFUSES a signable plan (`unverified`) — while Coston2 emits a real plan directly, with no
+ * override. The invariants (self_delegation / invalid_target / no_delegate / already_delegated)
+ * fire against the real reads. No key is read, nothing is signed, nothing is broadcast.
  *
- * BROADCAST PASS (GATED — moves real governance vote power, HELD on Abu's explicit go): wires
+ * BROADCAST PASS (GATED — moves real governance vote power; RAN once on Abu's explicit go,
+ * 2026-08-13, and is the reason `governanceVerified` is true on Coston2): wires
  * `delegate(to) → poll getDelegateOfAtNow → flip governanceVerified → undelegate() → poll zero`
  * behind a DOUBLE guard — the `--broadcast` CLI flag AND the `LIVE_GOV_BROADCAST` env token,
  * both required so it can never fire by accident. When either is missing (the default, and this
@@ -188,26 +190,35 @@ async function read() {
   // --- planGovernance gate + invariant proof against the LIVE Coston2 reads. ---
   if (c2Votes === undefined) throw new Error('coston2 governance reads unavailable — cannot prove the plan gate against live reads')
   const liveReads = { delegate: c2Votes.delegate }
-  const verified = { ...govC2, governanceVerified: true } // OVERRIDE for the demo — NOT a source flip
 
-  // 1. Verified gate: the REAL (unflipped) deployment REFUSES a signable delegate plan.
-  const gate = planGovernance({ intent: { kind: 'delegate', to: PLAN_PROBE_TARGET }, deployment: govC2, reads: liveReads, account: ACCOUNT })
-  // 2. Same intent under the verified override -> a real plan (the mechanism is built).
-  const validUnderOverride = planGovernance({ intent: { kind: 'delegate', to: PLAN_PROBE_TARGET }, deployment: verified, reads: liveReads, account: ACCOUNT })
-  // 3. Self-delegation invariant (override so the gate is not what refuses).
-  const selfDelegation = planGovernance({ intent: { kind: 'delegate', to: ACCOUNT }, deployment: verified, reads: liveReads, account: ACCOUNT })
+  // POST-FLIP reality (Task 6 landed 2026-08-13): Coston2 carries `governanceVerified: true`,
+  // Flare mainnet is still `false`. So the gate is proven on MAINNET — the network no live run
+  // has ever driven — and Coston2 is proven to emit a real plan directly, with no override.
+  // 1. Verified gate: the mainnet read lens REFUSES a signable delegate plan.
+  const gate = planGovernance({ intent: { kind: 'delegate', to: PLAN_PROBE_TARGET }, deployment: govFlare, reads: liveReads, account: ACCOUNT })
+  // 2. Same intent on the live-verified Coston2 deployment -> a real plan (the mechanism is built).
+  const validOnVerified = planGovernance({ intent: { kind: 'delegate', to: PLAN_PROBE_TARGET }, deployment: govC2, reads: liveReads, account: ACCOUNT })
+  // 3. Self-delegation invariant (on the verified net, so the gate is not what refuses).
+  const selfDelegation = planGovernance({ intent: { kind: 'delegate', to: ACCOUNT }, deployment: govC2, reads: liveReads, account: ACCOUNT })
   // 4. Invalid (zero) target invariant.
-  const invalidTarget = planGovernance({ intent: { kind: 'delegate', to: zeroAddress }, deployment: verified, reads: liveReads, account: ACCOUNT })
+  const invalidTarget = planGovernance({ intent: { kind: 'delegate', to: zeroAddress }, deployment: govC2, reads: liveReads, account: ACCOUNT })
   // 5. Undelegate with no current delegate (the live blank-slate delegate is the zero address).
-  const noDelegate = planGovernance({ intent: { kind: 'undelegate' }, deployment: verified, reads: liveReads, account: ACCOUNT })
+  const noDelegate = planGovernance({ intent: { kind: 'undelegate' }, deployment: govC2, reads: liveReads, account: ACCOUNT })
+  // 6. Re-delegating to the CURRENT delegate is refused — otherwise the reconciler would read
+  //    `succeeded` off pre-existing state. On the live blank slate the current delegate IS the
+  //    zero address, which `invalid_target` catches first, so the code expected depends on the
+  //    live read rather than being asserted blind.
+  const alreadyDelegated = planGovernance({ intent: { kind: 'delegate', to: c2Votes.delegate }, deployment: govC2, reads: liveReads, account: ACCOUNT })
+  const alreadyDelegatedExpected = c2Votes.delegate.toLowerCase() === zeroAddress ? 'invalid_target' : 'already_delegated'
 
   const plan = {
     probeTarget: PLAN_PROBE_TARGET,
-    verifiedGate: { governanceVerified: govC2.governanceVerified, ok: gate.ok, error: gate.ok ? null : gate.error.code },
-    validUnderOverride: { ok: validUnderOverride.ok, calls: validUnderOverride.ok ? validUnderOverride.plan.calls.map((c) => c.functionName) : null },
+    verifiedGate: { network: 'flare', governanceVerified: govFlare.governanceVerified, ok: gate.ok, error: gate.ok ? null : gate.error.code },
+    validOnVerified: { network: 'coston2', governanceVerified: govC2.governanceVerified, ok: validOnVerified.ok, calls: validOnVerified.ok ? validOnVerified.plan.calls.map((c) => c.functionName) : null },
     selfDelegation: { ok: selfDelegation.ok, error: selfDelegation.ok ? null : selfDelegation.error.code },
     invalidTarget: { ok: invalidTarget.ok, error: invalidTarget.ok ? null : invalidTarget.error.code },
     noDelegate: { ok: noDelegate.ok, error: noDelegate.ok ? null : noDelegate.error.code },
+    alreadyDelegated: { ok: alreadyDelegated.ok, error: alreadyDelegated.ok ? null : alreadyDelegated.error.code },
   }
   log('read:plan', plan)
 
@@ -232,13 +243,15 @@ async function read() {
     ['FTSO shape: votePowerBlock undefined', detail?.votePowerBlock === undefined],
     ['FTSO shape: hasVoted undefined', detail?.hasVoted === undefined],
     ['FTSO shape: accountVotes undefined', detail?.accountVotes === undefined],
-    ['plan gate refuses (unverified)', gate.ok === false && gate.error.code === 'unverified'],
-    ['plan valid under verified override', validUnderOverride.ok === true],
+    ['plan gate refuses on mainnet (unverified — the read lens)', gate.ok === false && gate.error.code === 'unverified'],
+    ['plan valid on the live-verified coston2 deployment', validOnVerified.ok === true],
     ['self-delegation refused', selfDelegation.ok === false && selfDelegation.error.code === 'self_delegation'],
     ['invalid target refused', invalidTarget.ok === false && invalidTarget.error.code === 'invalid_target'],
     ['undelegate no-delegate refused', noDelegate.ok === false && noDelegate.error.code === 'no_delegate'],
-    ['governanceVerified still false (coston2 source)', govC2.governanceVerified === false],
-    ['governanceVerified still false (flare source)', govFlare.governanceVerified === false],
+    [`re-delegate to current delegate refused (${alreadyDelegatedExpected})`, alreadyDelegated.ok === false && alreadyDelegated.error.code === alreadyDelegatedExpected],
+    // Post-flip: Coston2 carries the live round trip (Task 6, 2026-08-13); mainnet never flips.
+    ['governanceVerified true (coston2 source — the live round trip)', govC2.governanceVerified === true],
+    ['governanceVerified false (flare source — read lens, never a write target)', govFlare.governanceVerified === false],
   ]
   const failed = checks.filter(([, ok]) => !ok).map(([name]) => name)
 
@@ -264,7 +277,7 @@ async function read() {
       note: 'Default invocation is the keyless read pass; the broadcast branch was not entered and the secrets file was never opened.',
     },
     carry:
-      'The delegate/undelegate round trip is HELD on Abu\'s explicit go. It is cheap and reversible (no funding floor) but moves real governance vote power, so it runs only on the double guard. governanceVerified stays FALSE on both networks; the governance-delegation write is declared-unbuilt, nothing faked. It flips (Coston2 only) exclusively after a live delegate lands and getDelegateOfAtNow reads back the target, then undelegate restores the zero address.',
+      'The Coston2 delegate/undelegate round trip RAN on Abu\'s explicit go (2026-08-13) and governanceVerified is now true there — delegate tx 0xc0da39abf699242a1306c7ac659c59d7df98612940e8b4036ec6d0075d1419d7 (block 34007574) read back the target via getDelegateOfAtNow, undelegate tx 0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d (block 34007843) read back the zero address. Flare mainnet stays false: it is the proposal read lens and no live run has driven a governance delegation there, so the write stays declared-unbuilt on mainnet. This read pass still broadcasts nothing and reads no key; re-running it re-proves the gate on mainnet and the plan on Coston2 against live reads.',
     note: 'READ-ONLY: readGovernanceVotes + readEligibility + governancePosition + discoverProposals + readProposalDetail + planGovernance (pure). No signer constructed, no key read, nothing broadcast; the account address is the only account value used.',
   }
 
@@ -492,7 +505,7 @@ function writeEvidenceMd(e) {
     `- Ran: ${e.ranAt} · account \`${e.account}\``,
     '- Networks: **Coston2** (114, write/verify target) + **Flare mainnet** (14, proposal read lens)',
     '- Broadcast: **none** — KEYLESS read pass. The delegate/undelegate round trip is HELD on Abu\'s go (see Carry).',
-    '- `governanceVerified`: **false** on both networks (unchanged — no live round trip has confirmed it).',
+    '- `governanceVerified`: **true** on Coston2 (flipped by the Task-6 live round trip, 2026-08-13: delegate tx `0xc0da39ab…19d7` block 34007574 read back the target; undelegate tx `0x5537335d…bea7d` block 34007843 read back the zero address) · **false** on Flare mainnet (a read lens, never a write target this milestone).',
     '',
     '## Coston2 governance state (honest observed / undefined — nothing fabricated)',
     '',
@@ -523,11 +536,12 @@ function writeEvidenceMd(e) {
     '',
     '## planGovernance gate + invariants against the LIVE Coston2 reads (AC2-plan)',
     '',
-    `- **verified gate**: governanceVerified=${p.verifiedGate.governanceVerified} → refused \`${p.verifiedGate.error}\` — no signable plan is emitted while unverified, proven against real reads`,
-    `- **valid under a verified OVERRIDE** (not a source flip): plan OK, calls \`${JSON.stringify(p.validUnderOverride.calls)}\` — the mechanism is built and dormant`,
+    `- **verified gate on ${p.verifiedGate.network}**: governanceVerified=${p.verifiedGate.governanceVerified} → refused \`${p.verifiedGate.error}\` — no signable plan is emitted on a network no live run has driven, proven against real reads`,
+    `- **valid on ${p.validOnVerified.network}** (governanceVerified=${p.validOnVerified.governanceVerified}, the live-verified net — no override): plan OK, calls \`${JSON.stringify(p.validOnVerified.calls)}\``,
     `- **self-delegation** (to = account) → refused \`${p.selfDelegation.error}\``,
     `- **invalid (zero) target** → refused \`${p.invalidTarget.error}\``,
     `- **undelegate with no current delegate** (live zero delegate) → refused \`${p.noDelegate.error}\``,
+    `- **re-delegate to the CURRENT delegate** → refused \`${p.alreadyDelegated.error}\` — never a plan whose read-back is already satisfied by pre-existing state`,
     '',
     '## Carry',
     '',

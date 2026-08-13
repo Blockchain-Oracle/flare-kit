@@ -11,6 +11,12 @@ export default tseslint.config(
     ignores: [
       'sources/**',
       'developer-hub/**',
+      // Sibling git worktrees are ANOTHER checkout of this same repo on another
+      // branch. Linting them double-lints our own source and drags in whatever
+      // build/tooling artefacts that branch happens to have on disk — a docs-branch
+      // `axe-temp.js` dump was failing the gate with 7300 errors from a bundled
+      // vendor file nobody edits. Same category as the entries around it.
+      '.worktrees/**',
       '.thoughts/**',
       '.playwright-mcp/**',
       '_bmad/**',

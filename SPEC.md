@@ -1074,6 +1074,11 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   list (cross-network read, labelled).
 - `packages/react-ui/src/ProposalDetail.tsx` — M12-R8. One proposal, full state
   + the carried vote affordance.
+- `packages/react-ui/src/proposal-visuals.ts` — M12-R8. The single map from
+  `ProposalState`/`ProposalSource` to its word, tone and glyph, beside
+  `state-visuals.ts` and `ftso-visuals.ts`; the state word is always shown, so
+  colour is never the first signal. Both surfaces read it — neither invents a
+  per-screen label.
 - `packages/react-ui/src/governance.css` — M12-R8. The `fk-gov` classes, values
   from tokens only, `@import`-ed into `styles.css`.
 - `packages/react-ui/gallery/m12-governance-sections.tsx` — M12-AC6. The state
