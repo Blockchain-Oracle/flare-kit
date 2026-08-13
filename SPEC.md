@@ -1052,6 +1052,10 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
 - `packages/core/src/proposals.ts` — M12-R5/R6. Mainnet-read proposal
   discovery/state + detail + eligibility, honest-empty when discovery finds
   none within RPC limits; the carried `castVote` intent.
+- `packages/core/src/proposal-mapping.ts` — M12-R5. The pure mapping layer
+  `proposals.ts` builds on: the proposal view types, the SOURCE-dispatched
+  state enum (FTSO vs IGovernor orders — probe-anchored index 3 = Defeated for
+  FTSO), and the local `ProposalCreated` event fragment for the discovery scan.
 - `packages/core/src/mock-governance.ts` — M12-R7. The governance mock, built
   after the real run; copies observed, refuses unobserved.
 - `packages/core/scripts/probe-governance.mjs` — M12 Verification / M12-R1. Dev,
