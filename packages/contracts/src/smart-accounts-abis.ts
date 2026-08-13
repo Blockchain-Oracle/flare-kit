@@ -128,6 +128,15 @@ const READS = [
   },
   {
     type: 'function',
+    name: 'isPaused',
+    stateMutability: 'view',
+    // Every dispatch entry point carries a `notPaused` modifier. A paused controller
+    // reverts `executeInstruction` — after the XRPL payment has already left.
+    inputs: [],
+    outputs: [{ name: '', type: 'bool' }],
+  },
+  {
+    type: 'function',
     name: 'getTransactionIdForCollateralReservation',
     stateMutability: 'view',
     inputs: [{ name: '_collateralReservationId', type: 'uint256' }],
@@ -233,6 +242,14 @@ export const masterAccountControllerAbi = [...READS, ...WRITES, ...EVENTS] as co
  * practice by refusing before the XRPL payment is signed.
  */
 export const smartAccountErrorsAbi = [
+  // The controller is paused; every dispatch entry point carries `notPaused`.
+  { type: 'error', name: 'Paused', inputs: [] },
+  // `PersonalAccount.redeemFXrp` requires `msg.value >= executorFee`.
+  {
+    type: 'error',
+    name: 'InsufficientFundsForRedeem',
+    inputs: [{ name: 'executorFee', type: 'uint256' }],
+  },
   // The proof did not satisfy `PaymentProofs.verifyPayment`.
   { type: 'error', name: 'InvalidSourceId', inputs: [] },
   { type: 'error', name: 'InvalidTransactionStatus', inputs: [] },

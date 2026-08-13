@@ -73,6 +73,14 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
       'The personal account for this XRPL address could not be derived.',
     )
   }
+  if (settings.paused) {
+    return refuse(
+      'paused',
+      'The controller is paused. Every dispatch entry point refuses while it is, so a ' +
+        'payment made now could not be executed until it resumes — and on mainnet the proof ' +
+        'window is only two hours.',
+    )
+  }
   const instruction = builtInInstruction(intent.instructionId)
   if (!instruction) {
     return refuse(
@@ -118,6 +126,23 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
     )
   }
 
+  // 4b. The value `executeInstruction` must carry. Only the FXRP redeem needs one, and it
+  //     needs it absolutely: `PersonalAccount.redeemFXrp` requires
+  //     `msg.value >= executorFee`, so a zero-value redeem reverts every time it is tried,
+  //     with the XRPL payment already spent.
+  let dispatchValueWei = 0n
+  if (instruction.id === 0x02) {
+    if (!settings.defaultExecutor) {
+      return refuse(
+        'executor_fee_unreadable',
+        'A redeem must carry the executor fee as transaction value, and that fee could not ' +
+          'be read from the controller. Dispatching with a guess would revert with the ' +
+          'payment already spent.',
+      )
+    }
+    dispatchValueWei = settings.defaultExecutor.fee
+  }
+
   // 5. Vault and agent-vault targeting, checked against the CONTROLLER's namespace.
   const needsVault = requiredVaultType(instruction)
   if (needsVault) {
@@ -152,7 +177,10 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
   // 6. A transfer the account demonstrably cannot cover. An inner-call revert rolls the
   //    whole Flare transaction back, so the instruction is dead and the XRP is spent.
   const warnings: PlanWarning[] = []
-  if (instruction.id === 0x01) {
+  // Keyed on the DENOMINATION, not on `0x01`. The vault deposits (`0x11`, `0x21`) pull the
+  // same FAsset out of the same account in the same units, so they carry the same hazard —
+  // an inner-call revert rolls the whole instruction back with the payment spent.
+  if (instruction.denomination === 'drops') {
     if (personalAccount.fassetBalance === undefined) {
       // Two different situations wear the same `undefined`: the balance read FAILED, or the
       // caller never supplied a token so it was never asked for. Reporting the second as a
@@ -193,6 +221,19 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
     warnings.push({
       code: 'replay_unknown',
       message: 'Whether this payment has already dispatched could not be read.',
+    })
+  }
+
+  // A lots-denominated instruction (redeem) cannot be compared against a drops balance
+  // without the AssetManager's lot size, so it is not gated — but silence would imply it
+  // was checked.
+  if (instruction.denomination === 'lots') {
+    warnings.push({
+      code: 'balance_not_read',
+      message:
+        'This instruction is denominated in lots, so the kit cannot check the account’s ' +
+        'balance covers it without the AssetManager lot size. If it does not, the ' +
+        'instruction reverts and the payment is spent.',
     })
   }
 
@@ -242,6 +283,7 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
       personalAccount,
       sourceId: settings.sourceId,
       proofWindowSeconds: settings.proofValidityDurationSeconds,
+      dispatchValueWei,
       downstream: downstreamOf(row, intent),
       warnings,
     },

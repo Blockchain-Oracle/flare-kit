@@ -28,7 +28,15 @@ export interface BuildInstructionPaymentInput {
   readonly reference: `0x${string}`
   readonly sequence: number
   readonly lastLedgerSequence: number
-  readonly feeDrops: bigint
+  /**
+   * The XRPL NETWORK fee, in drops — what the ledger charges to include the transaction.
+   *
+   * Named distinctly from `InstructionPlan.feeDrops`, which is the CONTROLLER's instruction
+   * fee and is part of `amountDrops`. They are both "drops" and both `bigint`, so a caller
+   * wiring the plan into this builder by field name would silently burn the instruction fee
+   * as a network fee and underpay the operator.
+   */
+  readonly ledgerFeeDrops: bigint
 }
 
 export function buildInstructionPayment(
@@ -56,7 +64,7 @@ export function buildInstructionPayment(
     Account: input.account,
     Destination: input.destination,
     Amount: input.amountDrops.toString(),
-    Fee: input.feeDrops.toString(),
+    Fee: input.ledgerFeeDrops.toString(),
     Sequence: input.sequence,
     // Bounds the payment: past this ledger it can never be applied, so a payment not found
     // by then is definitively not going to land.

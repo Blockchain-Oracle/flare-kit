@@ -95,6 +95,15 @@ function expired(observation: InstructionObservation, clock: InstructionClock): 
   return clock.now > deadline
 }
 
+/** How many spine legs the observation actually evidences. Never assumed. */
+function reachedLegs(observation: InstructionObservation): number {
+  if (observation.instructionExecuted) return 3
+  if (observation.submissionHash) return 2
+  if (observation.proofRetrieved) return 2
+  if (observation.xrplPayment) return 1
+  return 0
+}
+
 export function reconcileInstruction<I, Q, P>(
   record: OperationRecord<I, Q, P>,
   observation: InstructionObservation,
@@ -113,8 +122,13 @@ export function reconcileInstruction<I, Q, P>(
 
   // Terminal, and deliberately without a retry affordance.
   if (expired(observation, clock)) {
+    // `done` is derived from what was actually OBSERVED, never hardcoded. Stamping n-1
+    // steps done would claim a proof was retrieved and a transaction submitted when
+    // neither happened — the reconciler itself faking protocol reality. `current` is
+    // `pending`, not `failed`: expiry is the window closing, not a step erroring.
+    // `fassets/direct-mint.ts` uses the same shape.
     return reconcileTo(record, 'expired', now, {
-      steps: advance(record, now, Math.max(0, n - 1), 'failed'),
+      steps: advance(record, now, reachedLegs(observation), 'pending'),
       awaiting: undefined,
     })
   }

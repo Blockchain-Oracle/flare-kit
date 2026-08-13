@@ -38,6 +38,8 @@ export type RefusalCode =
   | 'no_operator_wallet'
   | 'fee_unmet'
   | 'fee_unreadable'
+  | 'paused'
+  | 'executor_fee_unreadable'
   | 'vault_not_registered'
   | 'vault_type_mismatch'
   | 'agent_vault_not_registered'
@@ -84,6 +86,14 @@ export interface InstructionPlan {
    * observed timestamp once the payment is on the ledger.
    */
   readonly proofWindowSeconds: bigint
+  /**
+   * The `msg.value` the `executeInstruction` call must carry, in wei.
+   *
+   * Zero for most instructions, but NOT for the FXRP redeem: `PersonalAccount.redeemFXrp`
+   * requires `msg.value >= executorFee`, so a redeem dispatched with zero value can never
+   * succeed — and by then the XRPL payment is gone. Read from `getExecutorInfo()`.
+   */
+  readonly dispatchValueWei: bigint
   /** What the personal account will do on Flare once the proof is submitted. */
   readonly downstream: string
   readonly warnings: readonly PlanWarning[]

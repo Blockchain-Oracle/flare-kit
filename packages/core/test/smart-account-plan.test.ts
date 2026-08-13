@@ -21,6 +21,7 @@ const SETTINGS: DeploymentSettings = {
   sourceIdRaw: '0x7465737458525000000000000000000000000000000000000000000000000000',
   proofValidityDurationSeconds: 86_400n,
   defaultInstructionFee: 1000n,
+  paused: false,
   instructionFees: Object.fromEntries(
     [0x00, 0x01, 0x02, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22, 0x23].map((id) => [id, 1000n]),
   ),
@@ -160,6 +161,34 @@ describe('refusals — each one is a payment a user would otherwise have lost', 
     expect(!result.ok && result.refusal.code).toBe('fee_unreadable')
   })
 
+  it('refuses while the controller is paused', () => {
+    // Found by the M13 review gate. Every dispatch entry point carries `notPaused`, and on
+    // mainnet the proof window is two hours — a pause outlasting it makes the payment
+    // permanently undispatchable.
+    const result = plan({ settings: { ...SETTINGS, paused: true } })
+    expect(!result.ok && result.refusal.code).toBe('paused')
+  })
+
+  it('refuses a redeem when the executor fee it must carry could not be read', () => {
+    // PersonalAccount.redeemFXrp requires msg.value >= executorFee. Dispatching with a
+    // guess reverts every time, with the XRPL payment already spent.
+    const result = plan({
+      settings: { ...SETTINGS, defaultExecutor: undefined },
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x02, value: 1n },
+    })
+    expect(!result.ok && result.refusal.code).toBe('executor_fee_unreadable')
+  })
+
+  it('refuses a vault DEPOSIT the account cannot cover, not just a transfer', () => {
+    // Found by the M13 review gate. A deposit pulls the same FAsset in the same units, so
+    // it carries the identical hazard — the gate is keyed on the denomination now.
+    const result = plan({
+      account: { ...ACCOUNT, fassetBalance: 10n },
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x11, value: 500_000n, vaultId: 1 },
+    })
+    expect(!result.ok && result.refusal.code).toBe('recipient_unfunded')
+  })
+
   it('refuses an instruction id the kit cannot build', () => {
     const result = plan({ intent: { ...TRANSFER, instructionId: 0x44 } })
     expect(!result.ok && result.refusal.code).toBe('unknown_instruction')
@@ -170,6 +199,20 @@ describe('refusals — each one is a payment a user would otherwise have lost', 
       intent: { ...TRANSFER, recipient: '0x0000000000000000000000000000000000000000' },
     })
     expect(!result.ok && result.refusal.code).toBe('invalid_reference')
+  })
+})
+
+describe('the dispatch value', () => {
+  it('is zero for a transfer and the executor fee for a redeem', () => {
+    // Hardcoding zero here was an M13 review-gate Critical: a redeem routes msg.value to
+    // PersonalAccount.redeemFXrp, which requires it to cover the executor fee.
+    const transfer = plan()
+    expect(transfer.ok && transfer.plan.dispatchValueWei).toBe(0n)
+
+    const redeem = plan({
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x02, value: 1n },
+    })
+    expect(redeem.ok && redeem.plan.dispatchValueWei).toBe(100_000_000_000n)
   })
 })
 

@@ -1,6 +1,6 @@
 // packages/core/src/reconcile.ts
 import { type OperationPatch, type OperationRecord, advanceSteps, applyTransition } from './operation.js'
-import { type OperationState, type StepActor, pathTo } from './states.js'
+import { type OperationState, type StepActor, type StepState, pathTo } from './states.js'
 
 /**
  * The shared lifecycle-reconcile helpers (M9-R13), extracted from `bridge-states.ts`
@@ -40,12 +40,19 @@ export function waitSince(record: OperationRecord, now: number, actor: StepActor
   return record.state === 'awaiting_external' && record.awaiting?.actor === actor ? record.awaiting.since : now
 }
 
-/** The spine progress for a leg: `done` leading steps finished, the next `current`. */
+/**
+ * The spine progress for a leg: `done` leading steps finished, the next `current`.
+ *
+ * `current` is the full `StepState`. It was narrowed to `active | done | failed` when this
+ * was extracted in M9, which covered every caller at the time — but an EXPIRED operation
+ * needs `pending`, because the window closing is not a step erroring, and `blocked` is the
+ * right answer for an action-required leg. Widening breaks no existing caller.
+ */
 export function advance(
   record: OperationRecord,
   now: number,
   done: number,
-  current: 'active' | 'done' | 'failed',
+  current: StepState,
 ) {
   return advanceSteps(record.steps, { done, current }, now)
 }

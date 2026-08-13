@@ -232,6 +232,22 @@ async function pay() {
   const info = await xrplClient.getAccountInfo(XRPL_OWNER)
   const ledgerIndex = await xrplClient.getCurrentLedgerIndex()
 
+  if (row?.feeDrops === undefined) {
+    throw new Error(
+      'the instruction fee could not be read from the controller — refusing to sign a ' +
+        'payment whose required amount is unknown',
+    )
+  }
+  // Re-assert what the plan would: the account must be able to cover the transfer, or the
+  // inner call reverts and the payment is spent for nothing. `fund` may have been skipped.
+  const account = await readPersonalAccount(publicClient, deployment, XRPL_OWNER, fasset.token)
+  if ((account?.fassetBalance ?? 0n) < TRANSFER_DROPS) {
+    throw new Error(
+      `the personal account holds ${account?.fassetBalance ?? 'an unreadable balance'} and this ` +
+        `instruction transfers ${TRANSFER_DROPS} — run \`fund\` first`,
+    )
+  }
+
   const unsigned = buildInstructionPayment({
     account: XRPL_OWNER,
     destination: settings.xrplProviderWallets[0],
@@ -239,7 +255,7 @@ async function pay() {
     reference,
     sequence: info.sequence,
     lastLedgerSequence: ledgerIndex + 20,
-    feeDrops: 12n,
+    ledgerFeeDrops: 12n,
   })
 
   // The XRPL wallet is constructed here and nowhere else; the seed never leaves this scope.
@@ -253,23 +269,40 @@ async function pay() {
   }).then((r) => r.json())
 
   const engineResult = submitted?.result?.engine_result
-  record('pay', {
-    xrplTransactionId: hash,
-    engineResult,
-    destination: unsigned.Destination,
-    amountDrops: unsigned.Amount,
-    reference,
-    // The submission result is NOT validation. `verify` reads the ledger back.
-    note: 'engine_result tesSUCCESS means accepted for processing, not validated.',
-  })
-  // A tef/tec/tem rejection means the payment will never apply. Continuing to `attest`
-  // against a transaction that does not exist would waste the FDC request fee and produce
-  // a confusing failure two phases later, so stop here with the reason.
+  // A tef/tec/tem rejection means the payment will never apply. Recording it as a completed
+  // `pay` phase would put a payment in the evidence file that never happened.
   if (engineResult !== 'tesSUCCESS') {
     throw new Error(
       `the XRPL submission was rejected with ${engineResult ?? 'no engine_result'} — nothing was paid`,
     )
   }
+
+  // Acceptance is not validation. The FDC verifier rejects a request for a transaction it
+  // cannot fetch or that lacks confirmations, so attesting off an unvalidated hash wastes
+  // the request fee and fails two phases later. M1's live-mint.mjs waits the same way.
+  let state
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    state = await xrplClient.getTransaction(hash)
+    if (state.found && state.validated) break
+    await new Promise((r) => setTimeout(r, 3000))
+    process.stdout.write('.')
+  }
+  if (!state?.validated) {
+    throw new Error(`XRPL payment ${hash} was accepted but has not validated — not attesting`)
+  }
+  if (!state.succeeded) {
+    throw new Error(`XRPL payment ${hash} validated but did NOT succeed on the ledger`)
+  }
+
+  record('pay', {
+    xrplTransactionId: hash,
+    engineResult,
+    validated: state.validated,
+    succeeded: state.succeeded,
+    destination: unsigned.Destination,
+    amountDrops: unsigned.Amount,
+    reference,
+  })
 }
 
 function paymentClient() {
@@ -358,7 +391,8 @@ async function dispatch() {
     account: privateKeyToAccount(evm.privateKey),
     transport: http(RPC),
   })
-  const call = buildExecuteInstructionCall(deployment, toPaymentProofStruct(proof), XRPL_OWNER)
+  // Zero for the transfer this run drives; a redeem would require the executor fee.
+  const call = buildExecuteInstructionCall(deployment, toPaymentProofStruct(proof), XRPL_OWNER, 0n)
   const hash = await wallet.writeContract({
     address: call.address,
     abi: masterAccountControllerAbi,

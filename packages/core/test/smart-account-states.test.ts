@@ -93,8 +93,22 @@ describe('the proof window', () => {
     const record = reconcileInstruction(submittedInstructionRecord(), PAID, clock(past))
     expect(record.state).toBe('expired')
     expect(record.awaiting).toBeUndefined()
-    // Not `succeeded`, and not silently in-flight forever.
-    expect(record.steps.some((step) => step.state === 'failed')).toBe(true)
+  })
+
+  it('marks only the legs that were actually observed as done', () => {
+    // Found by the M13 review gate. `done` was hardcoded to n-1, so an instruction whose
+    // proof was never retrievable still expired with `attestation: done` and
+    // `dispatch: done` — the reconciler itself asserting a proof and a transaction that
+    // never existed.
+    const past = NOW + Number(COSTON2_WINDOW) * 1000
+    const record = reconcileInstruction(submittedInstructionRecord(), PAID, clock(past))
+    const byId = Object.fromEntries(record.steps.map((step) => [step.id, step.state]))
+    expect(byId['xrpl-payment']).toBe('done')
+    expect(byId['attestation']).not.toBe('done')
+    expect(byId['dispatch']).not.toBe('done')
+    expect(byId['effect']).not.toBe('done')
+    // Expiry is the window closing, not a step erroring.
+    expect(record.steps.some((step) => step.state === 'failed')).toBe(false)
   })
 
   it('does not expire a dispatch that was submitted but not yet read back', () => {

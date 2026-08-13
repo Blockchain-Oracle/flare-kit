@@ -34,7 +34,10 @@ export interface SmartAccountCall {
   readonly abi: Abi
   readonly functionName: string
   readonly args: readonly unknown[]
-  /** `executeInstruction` is payable; the controller requires no value today. */
+  /**
+   * `executeInstruction` is payable, and for the FXRP redeem instruction it MUST carry at
+   * least the executor fee — see `buildExecuteInstructionCall`.
+   */
   readonly value: bigint
 }
 
@@ -60,6 +63,12 @@ export interface DeploymentSettings {
   readonly proofValidityDurationSeconds: bigint
   /** Drops. Applies to any instruction with no per-id override. */
   readonly defaultInstructionFee: bigint
+  /**
+   * Whether the controller is paused. Every dispatch entry point carries `notPaused`, so a
+   * paused controller reverts `executeInstruction` — and on mainnet the proof window is two
+   * hours, so a pause outlasting it makes the payment permanently undispatchable.
+   */
+  readonly paused: boolean
   /**
    * Per instruction id, in drops. `undefined` for an id whose fee READ FAILED.
    *
@@ -113,13 +122,17 @@ export async function readDeploymentSettings(
   let sourceIdRaw: `0x${string}`
   let proofWindow: bigint
   let defaultFee: bigint
+  let paused: boolean
   try {
-    ;[wallets, sourceIdRaw, proofWindow, defaultFee] = (await Promise.all([
+    ;[wallets, sourceIdRaw, proofWindow, defaultFee, paused] = (await Promise.all([
       read('getXrplProviderWallets'),
       read('getSourceId'),
       read('getPaymentProofValidityDurationSeconds'),
       read('getDefaultInstructionFee'),
-    ])) as [readonly string[], `0x${string}`, bigint, bigint]
+      // ESSENTIAL: an unreadable pause state cannot be assumed false. Doing so would let
+      // the plan sign a payment into a paused controller.
+      read('isPaused'),
+    ])) as [readonly string[], `0x${string}`, bigint, bigint, boolean]
   } catch {
     return undefined
   }
@@ -150,6 +163,7 @@ export async function readDeploymentSettings(
     sourceIdRaw,
     proofValidityDurationSeconds: proofWindow,
     defaultInstructionFee: defaultFee,
+    paused,
     instructionFees: Object.fromEntries(feeEntries),
     vaults: vaultsRaw
       ? vaultsRaw[0].map((id, i) => ({
@@ -194,17 +208,26 @@ export async function readTransactionIdUsed(
  * nothing. `proofStruct` is the tuple `toPaymentProofStruct` produces — an `XRPPayment`
  * proof cannot be passed here, and the type system cannot catch that, so the call site
  * must come from `families/payment.ts`.
+ *
+ * `valueWei` is NOT always zero, and hardcoding it as zero was an M13 review-gate Critical.
+ * The FXRP redeem instruction routes `msg.value` down to
+ * `PersonalAccount.redeemFXrp`, which does
+ * `require(msg.value >= _executorFee, InsufficientFundsForRedeem(_executorFee))`. With a
+ * zero value and any non-zero executor fee, a redeem can NEVER dispatch — and by then the
+ * XRPL payment is already the operator's. The plan computes this from the live
+ * `getExecutorInfo()` read.
  */
 export function buildExecuteInstructionCall(
   deployment: SmartAccountsDeployment,
   proofStruct: unknown,
   xrplAddress: string,
+  valueWei: bigint,
 ): SmartAccountCall {
   return {
     address: deployment.masterAccountController,
     abi: masterAccountControllerAbi as unknown as Abi,
     functionName: 'executeInstruction',
     args: [proofStruct, xrplAddress],
-    value: 0n,
+    value: valueWei,
   }
 }

@@ -47,6 +47,7 @@ const LIVE: Record<string, unknown> = {
   getNonce: 0n,
   getExecutor: '0x0000000000000000000000000000000000000000',
   isTransactionIdUsed: false,
+  isPaused: false,
   balanceOf: 0n,
 }
 
@@ -99,6 +100,9 @@ describe('the deployment settings are read fresh, never assumed', () => {
     'getSourceId',
     'getPaymentProofValidityDurationSeconds',
     'getDefaultInstructionFee',
+    // An unreadable pause state cannot be assumed false — doing so lets the plan sign a
+    // payment into a paused controller. Found by the M13 review gate.
+    'isPaused',
   ])('returns undefined when the essential read %s fails', async (functionName) => {
     // No plan can honestly be built without these, so a partial settings object would only
     // give a composer enough rope to ask for a signature it cannot justify.
