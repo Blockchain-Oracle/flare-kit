@@ -1,3 +1,5 @@
+import { Hero } from '../components/landing/hero'
+
 export default function Home() {
-  return <main>flare-kit</main>
+  return <Hero />
 }

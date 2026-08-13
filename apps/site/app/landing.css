@@ -1,0 +1,49 @@
+/* ============================================================
+   The landing page. Tokens only.
+   ============================================================ */
+
+.hero-inner {
+  display: grid;
+  gap: 22px;
+  max-width: 54rem;
+}
+.hero-title {
+  margin-top: 4px;
+}
+.hero-accent {
+  /* --fk-brand is 4.34:1 on paper and never carries text; --fk-brand-text is
+     the readable pair. One of the three sanctioned uses of the brand colour. */
+  color: var(--fk-brand-text);
+}
+.hero-lede {
+  max-width: 46rem;
+}
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+/* ---------- Copy field ---------- */
+.copyline {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 8px 0 14px;
+  min-height: 40px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  box-shadow: var(--fk-sh-1);
+}
+.copyline-cmd {
+  font-size: 0.92rem;
+  color: var(--fk-text);
+  white-space: nowrap;
+}
+.copyline-prefix {
+  color: var(--fk-text-faint);
+  user-select: none;
+}
