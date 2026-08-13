@@ -9,11 +9,17 @@ import type { GovernanceDeployment } from './use-governance.js'
  * proposal is read, not signed; `castVote` is built in core but deliberately CARRIED this
  * milestone, so this hook exposes no write path at all.
  *
- * **Honest-empty**: when `discoverProposals` finds nothing (Coston2 hosts no proposal ever,
- * probe-confirmed), `proposals` is `[]` — never a fabricated row. `detailOf(id)` only maps
- * an id that was actually discovered; an id never seen stays `undefined` forever, and a
- * discovered proposal whose detail read failed stays the honest `{id, source, state:
- * 'unknown'}` shape (`ProposalUnknown`) rather than collapsing into a fabricated detail.
+ * **Honest-empty vs unavailable (load-bearing — the M12 unavailable-vs-empty rule)**:
+ * `proposals` is `ProposalSummary[] | undefined`, and the two non-array-of-real-rows states
+ * are NOT the same claim. `undefined` means "not yet loaded" OR "the discovery read
+ * FAILED" (`error` is set) — an RPC outage must never wear the shape of an observed-empty
+ * catalogue. `[]` means ONLY a CONFIRMED-empty discovery: the read genuinely SUCCEEDED and
+ * `discoverProposals` returned zero rows (Coston2 hosts no proposal ever, probe-confirmed) —
+ * that is honest-empty, distinct from unavailable, and only a successful call ever produces
+ * it. `detailOf(id)` only maps an id that was actually discovered; an id never seen stays
+ * `undefined` forever, and a discovered proposal whose detail read failed stays the honest
+ * `{id, source, state:'unknown'}` shape (`ProposalUnknown`) rather than collapsing into a
+ * fabricated detail.
  *
  * There is deliberately no poll interval here (mirrors `use-observed-read.ts`'s reasoning):
  * proposals are a cross-network read lens, not a durable in-flight operation, so a one-shot
@@ -40,11 +46,13 @@ export interface UseProposalsInput {
 }
 
 export interface UseProposalsResult {
-  /** `[]` when discovery finds nothing — honest-empty, never a fabricated row. */
-  readonly proposals: ProposalSummary[]
+  /** `undefined` = not yet loaded OR the discovery read failed (see `error`) — never
+   *  conflated with a confirmed-empty catalogue. `[]` = discovery genuinely SUCCEEDED and
+   *  found zero proposals — honest-empty. A non-empty array = observed proposals. */
+  readonly proposals: ProposalSummary[] | undefined
   /** True until the first discovery read completes (mirrors `useObservedRead`'s `loading`). */
   readonly loading: boolean
-  /** The last failed read's message; never overwrites `proposals` with a fabricated result. */
+  /** The last failed read's message; never overwrites `proposals` with a fabricated `[]`. */
   readonly error: string | undefined
   /** `undefined` until the id has both been discovered AND its detail read has landed. A
    *  discovered proposal whose detail read failed returns the honest `ProposalUnknown`
@@ -54,7 +62,7 @@ export interface UseProposalsResult {
 
 export function useProposals(input: UseProposalsInput): UseProposalsResult {
   const { readDeployment, publicClient, account, lookbackBlocks = LOOKBACK_BLOCKS, maxRange = MAX_RANGE } = input
-  const [proposals, setProposals] = useState<ProposalSummary[]>([])
+  const [proposals, setProposals] = useState<ProposalSummary[] | undefined>(undefined)
   const [details, setDetails] = useState<Map<string, ProposalDetailView | ProposalUnknown>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | undefined>(undefined)
@@ -66,6 +74,8 @@ export function useProposals(input: UseProposalsInput): UseProposalsResult {
       try {
         const found = await discoverProposals(publicClient, readDeployment, lookbackBlocks, maxRange)
         if (!live) return
+        // `found` came from a SUCCESSFUL call — `[]` here is a confirmed-empty discovery,
+        // never conflated with the unavailable (`undefined`) the catch branch below leaves.
         setProposals(found)
         setError(undefined)
         // Eagerly land the detail for every discovered proposal — the observed catalogue is
@@ -77,6 +87,11 @@ export function useProposals(input: UseProposalsInput): UseProposalsResult {
         if (!live) return
         setDetails(new Map(entries))
       } catch (cause) {
+        // discoverProposals's own `getBlockNumber`/`getContractEvents` calls are NOT caught
+        // at that scope (proposals.ts) — an RPC outage throws here. Record it in `error` and
+        // deliberately do NOT touch `proposals`: it stays `undefined` (never loaded) on a
+        // first failure, or holds its last good value on a later one — either way it must
+        // NEVER be set to `[]` from this branch, or an outage would render as honest-empty.
         if (live) setError(cause instanceof Error ? cause.message : String(cause))
       } finally {
         if (live) setLoading(false)
@@ -90,7 +105,7 @@ export function useProposals(input: UseProposalsInput): UseProposalsResult {
 
   const detailOf = useCallback(
     (id: bigint): ProposalDetailView | ProposalUnknown | undefined => {
-      const summary = proposals.find((p) => p.id === id)
+      const summary = proposals?.find((p) => p.id === id)
       if (!summary) return undefined
       return details.get(`${summary.source}:${summary.id}`)
     },

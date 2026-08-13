@@ -82,7 +82,9 @@ export interface UseGovernanceResult {
   readonly position: GovernancePositionView
   readonly operation: GovernanceOperation | undefined
   readonly isSettled: boolean
-  /** True once a `walletClient` was injected — the write path is otherwise unavailable. */
+  /** True once a `walletClient` is injected AND a read has landed — `delegate`/`undelegate`
+   *  are a no-op until both hold, so this reports the write path's actual availability, not
+   *  just the presence of a wallet. */
   readonly canWrite: boolean
   /** A failed READ or a refused/failed WRITE; never moves the operation to failed itself. */
   readonly error: SerializedError | undefined
@@ -203,7 +205,7 @@ export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
     position: governancePosition(reads),
     operation,
     isSettled: operation ? isTerminal(operation.state) : false,
-    canWrite: Boolean(walletClient),
+    canWrite: Boolean(walletClient) && reads !== undefined,
     error,
     plan,
     delegate,
