@@ -36,3 +36,6 @@ developer-hub
 
 # fumadocs-mdx generated content layer, rewritten on every build.
 .source/
+
+# Pagefind static index, emitted by the post-build step.
+apps/site/public/pagefind/

@@ -20,6 +20,8 @@ export default tseslint.config(
       '**/.next/**',
       // fumadocs-mdx writes apps/site/.source on every build. Generated, not ours.
       '**/.source/**',
+      // Pagefind emits its search bundle and index here post-build. Also generated.
+      '**/public/pagefind/**',
       '**/node_modules/**',
     ],
   },

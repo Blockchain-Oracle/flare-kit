@@ -73,8 +73,116 @@
   gap: 8px;
   margin-left: auto;
 }
-.nav-search-slot {
-  width: 0;
+/* ---------- Search ---------- */
+.nav-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-surface);
+  color: var(--fk-text-faint);
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+.nav-search-btn:hover {
+  color: var(--fk-text-muted);
+  border-color: var(--fk-border-control);
+}
+.nav-search-btn kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--fk-border);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  background: var(--fk-card);
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding-top: 12vh;
+  background: var(--fk-tint);
+  backdrop-filter: blur(3px);
+}
+.search-dialog {
+  /* Content-sized, anchored to the top. Without this the dialog is a stretched
+     grid item, and because it sets overflow:hidden its automatic minimum size
+     resolves to 0 — it collapses to its own 2px of border with the input and
+     results clipped out of view. */
+  align-self: start;
+  width: min(640px, calc(100vw - 32px));
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  background: var(--fk-card);
+  box-shadow: var(--fk-sh-3);
+  overflow: hidden;
+}
+.search-input {
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--fk-border);
+  background: transparent;
+  color: var(--fk-text);
+  font-family: var(--fk-font-sans);
+  font-size: 1rem;
+}
+.search-input:focus {
+  outline: none;
+}
+.search-results {
+  max-height: 56vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+.search-note {
+  padding: 16px 12px;
+  color: var(--fk-text-muted);
+  font-size: 0.9rem;
+}
+.search-note code {
+  font-family: var(--fk-font-mono);
+  font-size: 0.85em;
+  padding: 1px 5px;
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-surface);
+}
+.search-hit {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: var(--fk-r-md);
+}
+.search-hit:hover {
+  background: var(--fk-surface);
+}
+.search-hit-title {
+  font-weight: 600;
+  color: var(--fk-text);
+  font-size: 0.94rem;
+}
+.search-hit-excerpt {
+  font-size: 0.86rem;
+  color: var(--fk-text-muted);
+  line-height: 1.5;
+}
+.search-hit-excerpt mark {
+  background: var(--fk-primary-soft);
+  color: var(--fk-text);
+  border-radius: 3px;
+}
+
+@media (max-width: 900px) {
+  .nav-search-label,
+  .nav-search-btn kbd {
+    display: none;
+  }
 }
 .nav-icon {
   display: grid;

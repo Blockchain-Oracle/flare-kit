@@ -24,7 +24,10 @@ export interface DocPageData {
 export function DocPage({ data, tocItems }: { data: DocPageData; tocItems: TocItem[] }) {
   return (
     <>
-      <article className="doc">
+      {/* data-pagefind-body scopes the search index to the page's own content.
+          Without it Pagefind indexes every <body>, so the nav and footer text
+          lands in the index once per page and pollutes every result. */}
+      <article className="doc" data-pagefind-body>
         <Breadcrumb parts={data.breadcrumb} />
         <DocTitle title={data.title} badges={data.badges} />
         {data.lede && <p className="doc-lede lede">{data.lede}</p>}

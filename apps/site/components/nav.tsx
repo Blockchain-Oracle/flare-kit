@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { BrandLockup } from './brand-mark'
 import { GithubIcon, NpmIcon } from './icons'
+import { NavSearch } from './nav-search'
 import { ThemeToggle } from './theme-toggle'
 
 const GITHUB = 'https://github.com/Blockchain-Oracle/flare-kit'
@@ -60,8 +61,7 @@ export function SiteNav() {
         </nav>
 
         <div className="nav-right">
-          {/* Plan 2 replaces this with the Pagefind dialog. */}
-          <div className="nav-search-slot" aria-hidden="true" />
+          <NavSearch />
           <a
             className="nav-icon"
             href={NPM}
