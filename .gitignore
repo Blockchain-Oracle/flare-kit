@@ -25,5 +25,9 @@ developer-hub/
 .agents/skills/
 .superpowers/
 
+# Linked worktrees live inside the project root and must never be committed
+# back into it.
+.worktrees/
+
 # Signing keys for a live testnet run. Never committed.
 .secrets/
