@@ -3,7 +3,7 @@
  *
  * FTSO and FDC publish their merkle roots on the *same* Relay, for the same
  * voting rounds, under different protocol ids. That is the whole reason
- * `@flare-kit/core`'s voting-round module is protocol-generic rather than
+ * `@flarekit-dev/core`'s voting-round module is protocol-generic rather than
  * FDC-shaped: `Relay.isFinalized(100, r)` and `Relay.isFinalized(200, r)` are
  * two independent questions about one round, and both are live on both networks.
  */

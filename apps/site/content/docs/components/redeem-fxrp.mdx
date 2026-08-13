@@ -2,7 +2,7 @@
 title: RedeemFXRP
 description: The redemption composer — takes whole lots because the protocol does, and says before you commit that an agent pays you and what happens if that agent does not.
 breadcrumb: ['Docs', 'Components', 'RedeemFXRP']
-importLine: "import { RedeemFXRP } from '@flare-kit/react-ui'"
+importLine: "import { RedeemFXRP } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/operation-timeline', label: 'OperationTimeline' }
 next: { href: '/docs/components/recovery-panel', label: 'RecoveryPanel' }
 ---
@@ -27,10 +27,10 @@ Mount it under a `FlareProvider` and hand it the XRP Ledger address that should
 receive the XRP. It quotes on its own; you handle `onSubmit`.
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
-import { RedeemFXRP } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { RedeemFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Redeem() {
   return (
@@ -92,7 +92,7 @@ composer refuses with the lot size rather than rounding for you.
 
 `RedeemFXRP` reads protocol state and quotes through the kit on the provider, so
 moving from the mock to a live network swaps the kit, not the screen. Addresses
-come from `@flare-kit/contracts`; network is configuration.
+come from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

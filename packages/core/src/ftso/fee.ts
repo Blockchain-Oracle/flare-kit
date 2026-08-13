@@ -3,7 +3,7 @@ import {
   feeCalculatorAbi,
   ftsoRegistryFor,
   ftsoV2Abi,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import type { RoundReader } from '../voting-round.js'
 

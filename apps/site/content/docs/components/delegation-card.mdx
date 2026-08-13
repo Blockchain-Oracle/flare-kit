@@ -2,7 +2,7 @@
 title: DelegationCard
 description: The delegation composer — wrap the native token into WNat, delegate that vote power to at most two FTSO providers, and read the position the chain actually returned.
 breadcrumb: ['Docs', 'Components', 'DelegationCard']
-importLine: "import { DelegationCard } from '@flare-kit/react-ui'"
+importLine: "import { DelegationCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/x402-card', label: 'X402Card' }
 next: { href: '/docs/components/claim-card', label: 'ClaimCard' }
 ---
@@ -26,14 +26,14 @@ actually reaches.
 Drive it from `useDelegation`: the hook's `position` is the state panel, its
 `buildPlan` is the refusal, and its `submit` hands the plan to your own wallet.
 `nativeToken` and `wrappedToken` are `DexToken`s — the WNat one comes from
-`@flare-kit/contracts` (`dexFor(chainId).tokens.WNAT`), never a literal in your
+`@flarekit-dev/contracts` (`dexFor(chainId).tokens.WNAT`), never a literal in your
 screen.
 
 ```tsx
-import { useDelegation } from '@flare-kit/react'
-import { DelegationCard } from '@flare-kit/react-ui'
-import { createMockDelegationAdapter } from '@flare-kit/core'
-import '@flare-kit/react-ui/styles.css'
+import { useDelegation } from '@flarekit-dev/react'
+import { DelegationCard } from '@flarekit-dev/react-ui'
+import { createMockDelegationAdapter } from '@flarekit-dev/core'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockDelegationAdapter()
 
@@ -132,7 +132,7 @@ docs:
 
 The card is prop-driven, so moving from the mock to a live network swaps the
 adapter behind `useDelegation`, not the screen. The WNat address comes from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

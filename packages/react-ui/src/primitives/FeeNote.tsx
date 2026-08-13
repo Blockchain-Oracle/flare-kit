@@ -1,4 +1,4 @@
-import type { FeedFeeQuote } from '@flare-kit/core'
+import type { FeedFeeQuote } from '@flarekit-dev/core'
 import { Note } from './Note.js'
 
 /**

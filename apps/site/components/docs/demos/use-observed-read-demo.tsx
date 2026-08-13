@@ -1,8 +1,8 @@
 'use client'
 
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, readFeeds } from '@flare-kit/core'
-import { useObservedRead } from '@flare-kit/react'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, readFeeds } from '@flarekit-dev/core'
+import { useObservedRead } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -16,8 +16,8 @@ const READER = createMockFtsoReader()
 const CHAIN_ID = FLARE_NETWORKS.coston2.id
 const FEED_IDS = [encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')]
 
-const CODE = `import { readFeeds } from '@flare-kit/core'
-import { useObservedRead } from '@flare-kit/react'
+const CODE = `import { readFeeds } from '@flarekit-dev/core'
+import { useObservedRead } from '@flarekit-dev/react'
 
 function Price({ reader, chainId, feedIds }) {
   const { data, loading, error, refresh } = useObservedRead(

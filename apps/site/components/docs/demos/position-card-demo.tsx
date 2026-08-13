@@ -11,9 +11,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const POSITION_CASES = M6_LIQUIDITY_SECTIONS.find((section) => section.id === 'm6-position')!.cases
 
-const CODE = `import { readPosition } from '@flare-kit/core'
-import { PositionCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { readPosition } from '@flarekit-dev/core'
+import { PositionCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 import { useState } from 'react'
 
 const CHAIN = 114 // Coston2

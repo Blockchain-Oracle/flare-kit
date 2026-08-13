@@ -23,9 +23,9 @@ const CASES = M4_INCENTIVE_SECTIONS.find((section) => section.id === 'ftso-05')!
     isValidElement<{ effect?: unknown }>(entry.node) && entry.node.props.effect !== undefined,
 )
 
-const CODE = `import { confirmIncentiveEffect, isEffectExpired } from '@flare-kit/core'
-import { IncentiveEffectPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { confirmIncentiveEffect, isEffectExpired } from '@flarekit-dev/core'
+import { IncentiveEffectPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 // Read at the offer's own block, from the offer's own IncentiveOffered event.
 const effect = await confirmIncentiveEffect({

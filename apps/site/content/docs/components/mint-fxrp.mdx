@@ -2,7 +2,7 @@
 title: MintFXRP
 description: The mint composer — quote FXRP against an XRPL payment, with every term on screen and a refusal below the protocol minimum that prevents an unrecoverable loss.
 breadcrumb: ['Docs', 'Components', 'MintFXRP']
-importLine: "import { MintFXRP } from '@flare-kit/react-ui'"
+importLine: "import { MintFXRP } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/mock-mode', label: 'Mock mode' }
 next: { href: '/docs/components/operation-timeline', label: 'OperationTimeline' }
 ---
@@ -26,10 +26,10 @@ Mount it under a `FlareProvider` and hand it the recipient and the XRPL account.
 It quotes on its own; you handle `onSubmit`.
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
-import { MintFXRP } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { MintFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Mint() {
   return (
@@ -87,7 +87,7 @@ docs:
 
 `MintFXRP` reads everything through the kit on the provider, so moving from the
 mock to a live network swaps the kit, not the screen. Addresses come from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

@@ -19,8 +19,8 @@ import {
   createRemoveLiquidity,
   serializeError,
   startQuoting,
-} from '@flare-kit/core'
-import { AddLiquidityCard, PoolCatalogue, PositionCard } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { AddLiquidityCard, PoolCatalogue, PositionCard } from '@flarekit-dev/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M6 liquidity surfaces, in both themes (the

@@ -2,7 +2,7 @@
 title: useGasless
 description: The delivery poll for a relayed FXRP payment — it re-reads the on-chain transfer while the relayer works, and reaches succeeded only from the PaymentExecuted read, never from the relayer's HTTP response.
 breadcrumb: ['Docs', 'Hooks', 'useGasless']
-importLine: "import { useGasless } from '@flare-kit/react'"
+importLine: "import { useGasless } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-bridge', label: 'useBridge' }
 next: { href: '/docs/hooks/use-x402', label: 'useX402' }
 ---
@@ -40,8 +40,8 @@ holds no key. Memoise it with `useCallback`, or the interval is torn down on
 every render.
 
 ```tsx
-import { type GaslessOperation, reconcileGaslessPayment } from '@flare-kit/core'
-import { useGasless } from '@flare-kit/react'
+import { type GaslessOperation, reconcileGaslessPayment } from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
 import { useCallback } from 'react'
 
 function Payment({ operation, adapter, payer, nonce, sinceBlock }) {
@@ -102,7 +102,7 @@ client the adapter reads, and whether `relay` is a real POST:
 const adapter = createMockGaslessAdapter({ confirmed: true })
 
 // Live: the same adapter over your public client and the deployment the
-// registry carries (`gaslessFor` comes from @flare-kit/contracts).
+// registry carries (`gaslessFor` comes from @flarekit-dev/contracts).
 const adapter = makeGaslessAdapter(coston2, gaslessFor('coston2')!)
 ```
 

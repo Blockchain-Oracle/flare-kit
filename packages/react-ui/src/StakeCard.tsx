@@ -6,8 +6,8 @@ import {
   type StakeOperation,
   type ValidatorInfo,
   amount,
-} from '@flare-kit/core'
-import type { StakeLimits } from '@flare-kit/core'
+} from '@flarekit-dev/core'
+import type { StakeLimits } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { LegTimeline } from './primitives/LegTimeline.js'

@@ -2,14 +2,14 @@
 title: Quickstart
 description: Install the kit, mount the provider against the mock, and render a real operation in about a minute.
 breadcrumb: ['Docs', 'Quickstart']
-importLine: "import { createMockKit } from '@flare-kit/core'"
+importLine: "import { createMockKit } from '@flarekit-dev/core'"
 prev: { href: '/docs', label: 'Introduction' }
 next: { href: '/docs/theming', label: 'Theming' }
 ---
 
 ## Install
 
-<InstallTabs packages="@flare-kit/core @flare-kit/react @flare-kit/react-ui" />
+<InstallTabs packages="@flarekit-dev/core @flarekit-dev/react @flarekit-dev/react-ui" />
 
 `react`, `viem` and the query libraries are peer dependencies — the kit never
 bundles them.
@@ -21,7 +21,7 @@ same seed gives the same trace every time, which is what makes it usable in
 tests.
 
 ```ts
-import { createMockKit } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
 
 const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
 
@@ -41,8 +41,8 @@ Scenarios cover the paths that actually happen: `happy`, `executor-late`,
 ## Render the operation
 
 ```tsx
-import { OperationTimeline } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Mint({ record }) {
   return <OperationTimeline operation={record} />
@@ -54,6 +54,6 @@ an attestation and a mint share one component rather than drifting apart.
 
 ## Switch to a live network
 
-Network is configuration. Addresses come from `@flare-kit/contracts`, so moving
+Network is configuration. Addresses come from `@flarekit-dev/contracts`, so moving
 from the mock to Coston2 or to Flare mainnet is a change of kit construction,
 not a rewrite of your screens.

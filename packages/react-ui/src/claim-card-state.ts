@@ -7,7 +7,7 @@ import type {
   OperationRecord,
   RewardsClaimPlan,
   RewardsReads,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import type { Cta } from './card-chrome.js'
 
 /**

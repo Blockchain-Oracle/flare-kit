@@ -28,7 +28,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
   `simulateContract`), and events are decoded with `decodeEventLog`, never by
   indexing `topics`.
 - **React 18.3 || 19 is a peerDependency only** — react, wagmi, viem and query
-  libraries are never bundled. react-ui imports @flare-kit/react **from dist**,
+  libraries are never bundled. react-ui imports @flarekit-dev/react **from dist**,
   so a hook change needs `pnpm build` before react-ui tests see it.
 - **Build/test**: tsup 8.5.1 (dual ESM/CJS, must pass publint), vitest 4.1.10
   (jsdom for react-ui), ESLint 10 flat config, prettier 3.9, changesets.
@@ -143,7 +143,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
   change to it against a known-opacity element before trusting output
   (`getComputedStyle().color` never includes `opacity`).
 - **Build core before react-ui tests** when a hook changed — react-ui imports
-  @flare-kit/react from `dist`.
+  @flarekit-dev/react from `dist`.
 - **Tabular data is a real `<table>`** — div grids with ARIA break
   row/column navigation in screen readers, and the tests assume table
   semantics.
@@ -156,7 +156,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
   vs the consumption block), never by line-count surgery.
 - **Public values are exported constants, never environment variables.** RPC
   URLs, chain ids, contract addresses, DA hosts — all constants in
-  @flare-kit/contracts. ESLint bans `process.env` outside scripts. The only
+  @flarekit-dev/contracts. ESLint bans `process.env` outside scripts. The only
   secret is the signing key in `.secrets/`, never committed, logged, or
   printed in output.
 - **DESIGN.md outranks every default, taste skill and component library.**

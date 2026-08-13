@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 // The kit's contract first, then the page rules that consume it.
-import '@flare-kit/react-ui/styles.css'
+import '@flarekit-dev/react-ui/styles.css'
 import './globals.css'
 import './shell.css'
 import './landing.css'

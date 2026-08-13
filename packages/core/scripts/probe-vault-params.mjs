@@ -3,7 +3,7 @@
 // confirm they reproduce the Phase A pairs (991577 shares / 497500 instant /
 // 498759 delayed / 3000 firelight). No key, no writes.
 import { createPublicClient, http } from 'viem'
-import { chainFor, vaultByKey } from '@flare-kit/contracts'
+import { chainFor, vaultByKey } from '@flarekit-dev/contracts'
 import { vaultAbiFor } from '../dist/index.js'
 
 const CHAIN_ID = 114

@@ -1,6 +1,6 @@
 'use client'
 
-import { CodeWindow } from '@flare-kit/react-ui'
+import { CodeWindow } from '@flarekit-dev/react-ui'
 import { Preview } from '../preview'
 
 /**
@@ -17,8 +17,8 @@ import { Preview } from '../preview'
  * must never do.
  */
 
-const CODE = `import { FEED_CATEGORY, encodeFeedId, isObserved } from '@flare-kit/core'
-import { useAnchorProof } from '@flare-kit/react'
+const CODE = `import { FEED_CATEGORY, encodeFeedId, isObserved } from '@flarekit-dev/core'
+import { useAnchorProof } from '@flarekit-dev/react'
 
 const FLR_USD = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
 

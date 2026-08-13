@@ -2,7 +2,7 @@
 title: AccountSheet
 description: The account surface — a Flare account and an XRP Ledger account side by side, each stating its connection status and who holds its key in words.
 breadcrumb: ['Docs', 'Components', 'AccountSheet']
-importLine: "import { AccountSheet } from '@flare-kit/react-ui'"
+importLine: "import { AccountSheet } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/recovery-panel', label: 'RecoveryPanel' }
 next: { href: '/docs/components/connect-modal', label: 'ConnectModal' }
 ---
@@ -28,10 +28,10 @@ resulting identity in — which is why the sheet takes callbacks rather than a
 connector.
 
 ```tsx
-import { walletConnected } from '@flare-kit/core'
-import { useAccounts } from '@flare-kit/react'
-import { AccountSheet } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { walletConnected } from '@flarekit-dev/core'
+import { useAccounts } from '@flarekit-dev/react'
+import { AccountSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const COSTON2 = { name: 'Coston2', chainId: 114 }
 
@@ -113,7 +113,7 @@ setIdentity(walletConnected('evm', await yourEvmAdapter.connect(), COSTON2))
 ```
 
 Network names and chain ids come from configuration — `114` is Coston2 — and
-addresses from `@flare-kit/contracts`, never from the component.
+addresses from `@flarekit-dev/contracts`, never from the component.
 
 ## What it will not do
 

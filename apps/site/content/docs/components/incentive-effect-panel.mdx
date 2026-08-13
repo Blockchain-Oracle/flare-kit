@@ -2,7 +2,7 @@
 title: IncentiveEffectPanel
 description: What a Fast Update incentive actually bought, measured at the offer's own block — including the case where the delta cannot be attributed to it.
 breadcrumb: ['Docs', 'Components', 'IncentiveEffectPanel']
-importLine: "import { IncentiveEffectPanel } from '@flare-kit/react-ui'"
+importLine: "import { IncentiveEffectPanel } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/incentive-composer', label: 'IncentiveComposer' }
 next: { href: '/docs/components/custom-feed-review', label: 'CustomFeedReview' }
 ---
@@ -35,9 +35,9 @@ The panel reads nothing. The caller confirms the effect with
 the result over.
 
 ```tsx
-import { confirmIncentiveEffect, isEffectExpired } from '@flare-kit/core'
-import { IncentiveEffectPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { confirmIncentiveEffect, isEffectExpired } from '@flarekit-dev/core'
+import { IncentiveEffectPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const effect = await confirmIncentiveEffect({
   reader,
@@ -102,7 +102,7 @@ docs:
 
 Nothing on this panel changes between mock and live, because it never reads. The
 swap is in the reader handed to `confirmIncentiveEffect`, whose incentive
-manager address comes from `@flare-kit/contracts` by chain id.
+manager address comes from `@flarekit-dev/contracts` by chain id.
 
 ```tsx
 // From this…

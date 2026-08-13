@@ -2,7 +2,7 @@
 title: AttestationCatalogue
 description: The attestation families table, compared row by row against what the live verifier answers — with "the verifier disagreed" and "we could not reach the verifier" kept as two different answers.
 breadcrumb: ['Docs', 'Components', 'AttestationCatalogue']
-importLine: "import { AttestationCatalogue } from '@flare-kit/react-ui'"
+importLine: "import { AttestationCatalogue } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/pending-tray', label: 'PendingTray' }
 next: { href: '/docs/components/attestation-request-builder', label: 'AttestationRequestBuilder' }
 ---
@@ -32,10 +32,10 @@ an unwrapped `FamilyRow[]` would make "we could not ask" look identical to "the
 answer was empty", and the only route to the rows is through `isObserved`.
 
 ```tsx
-import { mockCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
-import { AttestationCatalogue } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Families() {
   const { catalogue, loading, stale, refresh } = useAttestationFamilies({
@@ -107,7 +107,7 @@ docs:
 
 The mock and the live loader return the same `Observation`, so moving networks
 swaps the loader, not the table. Addresses and verifier hosts come from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

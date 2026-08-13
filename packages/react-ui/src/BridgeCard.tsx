@@ -6,7 +6,7 @@ import {
   type DexToken,
   type OperationRecord,
   formatExact,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

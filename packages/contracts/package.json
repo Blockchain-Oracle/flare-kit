@@ -1,5 +1,5 @@
 {
-  "name": "@flare-kit/contracts",
+  "name": "@flarekit-dev/contracts",
   "version": "0.1.0",
   "description": "Typed ABIs and the single address registry for Flare networks. Every address in flare-kit comes from here.",
   "keywords": [

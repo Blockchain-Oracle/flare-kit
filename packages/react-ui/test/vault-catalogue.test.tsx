@@ -1,7 +1,7 @@
 // packages/react-ui/test/vault-catalogue.test.tsx
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
-import { type Observation, type VaultConfig, amount, observe, vaultByKey } from '@flare-kit/core'
+import { type Observation, type VaultConfig, amount, observe, vaultByKey } from '@flarekit-dev/core'
 import { VaultCatalogue } from '../src/VaultCatalogue.js'
 import type { VaultReadsView, VaultRow } from '../src/vault-catalogue-state.js'
 

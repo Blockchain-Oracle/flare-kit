@@ -1,5 +1,5 @@
 {
-  "name": "@flare-kit/react",
+  "name": "@flarekit-dev/react",
   "version": "0.1.0",
   "description": "React provider and hooks over the Flare operation lifecycle. Works against a live kit or the mock, unchanged.",
   "keywords": [
@@ -57,7 +57,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@flare-kit/core": "workspace:^"
+    "@flarekit-dev/core": "workspace:^"
   },
   "peerDependencies": {
     "react": "^18.3.0 || ^19.0.0",

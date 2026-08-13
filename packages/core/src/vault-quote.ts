@@ -1,5 +1,5 @@
 // packages/core/src/vault-quote.ts
-import type { Address } from '@flare-kit/contracts'
+import type { Address } from '@flarekit-dev/contracts'
 import { type Amount, amount } from './amounts.js'
 import type { ExitRoute, VaultAdapter } from './vault-adapter.js'
 

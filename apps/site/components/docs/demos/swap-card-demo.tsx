@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const SWAP_CASES = M5_SWAP_SECTIONS.find((section) => section.id === 'm5-swap')!.cases
 
-const CODE = `import { dexFor } from '@flare-kit/contracts'
-import { applyQuote, createSwap, quoteSwap, readAllowance, startQuoting } from '@flare-kit/core'
-import { SwapCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { dexFor } from '@flarekit-dev/contracts'
+import { applyQuote, createSwap, quoteSwap, readAllowance, startQuoting } from '@flarekit-dev/core'
+import { SwapCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const CHAIN = 114 // Coston2
 const dex = dexFor(CHAIN) // the router, factory and swappable tokens

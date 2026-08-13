@@ -1,4 +1,4 @@
-# @flare-kit/relayer
+# @flarekit-dev/relayer
 
 The flare-kit reference **fee-free** gasless relayer. A payer signs an EIP-712
 `PaymentRequest` off-chain; this service recovers the signer, validates, simulates,
@@ -11,7 +11,7 @@ not, and it renders no fee because it charges none.
 ## No crypto drift
 
 The relayer imports `recoverPaymentSigner` (and the domain/types) from
-`@flare-kit/core` — the **same** vocabulary the client signs with. It re-declares no
+`@flarekit-dev/core` — the **same** vocabulary the client signs with. It re-declares no
 EIP-712 domain or types, so the signature the client produces is exactly what this
 service recovers and the forwarder verifies.
 
@@ -28,9 +28,9 @@ service recovers and the forwarder verifies.
 ## Running
 
 ```bash
-pnpm build --filter @flare-kit/core --filter @flare-kit/contracts   # relayer imports from dist
+pnpm build --filter @flarekit-dev/core --filter @flarekit-dev/contracts   # relayer imports from dist
 RELAYER_PRIVATE_KEY=0x... RELAYER_NETWORK=coston2 RELAYER_PORT=8788 \
-  pnpm --filter @flare-kit/relayer start
+  pnpm --filter @flarekit-dev/relayer start
 ```
 
 The operator key is read from `RELAYER_PRIVATE_KEY` only. It is **never logged, never

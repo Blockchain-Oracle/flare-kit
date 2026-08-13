@@ -2,7 +2,7 @@
 title: useAttestationFamilies
 description: The attestation catalogue as React state — what this deployment actually serves, compared per family against the shipped table, with "the verifier disagreed" and "we could not ask" kept as different answers.
 breadcrumb: ['Docs', 'Hooks', 'useAttestationFamilies']
-importLine: "import { useAttestationFamilies } from '@flare-kit/react'"
+importLine: "import { useAttestationFamilies } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-observed-read', label: 'useObservedRead' }
 next: { href: '/docs/hooks/use-attestation', label: 'useAttestation' }
 ---
@@ -41,9 +41,9 @@ Hand it a loader. The host decides which one — the live comparison or the
 mock's fixture — and the hook never branches on that.
 
 ```tsx
-import { loadFamilyCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
-import { AttestationCatalogue } from '@flare-kit/react-ui'
+import { loadFamilyCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
 
 function Families({ services, chainId }) {
   const { catalogue, loading, stale, refresh } = useAttestationFamilies({

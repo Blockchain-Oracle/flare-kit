@@ -15,11 +15,11 @@
 //   node packages/core/scripts/probe-gasless.mjs
 //
 // Addresses inlined on purpose: this is the run that verifies them before Task 3
-// makes them the @flare-kit/contracts registry's source of truth.
+// makes them the @flarekit-dev/contracts registry's source of truth.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http, erc20Abi, getAddress } from 'viem'
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-12-m9-probe.json`

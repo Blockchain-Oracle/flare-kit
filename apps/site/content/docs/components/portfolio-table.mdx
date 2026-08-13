@@ -2,7 +2,7 @@
 title: PortfolioTable
 description: Balances across a Flare account and an XRP Ledger account, each value carrying the source it came from and how old it is — and a balance that could not be read rendered as "Not read", never as zero.
 breadcrumb: ['Docs', 'Components', 'PortfolioTable']
-importLine: "import { PortfolioTable } from '@flare-kit/react-ui'"
+importLine: "import { PortfolioTable } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/network-resolution-sheet', label: 'NetworkResolutionSheet' }
 next: { href: '/docs/components/activity-table', label: 'ActivityTable' }
 ---
@@ -28,10 +28,10 @@ Mount it under a `FlareProvider` and hand it a portfolio. `usePortfolio` takes
 the reader, so the same table serves a mock read and a live one.
 
 ```tsx
-import { createMockKit, mockPortfolio } from '@flare-kit/core'
-import { FlareProvider, usePortfolio } from '@flare-kit/react'
-import { PortfolioTable } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit, mockPortfolio } from '@flarekit-dev/core'
+import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
+import { PortfolioTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 function Balances() {
   const { portfolio, loading, conflicts } = usePortfolio({
@@ -108,7 +108,7 @@ docs:
 
 `PortfolioTable` renders whatever `usePortfolio` read, so moving from the mock to
 a live network swaps the reader and the kit, not the screen. Addresses come from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

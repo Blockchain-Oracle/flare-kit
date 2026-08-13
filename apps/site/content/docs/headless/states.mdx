@@ -2,7 +2,7 @@
 title: States and transitions
 description: Sixteen canonical states, one transition table, and the rendering invariants that follow from it — submitted is never success, an unknown outcome is never failure.
 breadcrumb: ['Docs', 'Headless', 'States and transitions']
-importLine: "import { OPERATION_STATES, canTransition, pathTo } from '@flare-kit/core'"
+importLine: "import { OPERATION_STATES, canTransition, pathTo } from '@flarekit-dev/core'"
 prev: { href: '/docs/headless/lifecycle', label: 'The operation lifecycle' }
 next: { href: '/docs/headless/adapters', label: 'Adapters' }
 ---
@@ -12,7 +12,7 @@ identifiers. There is no per-capability vocabulary, and no display state that
 exists only in a component.
 
 ```ts
-// The full set, as `OPERATION_STATES` exports it from '@flare-kit/core':
+// The full set, as `OPERATION_STATES` exports it from '@flarekit-dev/core':
 const STATES = [
   'draft',
   'discovering',
@@ -59,7 +59,7 @@ deliberately not: a quote that expired is re-quotable, and only value-final
 states are dead ends.
 
 ```ts
-import { isTerminal, isSuccess } from '@flare-kit/core'
+import { isTerminal, isSuccess } from '@flarekit-dev/core'
 
 isTerminal('expired') // false — expired transitions to 'quoting' or 'cancelled'
 isSuccess('submitted') // false. Only 'succeeded' is success.
@@ -70,7 +70,7 @@ isSuccess('submitted') // false. Only 'succeeded' is success.
 `canTransition` answers from one table, and that table is the contract:
 
 ```ts
-import { canTransition } from '@flare-kit/core'
+import { canTransition } from '@flarekit-dev/core'
 
 canTransition('ready', 'executing') // true
 canTransition('submitted', 'succeeded') // true
@@ -109,7 +109,7 @@ when the protocol states an exact end.
 ## applyTransition is the one way state moves
 
 ```ts
-import { applyTransition } from '@flare-kit/core'
+import { applyTransition } from '@flarekit-dev/core'
 
 const result = applyTransition(record, {
   to: 'confirming',
@@ -149,7 +149,7 @@ breadth-first search for the shortest legal sequence of states, excluding the
 starting one:
 
 ```ts
-import { pathTo } from '@flare-kit/core'
+import { pathTo } from '@flarekit-dev/core'
 
 pathTo('ready', 'succeeded') // the states to walk, in order, ending with the target
 pathTo('succeeded', 'ready') // [] — unreachable, so the record stays put

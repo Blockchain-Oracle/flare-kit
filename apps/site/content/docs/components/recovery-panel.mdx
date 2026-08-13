@@ -2,7 +2,7 @@
 title: RecoveryPanel
 description: The recovery surface — what you can still safely do about an operation, with any action that would move new value labelled as a new payment rather than a retry.
 breadcrumb: ['Docs', 'Components', 'RecoveryPanel']
-importLine: "import { RecoveryPanel } from '@flare-kit/react-ui'"
+importLine: "import { RecoveryPanel } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/redeem-fxrp', label: 'RedeemFXRP' }
 next: { href: '/docs/components/account-sheet', label: 'AccountSheet' }
 ---
@@ -28,9 +28,9 @@ Hand it an operation record and a clock. It holds no state and fetches nothing.
 directly only when the actions belong somewhere the timeline is not.
 
 ```tsx
-import { useOperation } from '@flare-kit/react'
-import { RecoveryPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { useOperation } from '@flarekit-dev/react'
+import { RecoveryPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Recovery({ id }: { id: string }) {
   const operation = useOperation(id)

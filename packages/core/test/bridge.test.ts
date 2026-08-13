@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { decodeAbiParameters } from 'viem'
-import { REDEEM_COMPOSE_MESSAGE, routeByKey } from '@flare-kit/contracts'
+import { REDEEM_COMPOSE_MESSAGE, routeByKey } from '@flarekit-dev/contracts'
 import type { BridgeAdapter, BridgeCall, MessagingFee, SendParam } from '../src/bridge-adapter.js'
 import { ZERO_BYTES32 } from '../src/bridge-adapter.js'
 import { buildBridgePlan, buildRedeemPlan, encodeRedeemComposeMessage } from '../src/bridge.js'

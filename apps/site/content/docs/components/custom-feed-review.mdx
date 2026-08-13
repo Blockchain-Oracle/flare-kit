@@ -2,7 +2,7 @@
 title: CustomFeedReview
 description: Custom feeds read through FtsoV2, with their trust class named, entries that are listed but unreadable shown as such, and creation declared blocked.
 breadcrumb: ['Docs', 'Components', 'CustomFeedReview']
-importLine: "import { CustomFeedReview } from '@flare-kit/react-ui'"
+importLine: "import { CustomFeedReview } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/incentive-effect-panel', label: 'IncentiveEffectPanel' }
 next: { href: '/docs/components/swap-card', label: 'SwapCard' }
 ---
@@ -35,10 +35,10 @@ because they are two claims: the set is metadata, a value is payable and carries
 its own decimals and timestamp.
 
 ```tsx
-import { createMockFtsoReader } from '@flare-kit/core'
-import { useCustomFeeds, useFeeds } from '@flare-kit/react'
-import { CustomFeedReview } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockFtsoReader } from '@flarekit-dev/core'
+import { useCustomFeeds, useFeeds } from '@flarekit-dev/react'
+import { CustomFeedReview } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader({ customFeedNames: ['sFLR/USD'] })
 
@@ -120,7 +120,7 @@ docs:
 ## Mock to live
 
 The panel takes observations, not a chain, so going live swaps the reader that
-produced them. `FtsoV2`'s address comes from `@flare-kit/contracts` by chain id;
+produced them. `FtsoV2`'s address comes from `@flarekit-dev/contracts` by chain id;
 network is configuration.
 
 ```tsx

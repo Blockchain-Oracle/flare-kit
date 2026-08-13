@@ -2,7 +2,7 @@
 title: SourceDrawer
 description: How every value on the portfolio was obtained — which source answered, how old the reading is, which sources went silent, and when a chain read and an index disagree, both claims side by side.
 breadcrumb: ['Docs', 'Components', 'SourceDrawer']
-importLine: "import { SourceDrawer } from '@flare-kit/react-ui'"
+importLine: "import { SourceDrawer } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/activity-table', label: 'ActivityTable' }
 next: { href: '/docs/components/pending-tray', label: 'PendingTray' }
 ---
@@ -29,10 +29,10 @@ Give it the same portfolio the table is rendering, plus the conflicts
 to compare against — one source cannot disagree with itself.
 
 ```tsx
-import { createMockKit, mockPortfolio, type PortfolioPosition } from '@flare-kit/core'
-import { FlareProvider, usePortfolio } from '@flare-kit/react'
-import { SourceDrawer } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit, mockPortfolio, type PortfolioPosition } from '@flarekit-dev/core'
+import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
+import { SourceDrawer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 function Sources({ indexed }: { indexed: readonly PortfolioPosition[] }) {
   const { portfolio, conflicts } = usePortfolio({
@@ -97,7 +97,7 @@ those values stay on screen with their age rather than being replaced by a blank
 
 `SourceDrawer` renders whatever `usePortfolio` read and compared, so moving from
 the mock to a live network swaps the reader and the kit, not the screen.
-Addresses come from `@flare-kit/contracts`; network is configuration.
+Addresses come from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

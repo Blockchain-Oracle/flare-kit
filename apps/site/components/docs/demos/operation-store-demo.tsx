@@ -1,12 +1,12 @@
 'use client'
 
-import { openOperations, useFlareContext } from '@flare-kit/react'
+import { openOperations, useFlareContext } from '@flarekit-dev/react'
 import { useSyncExternalStore } from 'react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 import { SeededRegistry } from './seed-registry'
 
-const CODE = `import { openOperations, useFlareContext } from '@flare-kit/react'
+const CODE = `import { openOperations, useFlareContext } from '@flarekit-dev/react'
 import { useSyncExternalStore } from 'react'
 
 function OpenCount() {

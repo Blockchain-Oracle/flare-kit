@@ -1,13 +1,13 @@
 'use client'
 
-import { type RedeemIntent } from '@flare-kit/core'
-import { useRedeem } from '@flare-kit/react'
+import { type RedeemIntent } from '@flarekit-dev/core'
+import { useRedeem } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { formatExact } from '@flare-kit/core'
-import { useRedeem } from '@flare-kit/react'
+const CODE = `import { formatExact } from '@flarekit-dev/core'
+import { useRedeem } from '@flarekit-dev/react'
 
 const intent = { lots: 3, redeemerUnderlyingAddress: 'rPT1Sjq2…dyfzbpAYe' }
 

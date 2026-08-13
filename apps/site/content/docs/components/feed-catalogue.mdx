@@ -2,7 +2,7 @@
 title: FeedCatalogue
 description: The table of FTSO feeds a deployment actually serves, where the feed list and the feed values are two separate claims with two separate provenance chips.
 breadcrumb: ['Docs', 'Components', 'FeedCatalogue']
-importLine: "import { FeedCatalogue } from '@flare-kit/react-ui'"
+importLine: "import { FeedCatalogue } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/proof-handoff', label: 'ProofHandoff' }
 next: { href: '/docs/components/feed-detail', label: 'FeedDetail' }
 ---
@@ -32,11 +32,11 @@ Read the list and the values separately, hand both to the table. No provider is
 involved — this surface is driven by props.
 
 ```tsx
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flare-kit/core'
-import { useFeedCatalogue, useFeeds } from '@flare-kit/react'
-import { FeedCatalogue } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flarekit-dev/core'
+import { useFeedCatalogue, useFeeds } from '@flarekit-dev/react'
+import { FeedCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader()
 const chainId = FLARE_NETWORKS.coston2.id
@@ -96,7 +96,7 @@ None of the four is ever a zero price.
 The row is exported too, for building a table of your own:
 
 ```tsx
-import { FeedCatalogueRow } from '@flare-kit/react-ui'
+import { FeedCatalogueRow } from '@flarekit-dev/react-ui'
 ```
 
 It takes an `entry: CatalogueEntry`, an optional `reading: FeedReading`, and
@@ -135,7 +135,7 @@ docs:
 `createMockFtsoReader()` is a reader, not a second implementation: the same
 `readFeedCatalogue` and `readFeeds` run against it. Swapping in a viem public
 client for the network you want is the whole change, and addresses come from
-`@flare-kit/contracts`.
+`@flarekit-dev/contracts`.
 
 ```tsx
 // From this…

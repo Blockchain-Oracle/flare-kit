@@ -2,7 +2,7 @@
 title: useSecureRandom
 description: The protocol's randomness, current or historical, with one policy option — and when a secure value was required and the protocol reports an insecure one, a refusal that carries no number at all.
 breadcrumb: ['Docs', 'Hooks', 'useSecureRandom']
-importLine: "import { useSecureRandom } from '@flare-kit/react'"
+importLine: "import { useSecureRandom } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-custom-feeds', label: 'useCustomFeeds' }
 next: { href: '/docs/hooks/use-incentive-offer', label: 'useIncentiveOffer' }
 ---
@@ -33,10 +33,10 @@ against. There is no number anywhere in it.
 ## Usage
 
 ```tsx
-import type { RoundReader } from '@flare-kit/core'
-import { isObserved, isRefusal } from '@flare-kit/core'
-import { useSecureRandom } from '@flare-kit/react'
-import { SecureRandomPanel } from '@flare-kit/react-ui'
+import type { RoundReader } from '@flarekit-dev/core'
+import { isObserved, isRefusal } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
 
 export function Random({ reader }: { reader: RoundReader }) {
   const { data, loading, error, refresh } = useSecureRandom({
@@ -70,7 +70,7 @@ would make that indistinguishable from the RPC being down, and would invite a
 
 <PropsTable rows={[
   { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the Relay. Named Relay (RandomNumberV2) on the observation, after the contract rather than the registry alias, so it matches an explorer.' },
-  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The Relay address comes from @flare-kit/contracts.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The Relay address comes from @flarekit-dev/contracts.' },
   { name: 'votingRoundId', type: 'bigint', required: false, description: 'Omit for the current random. Given, it reads getRandomNumberHistorical, which reaches back to about round 864606 on Coston2 — far past the anchor-feed floor, so a round can have retrievable randomness and an unretrievable price at the same time.' },
   { name: 'requireSecure', type: 'boolean', required: false, description: 'Refuse an insecure value rather than returning it with a flag. The flag alone is not enough: isSecure sitting beside a usable value is an invitation to use it.' },
 ]} />
@@ -110,8 +110,8 @@ no value field to read.
 ## Mock to live
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
-import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '@flarekit-dev/core'
 import { createPublicClient, http } from 'viem'
 
 // The mock reports the four rounds that genuinely are insecure as insecure, so

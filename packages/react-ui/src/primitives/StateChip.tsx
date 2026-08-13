@@ -1,4 +1,4 @@
-import type { OperationState } from '@flare-kit/core'
+import type { OperationState } from '@flarekit-dev/core'
 import { type Glyph, type Tone, visualFor } from '../state-visuals.js'
 
 /**

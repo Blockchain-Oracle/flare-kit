@@ -1,6 +1,6 @@
 // packages/core/src/mock-gasless.ts
 import type { Address, Hex, PublicClient } from 'viem'
-import { type FlareNetworkKey, gaslessFor } from '@flare-kit/contracts'
+import { type FlareNetworkKey, gaslessFor } from '@flarekit-dev/contracts'
 import { type GaslessAdapter, type RelayReceipt, makeGaslessAdapter } from './gasless-adapter.js'
 
 /**

@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const STAKE_CASES = M11_STAKING_SECTIONS.find((section) => section.id === 'm11-staking')!.cases
 
-const CODE = `import { parseAmount } from '@flare-kit/core'
-import { useStaking, type UseStakingInput } from '@flare-kit/react'
-import { StakeCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { parseAmount } from '@flarekit-dev/core'
+import { useStaking, type UseStakingInput } from '@flarekit-dev/react'
+import { StakeCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 import { useState } from 'react'
 
 const NATIVE = { symbol: 'C2FLR', address: '0x…', decimals: 18 }

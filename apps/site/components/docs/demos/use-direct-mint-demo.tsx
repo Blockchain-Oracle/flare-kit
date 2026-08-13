@@ -1,13 +1,13 @@
 'use client'
 
-import { type DirectMintIntent } from '@flare-kit/core'
-import { useDirectMint } from '@flare-kit/react'
+import { type DirectMintIntent } from '@flarekit-dev/core'
+import { useDirectMint } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { formatExact } from '@flare-kit/core'
-import { useDirectMint } from '@flare-kit/react'
+const CODE = `import { formatExact } from '@flarekit-dev/core'
+import { useDirectMint } from '@flarekit-dev/react'
 
 const intent = {
   amountXrp: '25.000000',

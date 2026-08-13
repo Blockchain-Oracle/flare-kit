@@ -5,7 +5,7 @@ import {
   type Address,
   type DexToken,
   dexFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Amount, amount } from './amounts.js'
 import type { SwapReader } from './swap-quote.js'
 

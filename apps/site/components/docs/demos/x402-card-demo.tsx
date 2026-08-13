@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const X402_CASES = M9_X402_SECTIONS.find((section) => section.id === 'm9-x402')!.cases
 
-const CODE = `import type { X402Challenge, X402Operation } from '@flare-kit/core'
-import { useX402 } from '@flare-kit/react'
-import { X402Card } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import type { X402Challenge, X402Operation } from '@flarekit-dev/core'
+import { useX402 } from '@flarekit-dev/react'
+import { X402Card } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Paywall({ op, challenge, reconcile }: {
   op: X402Operation

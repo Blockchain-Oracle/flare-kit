@@ -1,4 +1,4 @@
-import type { AttestationOperation, Observation } from '@flare-kit/core'
+import type { AttestationOperation, Observation } from '@flarekit-dev/core'
 import { Note } from './primitives/Note.js'
 import { OperationTimeline } from './OperationTimeline.js'
 import { SourceChip } from './primitives/SourceChip.js'

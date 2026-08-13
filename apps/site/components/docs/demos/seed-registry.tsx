@@ -1,7 +1,7 @@
 'use client'
 
-import { mockOperationRecords } from '@flare-kit/core'
-import { useFlareContext } from '@flare-kit/react'
+import { mockOperationRecords } from '@flarekit-dev/core'
+import { useFlareContext } from '@flarekit-dev/react'
 import { type ReactNode, useEffect } from 'react'
 import { MockKitProvider } from './mock-kit-provider'
 

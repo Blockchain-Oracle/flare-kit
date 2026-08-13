@@ -2,7 +2,7 @@
 title: useAttestation
 description: An attestation as one durable, non-blocking operation — request returns the moment the record exists, and the provider's interval advances it from prepare through consume without a Resume button.
 breadcrumb: ['Docs', 'Hooks', 'useAttestation']
-importLine: "import { useAttestation } from '@flare-kit/react'"
+importLine: "import { useAttestation } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-attestation-families', label: 'useAttestationFamilies' }
 next: { href: '/docs/hooks/use-anchor-proof', label: 'useAnchorProof' }
 ---
@@ -54,8 +54,8 @@ deployed consumer and two do not, and a step declared absent is honest where a
 step that silently never runs is not.
 
 ```tsx
-import { useAttestation } from '@flare-kit/react'
-import { AttestationTimeline } from '@flare-kit/react-ui'
+import { useAttestation } from '@flarekit-dev/react'
+import { AttestationTimeline } from '@flarekit-dev/react-ui'
 
 function Attest({ intent, hasConsumer }) {
   const { request, operation, waitingReason } = useAttestation({

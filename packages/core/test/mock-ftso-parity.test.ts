@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId } from '@flarekit-dev/contracts'
 import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '../src/mock-ftso.js'
 import { readFeeds, listSupportedFeedIds } from '../src/ftso/feeds.js'
 import { readFeedCatalogue } from '../src/ftso/catalogue.js'

@@ -3,7 +3,7 @@ import type {
   DelegationPlanResult,
   DelegationReads,
   DexToken,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   applyTransition,
   buildDelegationPlan,
@@ -12,7 +12,7 @@ import {
   delegationPosition,
   evidence,
   reconcileDelegation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { DelegationCard } from '../src/DelegationCard.js'

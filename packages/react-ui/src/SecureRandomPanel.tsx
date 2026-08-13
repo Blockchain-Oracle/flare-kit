@@ -1,5 +1,5 @@
-import type { Observation, RandomResult } from '@flare-kit/core'
-import { isObserved, isRefusal } from '@flare-kit/core'
+import type { Observation, RandomResult } from '@flarekit-dev/core'
+import { isObserved, isRefusal } from '@flarekit-dev/core'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'
 import { Panel } from './primitives/Panel.js'

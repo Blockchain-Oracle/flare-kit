@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const ROUTE_CASES = M8_BRIDGE_SECTIONS.find((section) => section.id === 'm8-routes')!.cases
 
-const CODE = `import { type Amount, routesFor } from '@flare-kit/core'
-import { RouteCatalogue, type RouteRow } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { type Amount, routesFor } from '@flarekit-dev/core'
+import { RouteCatalogue, type RouteRow } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Routes({ fees }: { fees: Record<string, Amount | null> }) {
   // One row per configured route. A fee you have not read yet is null, which

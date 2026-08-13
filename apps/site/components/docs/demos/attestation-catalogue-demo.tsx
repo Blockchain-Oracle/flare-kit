@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const CATALOGUE_CASES = M3_SECTIONS.find((section) => section.id === 'fdc-01')!.cases
 
-const CODE = `import { mockCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
-import { AttestationCatalogue } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Families() {
   const { catalogue, loading, stale, refresh } = useAttestationFamilies({

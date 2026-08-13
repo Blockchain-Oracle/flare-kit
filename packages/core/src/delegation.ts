@@ -1,5 +1,5 @@
 // packages/core/src/delegation.ts
-import type { DelegationDeployment } from '@flare-kit/contracts'
+import type { DelegationDeployment } from '@flarekit-dev/contracts'
 import type { OperationStep } from './operation.js'
 import type { DelegationAdapter, DelegationCall, DelegationReads } from './delegation-adapter.js'
 

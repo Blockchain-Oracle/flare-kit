@@ -1,7 +1,7 @@
-# @flare-kit/react-ui
+# @flarekit-dev/react-ui
 
-[![npm](https://img.shields.io/npm/v/@flare-kit/react-ui.svg)](https://www.npmjs.com/package/@flare-kit/react-ui)
-[![license](https://img.shields.io/npm/l/@flare-kit/react-ui.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/@flarekit-dev/react-ui.svg)](https://www.npmjs.com/package/@flarekit-dev/react-ui)
+[![license](https://img.shields.io/npm/l/@flarekit-dev/react-ui.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
 
 Styled, embeddable Flare widgets — mint, redeem, swap, bridge, delegate, claim
 — each carrying its own loading, empty, degraded, error and recovery states.
@@ -11,7 +11,7 @@ Styled, embeddable Flare widgets — mint, redeem, swap, bridge, delegate, claim
 ## Install
 
 ```bash
-npm i @flare-kit/react-ui @flare-kit/react viem
+npm i @flarekit-dev/react-ui @flarekit-dev/react viem
 ```
 
 Requires React 18.3 or 19.
@@ -19,10 +19,10 @@ Requires React 18.3 or 19.
 ## Usage
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
-import { MintFXRP } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { MintFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit()
 

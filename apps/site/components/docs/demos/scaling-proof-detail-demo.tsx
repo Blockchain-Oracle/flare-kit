@@ -14,11 +14,11 @@ import { GalleryDemo } from './gallery-demo'
  */
 const PROOF_CASES = M4_PROOF_SECTIONS.find((section) => section.id === 'ftso-03')!.cases
 
-const CODE = `import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flare-kit/core'
-import type { RoundReader } from '@flare-kit/core'
-import { useAnchorProof } from '@flare-kit/react'
-import { ScalingProofDetail } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flarekit-dev/core'
+import type { RoundReader } from '@flarekit-dev/core'
+import { useAnchorProof } from '@flarekit-dev/react'
+import { ScalingProofDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const FLR_USD = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
 

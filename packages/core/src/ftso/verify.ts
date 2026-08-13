@@ -1,4 +1,4 @@
-import { ftsoRegistryFor, ftsoV2Abi } from '@flare-kit/contracts'
+import { ftsoRegistryFor, ftsoV2Abi } from '@flarekit-dev/contracts'
 import type { RoundReader } from '../voting-round.js'
 import type { AnchorFeedWithProof } from './anchor.js'
 

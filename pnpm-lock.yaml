@@ -44,16 +44,16 @@ importers:
 
   apps/site:
     dependencies:
-      '@flare-kit/contracts':
+      '@flarekit-dev/contracts':
         specifier: workspace:^
         version: link:../../packages/contracts
-      '@flare-kit/core':
+      '@flarekit-dev/core':
         specifier: workspace:^
         version: link:../../packages/core
-      '@flare-kit/react':
+      '@flarekit-dev/react':
         specifier: workspace:^
         version: link:../../packages/react
-      '@flare-kit/react-ui':
+      '@flarekit-dev/react-ui':
         specifier: workspace:^
         version: link:../../packages/react-ui
       fumadocs-core:
@@ -123,7 +123,7 @@ importers:
 
   packages/core:
     dependencies:
-      '@flare-kit/contracts':
+      '@flarekit-dev/contracts':
         specifier: workspace:^
         version: link:../contracts
     devDependencies:
@@ -139,7 +139,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@flare-kit/core':
+      '@flarekit-dev/core':
         specifier: workspace:^
         version: link:../core
       viem:
@@ -170,14 +170,14 @@ importers:
 
   packages/react-ui:
     dependencies:
-      '@flare-kit/core':
+      '@flarekit-dev/core':
         specifier: workspace:^
         version: link:../core
       viem:
         specifier: ^2.21.0
         version: 2.55.10(typescript@5.9.3)(zod@4.4.3)
     devDependencies:
-      '@flare-kit/react':
+      '@flarekit-dev/react':
         specifier: workspace:^
         version: link:../react
       '@testing-library/jest-dom':
@@ -216,10 +216,10 @@ importers:
 
   services/relayer:
     dependencies:
-      '@flare-kit/contracts':
+      '@flarekit-dev/contracts':
         specifier: workspace:^
         version: link:../../packages/contracts
-      '@flare-kit/core':
+      '@flarekit-dev/core':
         specifier: workspace:^
         version: link:../../packages/core
       express:
@@ -241,10 +241,10 @@ importers:
 
   services/x402-server:
     dependencies:
-      '@flare-kit/contracts':
+      '@flarekit-dev/contracts':
         specifier: workspace:^
         version: link:../../packages/contracts
-      '@flare-kit/core':
+      '@flarekit-dev/core':
         specifier: workspace:^
         version: link:../../packages/core
       express:

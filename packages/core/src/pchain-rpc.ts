@@ -5,7 +5,7 @@ import { FlareKitError } from './errors.js'
  * SDK-free P-chain reads over plain JSON-RPC, plus the bech32 P-address helper.
  *
  * No `@flarenetwork/flare-tx-sdk` / `flarejs`: this file ships in
- * `@flare-kit/core`, which stays viem-only. The three reads are `fetch` POSTs to
+ * `@flarekit-dev/core`, which stays viem-only. The three reads are `fetch` POSTs to
  * the P-chain endpoint (`…/ext/bc/P`); the address hash chain uses viem's
  * exported `sha256`/`ripemd160`; bech32 is a small local encoder (below) so no
  * new runtime dependency is added.

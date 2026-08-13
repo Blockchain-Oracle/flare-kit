@@ -2,7 +2,7 @@
 title: OperationTimeline
 description: The operation spine — every step, the actor being waited on, and the evidence gathered, for any operation the kit models.
 breadcrumb: ['Docs', 'Components', 'OperationTimeline']
-importLine: "import { OperationTimeline } from '@flare-kit/react-ui'"
+importLine: "import { OperationTimeline } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/mint-fxrp', label: 'MintFXRP' }
 next: { href: '/docs/components/redeem-fxrp', label: 'RedeemFXRP' }
 ---
@@ -27,8 +27,8 @@ nothing, so the same component serves a mint, a redemption and an attestation
 rather than three spines that drift apart.
 
 ```tsx
-import { OperationTimeline } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Mint({ record }) {
   return <OperationTimeline operation={record} onAction={handleAction} />

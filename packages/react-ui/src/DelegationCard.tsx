@@ -1,5 +1,5 @@
-import { type Amount, type DexToken, amount, formatExact } from '@flare-kit/core'
-import type { DelegationPlanResult, DelegationPositionView } from '@flare-kit/core'
+import { type Amount, type DexToken, amount, formatExact } from '@flarekit-dev/core'
+import type { DelegationPlanResult, DelegationPositionView } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

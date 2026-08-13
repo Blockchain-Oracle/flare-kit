@@ -6,7 +6,7 @@ import {
   UPSHIFT_VAULT_ABI,
   type VaultConfig,
   type VaultProtocol,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 /**
  * The seam that makes M7 "one lifecycle, not one ABI". Firelight (self-share

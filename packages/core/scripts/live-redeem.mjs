@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http, decodeEventLog } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { assetManagerAbi, fassetAbi, chainFor, registryFor } from '@flare-kit/contracts'
+import { assetManagerAbi, fassetAbi, chainFor, registryFor } from '@flarekit-dev/contracts'
 import { createFlareKit, attachRedemptionRequest, formatExact } from '../dist/index.js'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'

@@ -1,5 +1,5 @@
-import type { ClaimIntent, ClaimPlanResult, DexToken, FtsoReward, RewardsClaimPlan, RewardsReads, RnatState, StakingRewardState } from '@flare-kit/core'
-import { applyTransition, createOperation, reconcileClaim } from '@flare-kit/core'
+import type { ClaimIntent, ClaimPlanResult, DexToken, FtsoReward, RewardsClaimPlan, RewardsReads, RnatState, StakingRewardState } from '@flarekit-dev/core'
+import { applyTransition, createOperation, reconcileClaim } from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ClaimCard } from '../src/ClaimCard.js'

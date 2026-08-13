@@ -6,19 +6,19 @@
  */
 const PACKAGES: { name: string; blurb: string }[] = [
   {
-    name: '@flare-kit/core',
+    name: '@flarekit-dev/core',
     blurb: 'The durable operation lifecycle: intent, quote, plan, execution, evidence, recovery. Headless.',
   },
   {
-    name: '@flare-kit/react',
+    name: '@flarekit-dev/react',
     blurb: 'Provider and hooks over the lifecycle. A live kit or the mock, unchanged.',
   },
   {
-    name: '@flare-kit/react-ui',
+    name: '@flarekit-dev/react-ui',
     blurb: 'Styled, embeddable widgets — hand-written CSS on the DESIGN.md tokens.',
   },
   {
-    name: '@flare-kit/contracts',
+    name: '@flarekit-dev/contracts',
     blurb: 'Typed ABIs and the one address registry for Flare networks.',
   },
 ]

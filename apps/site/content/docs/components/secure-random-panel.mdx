@@ -2,7 +2,7 @@
 title: SecureRandomPanel
 description: The protocol's randomness with its security flag as the headline rather than a footnote — and when a secure value was required and the protocol reports an insecure one, no value on screen at all.
 breadcrumb: ['Docs', 'Components', 'SecureRandomPanel']
-importLine: "import { SecureRandomPanel } from '@flare-kit/react-ui'"
+importLine: "import { SecureRandomPanel } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/scaling-proof-detail', label: 'ScalingProofDetail' }
 next: { href: '/docs/components/incentive-composer', label: 'IncentiveComposer' }
 ---
@@ -31,10 +31,10 @@ Read with `useSecureRandom` and pass the observation straight through. The
 policy lives on the read, not on the panel.
 
 ```tsx
-import type { RoundReader } from '@flare-kit/core'
-import { useSecureRandom } from '@flare-kit/react'
-import { SecureRandomPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import type { RoundReader } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Random({ reader }: { reader: RoundReader }) {
   const { data, loading, refresh } = useSecureRandom({
@@ -115,11 +115,11 @@ docs:
 
 The panel reads nothing itself; it renders what a `RoundReader` produced. Moving
 from the mock to a live network swaps the reader, not the screen. Addresses come
-from `@flare-kit/contracts`; network is configuration.
+from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
-import { createMockFtsoReader } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
 import { createPublicClient, http } from 'viem'
 
 // From this…

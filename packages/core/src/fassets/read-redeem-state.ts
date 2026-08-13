@@ -5,7 +5,7 @@ import {
   fassetAbi,
   GET_SETTINGS_SELECTOR,
   registryFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import type { RedeemProtocolState } from './quote-redeem.js'
 import type { RedeemChainState, RedeemStatus } from './redeem-recovery.js'
@@ -16,7 +16,7 @@ import type { ChainStateReader } from './read-chain-state.js'
  *
  * The protocol snapshot needs values that only exist inside `getSettings()`, so
  * it is fetched as raw bytes and decoded by position — see
- * `@flare-kit/contracts/settings-reader`, which validates each value rather
+ * `@flarekit-dev/contracts/settings-reader`, which validates each value rather
  * than trusting the offset.
  */
 

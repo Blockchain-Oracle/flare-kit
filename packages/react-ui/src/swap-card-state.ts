@@ -1,4 +1,4 @@
-import { type Amount, type SwapOperation, type SwapQuote, type SwapQuoteResult, amount } from '@flare-kit/core'
+import { type Amount, type SwapOperation, type SwapQuote, type SwapQuoteResult, amount } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /**

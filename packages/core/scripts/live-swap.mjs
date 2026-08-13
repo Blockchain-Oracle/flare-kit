@@ -19,7 +19,7 @@ import {
   UNIV2_ROUTER_ABI,
   chainFor,
   dexFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import {
   buildSwapPlan,
   formatExact,

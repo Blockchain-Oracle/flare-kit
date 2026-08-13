@@ -20,7 +20,7 @@ import {
   chainFor,
   fastUpdateIncentiveManagerAbi,
   ftsoRegistryFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { confirmIncentiveEffect } from '../dist/index.js'
 
 /**

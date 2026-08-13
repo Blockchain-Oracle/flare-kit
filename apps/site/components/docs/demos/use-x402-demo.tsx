@@ -9,8 +9,8 @@ import {
   mockX402Outcome,
   reconcileTo,
   reconcileX402,
-} from '@flare-kit/core'
-import { useX402 } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { useX402 } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -31,9 +31,9 @@ import { HookReadout } from './hook-readout'
 const NOW = MOCK_EPOCH
 const CHALLENGE = mockX402Challenge(NOW)
 
-const CODE = `import { reconcileX402, type X402Operation } from '@flare-kit/core'
-import { useX402 } from '@flare-kit/react'
-import { X402Card } from '@flare-kit/react-ui'
+const CODE = `import { reconcileX402, type X402Operation } from '@flarekit-dev/core'
+import { useX402 } from '@flarekit-dev/react'
+import { X402Card } from '@flarekit-dev/react-ui'
 import { useCallback } from 'react'
 
 function Paywall({ operation, readSettlement, readResource, challenge }) {

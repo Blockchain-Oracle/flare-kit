@@ -2,7 +2,7 @@
 title: useActivity
 description: The operation registry as a filterable feed, with each operation's ledger payment, attestation round and Flare execution kept as separate identifiers, plus an export that refuses rather than writes a partial file.
 breadcrumb: ['Docs', 'Hooks', 'useActivity']
-importLine: "import { useActivity } from '@flare-kit/react'"
+importLine: "import { useActivity } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-portfolio', label: 'usePortfolio' }
 next: { href: '/docs/hooks/use-observed-read', label: 'useObservedRead' }
 ---
@@ -34,8 +34,8 @@ Mount it under a `FlareProvider`. The feed, the filtered view and the export
 all come from one source.
 
 ```tsx
-import { FlareProvider, useActivity } from '@flare-kit/react'
-import { ActivityTable } from '@flare-kit/react-ui'
+import { FlareProvider, useActivity } from '@flarekit-dev/react'
+import { ActivityTable } from '@flarekit-dev/react-ui'
 
 function History() {
   const { feed, entries, empty, filteredEmpty, exportError, exportJson } =

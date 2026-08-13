@@ -2,7 +2,7 @@
 title: AddLiquidityCard
 description: The supply composer — two legs paired at the live pool ratio, each approval named separately, and a refusal to quote on a venue whose addLiquidity signature has not been verified on chain.
 breadcrumb: ['Docs', 'Components', 'AddLiquidityCard']
-importLine: "import { AddLiquidityCard } from '@flare-kit/react-ui'"
+importLine: "import { AddLiquidityCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/token-selector', label: 'TokenSelector' }
 next: { href: '/docs/components/position-card', label: 'PositionCard' }
 ---
@@ -33,9 +33,9 @@ import {
   quoteAddLiquidity,
   readAllowance,
   startQuoting,
-} from '@flare-kit/core'
-import { AddLiquidityCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+} from '@flarekit-dev/core'
+import { AddLiquidityCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const CHAIN = 114 // Coston2
 
@@ -62,7 +62,7 @@ export async function quoteSupply(reader, owner, now = Date.now()) {
 
 <PropsTable rows={[
   { name: 'operation', type: 'AddLiquidityOperation', required: true, description: 'The add-liquidity record. Its state drives the CTA, the note and whether the spine appears; its quote drives the terms.' },
-  { name: 'tokenA', type: 'DexToken', required: true, description: 'The token whose amount you enter. Symbol, address and decimals, from `@flare-kit/contracts`.' },
+  { name: 'tokenA', type: 'DexToken', required: true, description: 'The token whose amount you enter. Symbol, address and decimals, from `@flarekit-dev/contracts`.' },
   { name: 'tokenB', type: 'DexToken', required: true, description: 'The paired token. Its amount is never entered — it comes from the quote, at the pool ratio.' },
   { name: 'quoteResult', type: 'AddLiquidityQuoteResult', description: 'The raw quote outcome: a quote, `no_pool`, or `unavailable` with its reason. Passing it is what lets the card state why there is nothing to supply instead of showing an empty form.' },
   { name: 'amountAText', type: 'string', description: 'The controlled text of the entry field, when the host owns the input. Left unset, the field shows the quoted amount for tokenA.' },
@@ -126,7 +126,7 @@ docs:
 The card takes a record and a quote result; it never reaches for a network
 itself. Whatever produces them — a mock or a live reader — the component is the
 same, so moving to a live network swaps what feeds it, not the screen. Router,
-factory and token addresses come from `@flare-kit/contracts`; network is
+factory and token addresses come from `@flarekit-dev/contracts`; network is
 configuration.
 
 ```tsx

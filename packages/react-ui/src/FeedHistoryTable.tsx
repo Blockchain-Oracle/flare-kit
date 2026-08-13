@@ -1,5 +1,5 @@
-import type { FeedHistory, HistoryPoint, Observation } from '@flare-kit/core'
-import { amount, formatExact, isObserved, quoteAssetOf } from '@flare-kit/core'
+import type { FeedHistory, HistoryPoint, Observation } from '@flarekit-dev/core'
+import { amount, formatExact, isObserved, quoteAssetOf } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { SourceChip } from './primitives/SourceChip.js'

@@ -1,7 +1,7 @@
-# @flare-kit/contracts
+# @flarekit-dev/contracts
 
-[![npm](https://img.shields.io/npm/v/@flare-kit/contracts.svg)](https://www.npmjs.com/package/@flare-kit/contracts)
-[![license](https://img.shields.io/npm/l/@flare-kit/contracts.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/@flarekit-dev/contracts.svg)](https://www.npmjs.com/package/@flarekit-dev/contracts)
+[![license](https://img.shields.io/npm/l/@flarekit-dev/contracts.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
 
 Typed ABIs and the single address registry for the Flare network. Every address
 flare-kit uses is resolved from here, and from nowhere else.
@@ -11,7 +11,7 @@ flare-kit uses is resolved from here, and from nowhere else.
 ## Install
 
 ```bash
-npm i @flare-kit/contracts
+npm i @flarekit-dev/contracts
 ```
 
 No required dependencies. `viem` is an **optional** peer — install it only if
@@ -20,7 +20,7 @@ you want the ABIs typed as viem `Abi` values.
 ## Usage
 
 ```ts
-import { chainFor, registryFor, fassetFor, explorerTxUrl } from '@flare-kit/contracts'
+import { chainFor, registryFor, fassetFor, explorerTxUrl } from '@flarekit-dev/contracts'
 
 const COSTON2 = 114
 
@@ -77,7 +77,7 @@ It is `true` only where a full round trip has been driven on chain and read
 back — never because the code exists, and never because a simulation passed.
 
 ```ts
-import { STAKING, stakingFor } from '@flare-kit/contracts'
+import { STAKING, stakingFor } from '@flarekit-dev/contracts'
 
 stakingFor(114).stakeVerified // false
 ```
@@ -94,7 +94,7 @@ Today, on Coston2:
 | `rewardsVerified` | `false` | the account has earned no reward yet, so no claim has settled |
 | `withdrawVerified` | `false` | held false deliberately — a safe under-claim |
 
-Consumers are expected to **gate on these**. `@flare-kit/core` refuses to build
+Consumers are expected to **gate on these**. `@flarekit-dev/core` refuses to build
 a signable plan against an unverified capability, so a mainnet call cannot
 silently sign approvals and then revert. A `false` here means "we have not
 proven this," which is not the same as "this is broken."

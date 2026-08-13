@@ -1,8 +1,8 @@
-import type { PendingOperation } from '@flare-kit/core'
+import type { PendingOperation } from '@flarekit-dev/core'
 import { Note } from './primitives/Note.js'
 import { StateChip } from './primitives/StateChip.js'
 import { SourceChip } from './primitives/SourceChip.js'
-import { observe } from '@flare-kit/core'
+import { observe } from '@flarekit-dev/core'
 
 /**
  * SH-10 — the persistent tray of operations still in flight.

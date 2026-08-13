@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const DEPOSIT_CASES = M7_VAULT_SECTIONS.find((section) => section.id === 'm7-deposit')!.cases
 
-const CODE = `import { createDeposit, quoteDeposit, createMockVaultAdapter } from '@flare-kit/core'
-import { DepositCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createDeposit, quoteDeposit, createMockVaultAdapter } from '@flarekit-dev/core'
+import { DepositCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockVaultAdapter('upshift-fxrp')
 

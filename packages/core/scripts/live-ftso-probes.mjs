@@ -9,7 +9,7 @@
  * probe can be run on its own against a different network without the script
  * around it.
  */
-import { FEED_CATEGORY, encodeFeedId, ftsoRegistryFor } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId, ftsoRegistryFor } from '@flarekit-dev/contracts'
 import {
   fetchAnchorFeeds,
   isObserved,

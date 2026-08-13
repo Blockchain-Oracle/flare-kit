@@ -1,13 +1,13 @@
 'use client'
 
-// `@flare-kit/react-ui`'s barrel re-exports `@flare-kit/react`, which calls
+// `@flarekit-dev/react-ui`'s barrel re-exports `@flarekit-dev/react`, which calls
 // createContext at module scope — so any import from the kit's UI package is
 // client-only, even for a presentational component like OperationTimeline. The
 // record below is still built at render time from a seeded mock, which is
 // deterministic, so server and client agree.
 
-import { createMockKit } from '@flare-kit/core'
-import { OperationTimeline } from '@flare-kit/react-ui'
+import { createMockKit } from '@flarekit-dev/core'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
 
 const RECIPIENT = '0xDeaDbeefDeAdbeefdEadbEEFdeadbeEFdEaDbeeF'
 const XRPL_ACCOUNT = 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe'

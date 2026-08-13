@@ -1,5 +1,5 @@
 // packages/react-ui/src/RouteCatalogue.tsx
-import { formatExact } from '@flare-kit/core'
+import { formatExact } from '@flarekit-dev/core'
 import { AssetLogo } from './primitives/AssetLogo.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

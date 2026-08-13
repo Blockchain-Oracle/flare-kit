@@ -2,7 +2,7 @@
 title: The mock kit
 description: createMockKit at the API level — a seeded clock feeding the real state machine, scenarios that are real paths, and mock readers that refuse what the live run never observed.
 breadcrumb: ['Docs', 'Headless', 'The mock kit']
-importLine: "import { createMockKit, type MockKit } from '@flare-kit/core'"
+importLine: "import { createMockKit, type MockKit } from '@flarekit-dev/core'"
 prev: { href: '/docs/headless/storage', label: 'Storage and reconcile' }
 next: { href: '/docs/contracts/networks', label: 'Networks and registries' }
 ---
@@ -23,7 +23,7 @@ A parallel implementation would drift, and every state it showed would be a
 claim about the product rather than a demonstration of it.
 
 ```ts
-import { createMockKit } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
 
 const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
 
@@ -65,7 +65,7 @@ A scenario is a real path the operation can take, expressed as stage timings —
 not a cosmetic flag and not a rendering override.
 
 ```ts
-import { MOCK_SCENARIOS, type MockScenario } from '@flare-kit/core'
+import { MOCK_SCENARIOS, type MockScenario } from '@flarekit-dev/core'
 
 // ['happy', 'large-delayed', 'executor-late', 'proof-slow', 'protocol-unavailable']
 ```
@@ -165,7 +165,7 @@ import {
   mockOperationRecords,
   mockX402Challenge,
   mockX402Outcome,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 ```
 
 Three rules govern all of them.

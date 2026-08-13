@@ -2,7 +2,7 @@
 title: GaslessCard
 description: The gasless FXRP payment composer — you sign an authorization off-chain, an operated relayer submits it and pays the gas, and the payment reads as paid only from the on-chain transfer.
 breadcrumb: ['Docs', 'Components', 'GaslessCard']
-importLine: "import { GaslessCard } from '@flare-kit/react-ui'"
+importLine: "import { GaslessCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/bridge-card', label: 'BridgeCard' }
 next: { href: '/docs/components/x402-card', label: 'X402Card' }
 ---
@@ -30,10 +30,10 @@ through its own wallet, and hands the record back. `useGasless` owns only the
 reconcile poll that re-reads the chain while the payment is in flight.
 
 ```tsx
-import type { GaslessOperation, GaslessPlanResult } from '@flare-kit/core'
-import { useGasless } from '@flare-kit/react'
-import { GaslessCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import type { GaslessOperation, GaslessPlanResult } from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
+import { GaslessCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const FXRP = { symbol: 'FTestXRP', address: '0x0b6A…3dc7', decimals: 6 } as const
 
@@ -141,7 +141,7 @@ docs:
 
 The card takes props; it never reaches for a network itself. What changes between
 mock and live is the adapter behind `buildGaslessPlan` — the forwarder deployment
-and the relayer endpoint come from `@flare-kit/contracts`, so network is
+and the relayer endpoint come from `@flarekit-dev/contracts`, so network is
 configuration and the screen does not change.
 
 ```tsx

@@ -2,7 +2,7 @@
 title: useAccounts
 description: Simultaneous Flare and XRP Ledger identity as React state, each carrying its own connection status and custody class, and a binding that snapshots the accounts an action was made for.
 breadcrumb: ['Docs', 'Hooks', 'useAccounts']
-importLine: "import { useAccounts } from '@flare-kit/react'"
+importLine: "import { useAccounts } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-redeem', label: 'useRedeem' }
 next: { href: '/docs/hooks/use-portfolio', label: 'usePortfolio' }
 ---
@@ -37,9 +37,9 @@ The host connects; the hook stores. Every M1 surface takes an `onConnect`
 callback rather than a connector for the same reason.
 
 ```tsx
-import { walletConnected } from '@flare-kit/core'
-import { useAccounts } from '@flare-kit/react'
-import { AccountSheet } from '@flare-kit/react-ui'
+import { walletConnected } from '@flarekit-dev/core'
+import { useAccounts } from '@flarekit-dev/react'
+import { AccountSheet } from '@flarekit-dev/react-ui'
 
 // The networks this app watches on, one per family.
 const NETWORKS = { evm: coston2, xrpl: xrplTestnet }
@@ -133,7 +133,7 @@ still two people with two wallets.
 ## What it will not do
 
 It will not connect a wallet, and it will not sign. Whether an identity *can*
-sign is answered by `canSign` and `cannotSignReason` in `@flare-kit/core`, not
+sign is answered by `canSign` and `cannotSignReason` in `@flarekit-dev/core`, not
 here — a read-only identity is `ready` and holds no key, and a restored session
 is connected and has not been re-authorized.
 

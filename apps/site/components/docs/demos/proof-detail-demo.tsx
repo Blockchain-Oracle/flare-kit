@@ -13,10 +13,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const PROOF_CASES = M3_PROOF_SECTIONS.find((section) => section.id === 'fdc-04')!.cases
 
-const CODE = `import { mockCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
-import { ProofDetail } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { ProofDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Proof({ proof, verified, account }) {
   const { rows } = useAttestationFamilies({ load: async () => mockCatalogue() })

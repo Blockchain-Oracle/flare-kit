@@ -17,7 +17,7 @@ import {
   walletUnavailable,
   wrongNetwork,
   type PendingOperation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   AccountSheet,
   ActivityTable,
@@ -25,7 +25,7 @@ import {
   PendingTray,
   PortfolioTable,
   SourceDrawer,
-} from '@flare-kit/react-ui'
+} from '@flarekit-dev/react-ui'
 
 /**
  * Every required state of every M2 surface, as data.

@@ -8,8 +8,8 @@ import {
   createMockBridgeAdapter,
   reconcileDelivery,
   reconcileTo,
-} from '@flare-kit/core'
-import { useBridge } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -29,9 +29,9 @@ const NOW = MOCK_EPOCH
 const GUID = '0xd0f1e2c6172a0bec72221e25b95c6c1952c64839073081bf20e2c343c2b22a04'
 const RECIPIENT = '0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9'
 
-const CODE = `import { type BridgeOperation, reconcileDelivery } from '@flare-kit/core'
-import { useBridge } from '@flare-kit/react'
-import { BridgeCard } from '@flare-kit/react-ui'
+const CODE = `import { type BridgeOperation, reconcileDelivery } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
+import { BridgeCard } from '@flarekit-dev/react-ui'
 import { useCallback } from 'react'
 
 function Delivery({ operation, adapter, guid, sinceBlock, route }) {

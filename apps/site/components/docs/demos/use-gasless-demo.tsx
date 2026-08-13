@@ -8,8 +8,8 @@ import {
   createMockGaslessAdapter,
   reconcileGaslessPayment,
   reconcileTo,
-} from '@flare-kit/core'
-import { useGasless } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -31,9 +31,9 @@ const NOW = MOCK_EPOCH
 const PAYER = '0xDddF991858311597bFD3D125cb342a0d4B56ea0a'
 const RECIPIENT = '0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9'
 
-const CODE = `import { type GaslessOperation, reconcileGaslessPayment } from '@flare-kit/core'
-import { useGasless } from '@flare-kit/react'
-import { GaslessCard } from '@flare-kit/react-ui'
+const CODE = `import { type GaslessOperation, reconcileGaslessPayment } from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
+import { GaslessCard } from '@flarekit-dev/react-ui'
 import { useCallback } from 'react'
 
 function Payment({ operation, adapter, payer, recipient, nonce, sinceBlock, token }) {

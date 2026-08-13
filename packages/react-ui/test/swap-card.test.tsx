@@ -10,7 +10,7 @@ import {
   applyTransition,
   createSwap,
   startQuoting,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { SwapCard } from '../src/SwapCard.js'
 
 /**

@@ -3,8 +3,8 @@ import type {
   FeedId,
   FeedReadResult,
   Observation,
-} from '@flare-kit/core'
-import { isObserved } from '@flare-kit/core'
+} from '@flarekit-dev/core'
+import { isObserved } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { FeeNote } from './primitives/FeeNote.js'
 import { Note } from './primitives/Note.js'

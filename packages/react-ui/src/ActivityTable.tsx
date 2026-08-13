@@ -1,5 +1,5 @@
-import type { ActivityEntry, ActivityFeed } from '@flare-kit/core'
-import { chainEventsOf } from '@flare-kit/core'
+import type { ActivityEntry, ActivityFeed } from '@flarekit-dev/core'
+import { chainEventsOf } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { Note } from './primitives/Note.js'

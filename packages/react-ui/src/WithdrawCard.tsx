@@ -1,6 +1,6 @@
 // packages/react-ui/src/WithdrawCard.tsx
 import type { ReactNode } from 'react'
-import { type DexToken, type ExitRoute, type VaultConfig, type VaultPositionResult, type WithdrawOperation, type WithdrawPlanResult, type WithdrawQuoteResult, formatExact } from '@flare-kit/core'
+import { type DexToken, type ExitRoute, type VaultConfig, type VaultPositionResult, type WithdrawOperation, type WithdrawPlanResult, type WithdrawQuoteResult, formatExact } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'

@@ -1,7 +1,7 @@
 // packages/react-ui/test/position-card.test.tsx
 import { describe, expect, it } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { type Position, amount } from '@flare-kit/core'
+import { type Position, amount } from '@flarekit-dev/core'
 import { PositionCard } from '../src/PositionCard.js'
 
 const FXRP = { symbol: 'FXRP', address: '0x0b6A3645c240605887a5532109323A3E12273dc7', decimals: 6 } as const

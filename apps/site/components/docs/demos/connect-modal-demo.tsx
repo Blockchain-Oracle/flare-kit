@@ -12,8 +12,8 @@ import { GalleryDemo } from './gallery-demo'
  */
 const CONNECT_CASES = RECUT_SECTIONS.find((section) => section.id === 'recut-connect')!.cases
 
-const CODE = `import { ConnectModal, type WalletOption } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { ConnectModal, type WalletOption } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 import { useState } from 'react'
 
 // The host discovers these — EIP-6963 for the EVM leg, its own adapter for XRPL.

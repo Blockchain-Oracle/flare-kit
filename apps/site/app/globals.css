@@ -1,7 +1,7 @@
 /* ============================================================
    flare-kit.xyz — page-level sheet.
 
-   The site wears @flare-kit/react-ui's token contract by putting
+   The site wears @flarekit-dev/react-ui's token contract by putting
    `.fk` on <body>, so every --fk-* token, all three self-hosted
    faces and every .fk-* primitive cascade to the whole page.
 

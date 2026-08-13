@@ -15,7 +15,7 @@ library. Product requirements live in `.thoughts/specs/`; decisions in
   page scrolls.
 - `app.flare-kit.xyz` — the application, built on the published packages. An
   object on a surface: fixed panel, scrolls internally. Not a demo.
-- `@flare-kit/*` on npm — the packages themselves.
+- `@flarekit-dev/*` on npm — the packages themselves.
 
 ## Hard rules
 
@@ -40,7 +40,7 @@ Never build a card, badge, pill, chip or spine inline inside a screen.
 implementation. Never keep two versions of the same screen.
 
 **Network is configuration.** Testnet first, mainnet-capable, with no source
-rewrite to switch. Addresses come from `@flare-kit/contracts` and are never
+rewrite to switch. Addresses come from `@flarekit-dev/contracts` and are never
 hardcoded anywhere else.
 
 **Public values are constants, not environment variables.** RPC URLs, chain

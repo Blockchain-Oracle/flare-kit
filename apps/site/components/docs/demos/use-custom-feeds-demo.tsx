@@ -1,14 +1,14 @@
 'use client'
 
-import { FLARE_NETWORKS, OBSERVED_CUSTOM_FEEDS } from '@flare-kit/contracts'
-import { createMockFtsoReader } from '@flare-kit/core'
-import { useCustomFeeds } from '@flare-kit/react'
+import { FLARE_NETWORKS, OBSERVED_CUSTOM_FEEDS } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
+import { useCustomFeeds } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import type { RoundReader } from '@flare-kit/core'
-import { useCustomFeeds } from '@flare-kit/react'
-import { CustomFeedReview } from '@flare-kit/react-ui'
+const CODE = `import type { RoundReader } from '@flarekit-dev/core'
+import { useCustomFeeds } from '@flarekit-dev/react'
+import { CustomFeedReview } from '@flarekit-dev/react-ui'
 
 export function CustomFeeds({ reader }: { reader: RoundReader }) {
   const { data, loading, error } = useCustomFeeds(reader, 14)

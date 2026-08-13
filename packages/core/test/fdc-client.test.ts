@@ -1,4 +1,4 @@
-import { ATTESTATION_TYPES } from '@flare-kit/contracts'
+import { ATTESTATION_TYPES } from '@flarekit-dev/contracts'
 import { describe, expect, it, vi } from 'vitest'
 import { createFdcClient } from '../src/fdc/client.js'
 import { evmTransactionFamily } from '../src/fdc/families/evm-transaction.js'

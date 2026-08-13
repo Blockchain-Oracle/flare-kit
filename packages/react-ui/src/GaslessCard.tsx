@@ -1,4 +1,4 @@
-import { type Amount, type DexToken, type GaslessPlanResult, type OperationRecord } from '@flare-kit/core'
+import { type Amount, type DexToken, type GaslessPlanResult, type OperationRecord } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

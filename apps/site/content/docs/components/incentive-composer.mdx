@@ -2,7 +2,7 @@
 title: IncentiveComposer
 description: The Fast Update incentive composer — the exact offer amount, what it buys, for how long, and who pays, before anything is signed.
 breadcrumb: ['Docs', 'Components', 'IncentiveComposer']
-importLine: "import { IncentiveComposer } from '@flare-kit/react-ui'"
+importLine: "import { IncentiveComposer } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/secure-random-panel', label: 'SecureRandomPanel' }
 next: { href: '/docs/components/incentive-effect-panel', label: 'IncentiveEffectPanel' }
 ---
@@ -33,9 +33,9 @@ the host's own wallet flow, which is why `onSubmit` is a callback and not a
 transaction.
 
 ```tsx
-import { useIncentiveOffer } from '@flare-kit/react'
-import { IncentiveComposer } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { useIncentiveOffer } from '@flarekit-dev/react'
+import { IncentiveComposer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Incentive({ reader, payer, onOffer }) {
   const quote = useIncentiveOffer({
@@ -121,7 +121,7 @@ docs:
 
 The composer takes a quote, not a chain, so going live swaps the reader behind
 it and nothing on this screen changes. The Fast Update incentive manager's
-address is resolved from `@flare-kit/contracts` by chain id; network is
+address is resolved from `@flarekit-dev/contracts` by chain id; network is
 configuration.
 
 ```tsx

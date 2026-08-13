@@ -1,6 +1,6 @@
 // packages/core/src/gasless-adapter.ts
 import { type Address, type Hex, type PublicClient } from 'viem'
-import { type GaslessDeployment, ERC20_ABI, FORWARDER_ABI } from '@flare-kit/contracts'
+import { type GaslessDeployment, ERC20_ABI, FORWARDER_ABI } from '@flarekit-dev/contracts'
 
 /**
  * The `GaslessAdapter` — the reads/writes/relay seam for the gasless FXRP operation

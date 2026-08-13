@@ -2,7 +2,7 @@
 title: ConnectModal
 description: The wallet picker — the wallets your host discovered, grouped under the network each one connects to, with the real network mark and its name.
 breadcrumb: ['Docs', 'Components', 'ConnectModal']
-importLine: "import { ConnectModal } from '@flare-kit/react-ui'"
+importLine: "import { ConnectModal } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/account-sheet', label: 'AccountSheet' }
 next: { href: '/docs/components/network-resolution-sheet', label: 'NetworkResolutionSheet' }
 ---
@@ -27,8 +27,8 @@ Hand it the wallets you found and a network label per family. Selection returns
 the wallet's `id`, which is the value your host maps back to its connector.
 
 ```tsx
-import { ConnectModal, type WalletOption } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { ConnectModal, type WalletOption } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 import { useState } from 'react'
 
 // EIP-6963 for the EVM leg; your own adapter for the XRP Ledger.

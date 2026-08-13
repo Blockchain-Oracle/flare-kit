@@ -9,8 +9,8 @@ import {
   type RnatState,
   MOCK_EPOCH,
   MOCK_REWARDS_OBSERVED,
-} from '@flare-kit/core'
-import { ClaimCard, type RewardsClaimOperation } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { ClaimCard, type RewardsClaimOperation } from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

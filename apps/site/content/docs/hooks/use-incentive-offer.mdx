@@ -2,7 +2,7 @@
 title: useIncentiveOffer
 description: A price for the exact Fast Update incentive you are about to offer, computed from the contract's own rate — a quote and nothing more, because a read hook that could spend is a hook a component could spend from by rendering.
 breadcrumb: ['Docs', 'Hooks', 'useIncentiveOffer']
-importLine: "import { useIncentiveOffer } from '@flare-kit/react'"
+importLine: "import { useIncentiveOffer } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-secure-random', label: 'useSecureRandom' }
 next: { href: '/docs/hooks/use-bridge', label: 'useBridge' }
 ---
@@ -38,8 +38,8 @@ run and rejected one wei below.
 ## Usage
 
 ```tsx
-import { useIncentiveOffer } from '@flare-kit/react'
-import { IncentiveComposer } from '@flare-kit/react-ui'
+import { useIncentiveOffer } from '@flarekit-dev/react'
+import { IncentiveComposer } from '@flarekit-dev/react-ui'
 
 export function Incentive({ reader, payer, onOffer }) {
   const { data, loading, error, refresh } = useIncentiveOffer({
@@ -65,7 +65,7 @@ export function Incentive({ reader, payer, onOffer }) {
 ```
 
 Before anything is signed, dry-run the offer with `verifyOfferAmount` from
-`@flare-kit/core`. The price formula is fitted to four live measurements rather
+`@flarekit-dev/core`. The price formula is fitted to four live measurements rather
 than derived from Solidity this project does not vendor, which makes it exactly
 the kind of number that stays right until a contract upgrade makes it quietly
 wrong. Simulating the real call turns that risk into a caught refusal: the node
@@ -77,7 +77,7 @@ nothing failed.
 
 <PropsTable rows={[
   { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the FastUpdateIncentiveManager: getRange, getExpectedSampleSize, getIncentiveDuration, rangeIncreasePrice, rangeIncreaseLimit and getPrecision, in one batch.' },
-  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The manager address comes from @flare-kit/contracts.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The manager address comes from @flarekit-dev/contracts.' },
   { name: 'rangeIncrease', type: 'bigint', required: true, description: 'The exact widening being priced. The quote is meaningless without it, and a different increase is a different read.' },
   { name: 'rangeLimit', type: 'bigint', required: false, description: 'Defaults to the contract’s own rangeIncreaseLimit. It travels into the offer, so it is quoted rather than assumed.' },
 ]} />
@@ -117,7 +117,7 @@ arithmetic instead of asking to be trusted.
 ## Mock to live
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import { createPublicClient, http } from 'viem'
 
 const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })

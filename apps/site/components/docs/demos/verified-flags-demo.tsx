@@ -11,8 +11,8 @@ import {
   stakingFor,
   vaultsFor,
   x402For,
-} from '@flare-kit/contracts'
-import { DataTable, Panel, ToneChip } from '@flare-kit/react-ui'
+} from '@flarekit-dev/contracts'
+import { DataTable, Panel, ToneChip } from '@flarekit-dev/react-ui'
 import { Preview } from '../preview'
 
 /**
@@ -145,7 +145,7 @@ function ValueChip({ row }: { row: FlagRow }) {
   )
 }
 
-const CODE = `import { stakingFor, vaultsFor } from '@flare-kit/contracts'
+const CODE = `import { stakingFor, vaultsFor } from '@flarekit-dev/contracts'
 
 // Read the flag before you offer the action.
 const staking = stakingFor('coston2')
@@ -170,7 +170,7 @@ export function VerifiedFlagsDemo() {
         title="Verified flags"
         subtitle={
           <>
-            Read from <span className="fk-mono">@flare-kit/contracts</span> on this render — no
+            Read from <span className="fk-mono">@flarekit-dev/contracts</span> on this render — no
             value below is typed into the page.
           </>
         }

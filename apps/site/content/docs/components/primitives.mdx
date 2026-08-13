@@ -2,13 +2,13 @@
 title: Primitives
 description: The shared atoms every composed surface is built from — one chip, one row, one table, one modal — so a host reuses them instead of re-coding a card, badge, pill or spine.
 breadcrumb: ['Docs', 'Components', 'Primitives']
-importLine: "import { StateChip, DetailRow, CodeWindow } from '@flare-kit/react-ui'"
+importLine: "import { StateChip, DetailRow, CodeWindow } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/stake-card', label: 'StakeCard' }
 next: { href: '/docs/hooks/flare-provider', label: 'FlareProvider' }
 ---
 
 One shared component per pattern. Every composed surface on this site is
-assembled from the primitives below, all exported from `@flare-kit/react-ui`. If
+assembled from the primitives below, all exported from `@flarekit-dev/react-ui`. If
 your app needs a card, a badge, a pill, a chip or a timeline spine, reach for one
 of these rather than writing a second one: the moment two copies exist they
 drift, and the one that drifts is always the one carrying an exact value or an
@@ -26,7 +26,7 @@ is the honest "no bundled mark yet"; it never guesses a plausible logo. `size`
 is the diameter in CSS pixels, default `24`.
 
 ```tsx
-import { AssetLogo } from '@flare-kit/react-ui'
+import { AssetLogo } from '@flarekit-dev/react-ui'
 <AssetLogo symbol="FXRP" size={24} />
 ```
 
@@ -38,7 +38,7 @@ words beside it, so `testnet` only draws a secondary ring. `family` is `'evm'`
 or `'xrpl'`; `size` defaults to `20`.
 
 ```tsx
-import { NetworkLogo } from '@flare-kit/react-ui'
+import { NetworkLogo } from '@flarekit-dev/react-ui'
 <NetworkLogo family="evm" testnet />
 ```
 
@@ -54,7 +54,7 @@ value. `Details` is the grouping wrapper and takes an `aria-label` naming what
 the group is.
 
 ```tsx
-import { DetailRow, Details } from '@flare-kit/react-ui'
+import { DetailRow, Details } from '@flarekit-dev/react-ui'
 <Details aria-label="Stake limits">
   <DetailRow label="Minimum stake" value={minimum} />
 </Details>
@@ -71,7 +71,7 @@ nothing rather than showing a blank body; `SkeletonRows` renders a loading
 placeholder that is deliberately not zeroes or dashes.
 
 ```tsx
-import { DataTable, EmptyRow, SkeletonRows } from '@flare-kit/react-ui'
+import { DataTable, EmptyRow, SkeletonRows } from '@flarekit-dev/react-ui'
 <DataTable caption="Your positions" columns={columns}>{rows}</DataTable>
 ```
 
@@ -85,7 +85,7 @@ converts once here rather than at nine call sites. With neither it reads
 like a time is read as one.
 
 ```tsx
-import { Timestamp } from '@flare-kit/react-ui'
+import { Timestamp } from '@flarekit-dev/react-ui'
 <Timestamp seconds={validator.endTime} />
 ```
 
@@ -97,7 +97,7 @@ sits above the frame. Nothing is syntax-highlighted: a highlighter that
 mis-tokenises a hex literal would decorate a value this kit keeps exact.
 
 ```tsx
-import { CodeWindow } from '@flare-kit/react-ui'
+import { CodeWindow } from '@flarekit-dev/react-ui'
 <CodeWindow filename="proof.json" code={json} />
 ```
 
@@ -110,7 +110,7 @@ gallery screenshot is deterministic and the app makes it live by advancing the
 itself `data-reached`, leaving the surface to decide what that means.
 
 ```tsx
-import { Countdown } from '@flare-kit/react-ui'
+import { Countdown } from '@flarekit-dev/react-ui'
 <Countdown targetUnix={unlockAt} now={now} label="Claimable in" />
 ```
 
@@ -126,7 +126,7 @@ carries no glyph unless you pass one, because the seven marks are an outcome
 vocabulary and a label is not an outcome.
 
 ```tsx
-import { StateChip, ToneChip } from '@flare-kit/react-ui'
+import { StateChip, ToneChip } from '@flarekit-dev/react-ui'
 <StateChip state={operation.state} />
 <ToneChip tone="att">Mock kit</ToneChip>
 ```
@@ -142,7 +142,7 @@ outcome is unknown, never failed. `SourceLine` spells out the provider and
 network, for a drawer or a wide row.
 
 ```tsx
-import { SourceChip, SourceLine } from '@flare-kit/react-ui'
+import { SourceChip, SourceLine } from '@flarekit-dev/react-ui'
 <SourceChip observation={balance} now={now} />
 ```
 
@@ -155,7 +155,7 @@ cannot retrieve is not evidence. It composes `ExplorerLink` and `CopyButton`
 beneath.
 
 ```tsx
-import { EvidenceChip } from '@flare-kit/react-ui'
+import { EvidenceChip } from '@flarekit-dev/react-ui'
 <EvidenceChip item={evidence} />
 ```
 
@@ -169,7 +169,7 @@ value a person reads and copies, so this never disables and never errors.
 `'address'` (first six, last four) or `'hash'`.
 
 ```tsx
-import { ExplorerLink } from '@flare-kit/react-ui'
+import { ExplorerLink } from '@flarekit-dev/react-ui'
 <ExplorerLink value={txHash} href={explorerUrl} shorten="hash" />
 ```
 
@@ -182,7 +182,7 @@ never the truncated display form, and `label` names the control. The accessible
 name carries the confirmation, so the tick is not the only signal.
 
 ```tsx
-import { CopyButton } from '@flare-kit/react-ui'
+import { CopyButton } from '@flarekit-dev/react-ui'
 <CopyButton value={address} label="Flare address" />
 ```
 
@@ -196,7 +196,7 @@ announces politely, and `info` gets no live region at all, because explanatory
 copy that happens to sit in a box is not a status change.
 
 ```tsx
-import { Note } from '@flare-kit/react-ui'
+import { Note } from '@flarekit-dev/react-ui'
 <Note tone="att" title="Position unavailable">The last read didn’t land.</Note>
 ```
 
@@ -210,7 +210,7 @@ are different claims. Where two contracts disagree on the fee it shows both and
 says which one guards the call.
 
 ```tsx
-import { FeeNote } from '@flare-kit/react-ui'
+import { FeeNote } from '@flarekit-dev/react-ui'
 <FeeNote quote={quote} />
 ```
 
@@ -223,7 +223,7 @@ timeline and the staking round trip are the same render over different legs.
 `failed`; `ariaLabel` names the progression.
 
 ```tsx
-import { LegTimeline } from '@flare-kit/react-ui'
+import { LegTimeline } from '@flarekit-dev/react-ui'
 <LegTimeline legs={legs} ariaLabel="Staking round trip" />
 ```
 
@@ -238,7 +238,7 @@ native button attribute passes through. `type` defaults to `"button"`, so a
 widget dropped inside a host's form never submits it by accident.
 
 ```tsx
-import { Button } from '@flare-kit/react-ui'
+import { Button } from '@flarekit-dev/react-ui'
 <Button variant="primary" block disabled={cta.disabled}>{cta.label}</Button>
 ```
 
@@ -251,7 +251,7 @@ chip. It forwards any `data-*` attribute to the root, so a state that exists as
 a paragraph is also something a host can style and a test can target.
 
 ```tsx
-import { Panel } from '@flare-kit/react-ui'
+import { Panel } from '@flarekit-dev/react-ui'
 <Panel title="Stake" aside={<StateChip state={state} />} data-stake-state={key}>
   {children}
 </Panel>
@@ -266,7 +266,7 @@ Escape and on a backdrop click. Takes `open`, `title`, an `ariaLabel` for the
 accessible name, `onClose`, and an optional pinned `footer`.
 
 ```tsx
-import { Modal } from '@flare-kit/react-ui'
+import { Modal } from '@flarekit-dev/react-ui'
 <Modal open={open} title="Connect" ariaLabel="Connect a wallet" onClose={close}>
   {children}
 </Modal>
@@ -282,7 +282,7 @@ screen and tied to the tab for assistive tech. `value`, `onChange` and a `label`
 naming the group complete it.
 
 ```tsx
-import { SegmentedTabs } from '@flare-kit/react-ui'
+import { SegmentedTabs } from '@flarekit-dev/react-ui'
 <SegmentedTabs tabs={tabs} value={mode} onChange={setMode} label="Order type" />
 ```
 
@@ -295,6 +295,6 @@ target meets the 24-pixel minimum the package holds everywhere else. `value` is
 the current percent; `onChange` receives the new one.
 
 ```tsx
-import { PercentPills } from '@flare-kit/react-ui'
+import { PercentPills } from '@flarekit-dev/react-ui'
 <PercentPills value={percent} onChange={setPercent} />
 ```

@@ -1,7 +1,7 @@
-# @flare-kit/core
+# @flarekit-dev/core
 
-[![npm](https://img.shields.io/npm/v/@flare-kit/core.svg)](https://www.npmjs.com/package/@flare-kit/core)
-[![license](https://img.shields.io/npm/l/@flare-kit/core.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/@flarekit-dev/core.svg)](https://www.npmjs.com/package/@flarekit-dev/core)
+[![license](https://img.shields.io/npm/l/@flarekit-dev/core.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
 
 The durable operation lifecycle for Flare: intent, quote, unsigned plan,
 execution, evidence and recovery. Headless — no React, no DOM.
@@ -11,7 +11,7 @@ execution, evidence and recovery. Headless — no React, no DOM.
 ## Install
 
 ```bash
-npm i @flare-kit/core viem
+npm i @flarekit-dev/core viem
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ This example runs with no wallet, no key and no network. `createMockKit`
 reproduces the real state machine, including its waits.
 
 ```ts
-import { createMockKit } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
 
 const kit = createMockKit()
 kit.isMock // true — mock surfaces are always labelled, never a silent fallback
@@ -69,8 +69,8 @@ The live kit satisfies the same contract, so nothing downstream branches on it:
 
 ```ts
 import { createPublicClient, http } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
-import { createFlareKit } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { createFlareKit } from '@flarekit-dev/core'
 
 const chainId = 114 // Coston2
 const kit = await createFlareKit({

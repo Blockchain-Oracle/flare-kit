@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PublicClient } from 'viem'
-import { type VaultConfig, vaultByKey } from '@flare-kit/contracts'
+import { type VaultConfig, vaultByKey } from '@flarekit-dev/contracts'
 import { applyTransition } from '../src/operation.js'
 import { makeVaultAdapter } from '../src/vault-adapter.js'
 import {

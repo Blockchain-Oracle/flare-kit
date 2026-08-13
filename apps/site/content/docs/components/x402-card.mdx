@@ -2,7 +2,7 @@
 title: X402Card
 description: The x402 payment card — review the HTTP 402 challenge, sign an EIP-3009 authorization, and read the on-chain settlement and the delivered resource as two separate facts.
 breadcrumb: ['Docs', 'Components', 'X402Card']
-importLine: "import { X402Card } from '@flare-kit/react-ui'"
+importLine: "import { X402Card } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/gasless-card', label: 'GaslessCard' }
 next: { href: '/docs/components/delegation-card', label: 'DelegationCard' }
 ---
@@ -31,10 +31,10 @@ signs the authorization through its own wallet, and hands the record back.
 payment is in flight.
 
 ```tsx
-import type { X402Challenge, X402Operation } from '@flare-kit/core'
-import { useX402 } from '@flare-kit/react'
-import { X402Card } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import type { X402Challenge, X402Operation } from '@flarekit-dev/core'
+import { useX402 } from '@flarekit-dev/react'
+import { X402Card } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Paywall({ op, challenge, reconcile }: {
   op: X402Operation
@@ -128,7 +128,7 @@ docs:
 The card takes props; it never reaches for a network itself. What changes between
 mock and live is where the challenge comes from — the mock challenge copies an
 observed live run, and the live one is parsed out of a real 402 response. The
-payee, token and facilitator addresses come from `@flare-kit/contracts`, so
+payee, token and facilitator addresses come from `@flarekit-dev/contracts`, so
 network is configuration.
 
 ```tsx

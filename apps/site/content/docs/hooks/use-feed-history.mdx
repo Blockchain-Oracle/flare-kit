@@ -2,7 +2,7 @@
 title: useFeedHistory
 description: Anchor-feed history across a range of voting rounds, where every round in the range comes back as its own point — including the ones that answered nothing.
 breadcrumb: ['Docs', 'Hooks', 'useFeedHistory']
-importLine: "import { useFeedHistory } from '@flare-kit/react'"
+importLine: "import { useFeedHistory } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-feeds', label: 'useFeeds' }
 next: { href: '/docs/hooks/use-custom-feeds', label: 'useCustomFeeds' }
 ---
@@ -43,9 +43,9 @@ gallery's recorded Coston2 measurement.
 ## Usage
 
 ```tsx
-import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/core'
-import { useFeedHistory } from '@flare-kit/react'
-import { FeedHistoryTable } from '@flare-kit/react-ui'
+import { FEED_CATEGORY, encodeFeedId } from '@flarekit-dev/core'
+import { useFeedHistory } from '@flarekit-dev/react'
+import { FeedHistoryTable } from '@flarekit-dev/react-ui'
 
 const FEED_ID = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
 
@@ -78,7 +78,7 @@ are asking the host for, not a window to widen for free.
 
 <PropsTable rows={[
   { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the chain, not the host. It is asked one thing: what root the Relay published for a round whose leaf did not come back.' },
-  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. It selects both the Relay address and the data-availability host, from @flare-kit/contracts.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. It selects both the Relay address and the data-availability host, from @flarekit-dev/contracts.' },
   { name: 'feedId', type: 'FeedId', required: true, description: 'One feed. History is per feed because a leaf is per feed.' },
   { name: 'fromRound', type: 'bigint', required: true, description: 'Inclusive lower bound of the range.' },
   { name: 'toRound', type: 'bigint', required: true, description: 'Inclusive upper bound. The walk starts here and counts down.' },
@@ -129,10 +129,10 @@ claim out of a blip.
 
 `reader` swaps the way every other FTSO hook's does. The data-availability host
 does not: it is reached with the real `fetch`, at the URL
-`@flare-kit/contracts` holds for that network.
+`@flarekit-dev/contracts` holds for that network.
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import { createPublicClient, http } from 'viem'
 
 const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })

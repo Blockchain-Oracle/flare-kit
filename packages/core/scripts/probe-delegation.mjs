@@ -1,7 +1,7 @@
 // packages/core/scripts/probe-delegation.mjs
 // M10 Task 1 — read-only probe (no product code, no signing, no chain writes).
 // Confirms the substrate for the M10 delegation + claims milestone BEFORE any
-// @flare-kit/contracts registry entry exists. M10 uses the EXISTING Coston2 Flare
+// @flarekit-dev/contracts registry entry exists. M10 uses the EXISTING Coston2 Flare
 // contracts (no deploy), so this run:
 //   1) resolves the live addresses from FlareContractRegistry.getAllContracts()
 //      and ASSERTS the core ones (WNat / RewardManager / RNat /
@@ -22,10 +22,10 @@
 //   node packages/core/scripts/probe-delegation.mjs
 //
 // Addresses inlined on purpose: this is the run that verifies them before Task 2
-// makes them the @flare-kit/contracts registry's source of truth.
+// makes them the @flarekit-dev/contracts registry's source of truth.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http, getAddress } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-12-m10-probe.json`

@@ -1,10 +1,10 @@
 'use client'
 
-import { CopyButton } from '@flare-kit/react-ui'
+import { CopyButton } from '@flarekit-dev/react-ui'
 import { isValidElement, type ReactNode } from 'react'
 import { highlight, normalizeLang, type Lang } from '../../lib/highlight'
 
-// Importing from `@flare-kit/react-ui` makes this client-only (the barrel calls
+// Importing from `@flarekit-dev/react-ui` makes this client-only (the barrel calls
 // createContext at module scope), same as InstallLine and LiveOperation. The
 // tokenizer is cheap and runs during SSR, so the highlighted markup is still in
 // the first paint.

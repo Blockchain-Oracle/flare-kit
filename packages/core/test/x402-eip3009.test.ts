@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createWalletClient, http, hashDomain, getTypesForEIP712Domain, type Address, type Hex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { x402For } from '@flare-kit/contracts'
+import { x402For } from '@flarekit-dev/contracts'
 import { EIP3009_TRANSFER_TYPES, eip3009Domain, signAuthorization, recoverAuthorizationSigner } from '../src/x402-eip3009.js'
 
 const TOKEN = x402For('coston2')!.token.address

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PublicClient } from 'viem'
-import { vaultByKey } from '@flare-kit/contracts'
+import { vaultByKey } from '@flarekit-dev/contracts'
 import { type PendingWithdrawal, firelightClaimRef, makeVaultAdapter, withdrawalPhase } from '../src/vault-adapter.js'
 
 const OWNER = '0x00000000000000000000000000000000000000A1'

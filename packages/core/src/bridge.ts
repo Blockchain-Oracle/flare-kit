@@ -1,6 +1,6 @@
 // packages/core/src/bridge.ts
 import { type Address, type Hex, encodeAbiParameters, zeroAddress } from 'viem'
-import { REDEEM_COMPOSE_MESSAGE, type RouteKind } from '@flare-kit/contracts'
+import { REDEEM_COMPOSE_MESSAGE, type RouteKind } from '@flarekit-dev/contracts'
 import {
   type OperationRecord,
   type OperationStep,

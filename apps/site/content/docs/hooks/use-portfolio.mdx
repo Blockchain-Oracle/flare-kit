@@ -2,7 +2,7 @@
 title: usePortfolio
 description: The portfolio as React state — undefined until a read lands, never an object full of zeroes, and a refresh that never clears what is already on screen.
 breadcrumb: ['Docs', 'Hooks', 'usePortfolio']
-importLine: "import { usePortfolio } from '@flare-kit/react'"
+importLine: "import { usePortfolio } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-accounts', label: 'useAccounts' }
 next: { href: '/docs/hooks/use-activity', label: 'useActivity' }
 ---
@@ -26,8 +26,8 @@ Mount it under a `FlareProvider` and hand it a reader. The host decides which
 reader — the live one or the mock's — and the hook never branches on it.
 
 ```tsx
-import { FlareProvider, usePortfolio } from '@flare-kit/react'
-import { PortfolioTable } from '@flare-kit/react-ui'
+import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
+import { PortfolioTable } from '@flarekit-dev/react-ui'
 
 function Balances() {
   const { portfolio, loading, stale, error } = usePortfolio({

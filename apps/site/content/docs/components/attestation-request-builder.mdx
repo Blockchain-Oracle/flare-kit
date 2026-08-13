@@ -2,7 +2,7 @@
 title: AttestationRequestBuilder
 description: Everything a person agrees to before an attestation request is submitted — the canonicalised bytes, their hash, the fee read for those exact bytes, the round, the wait and the bound proof owner.
 breadcrumb: ['Docs', 'Components', 'AttestationRequestBuilder']
-importLine: "import { AttestationRequestBuilder } from '@flare-kit/react-ui'"
+importLine: "import { AttestationRequestBuilder } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/attestation-catalogue', label: 'AttestationCatalogue' }
 next: { href: '/docs/components/attestation-timeline', label: 'AttestationTimeline' }
 ---
@@ -27,9 +27,9 @@ reads the fee for those exact bytes, then hands both over — the component
 neither fetches nor signs.
 
 ```tsx
-import { createFdcClient, getRequestFee, xrpPaymentFamily } from '@flare-kit/core'
-import { AttestationRequestBuilder } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createFdcClient, getRequestFee, xrpPaymentFamily } from '@flarekit-dev/core'
+import { AttestationRequestBuilder } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 // The verifier canonicalises the body; the chain prices those exact bytes.
 const client = createFdcClient({ services, family: xrpPaymentFamily, source })
@@ -115,7 +115,7 @@ docs:
 
 The panel reads nothing itself, so nothing about it changes between networks.
 What changes is where `createFdcClient` and `getRequestFee` point, and both take
-their hosts and addresses from `@flare-kit/contracts`.
+their hosts and addresses from `@flarekit-dev/contracts`.
 
 ```tsx
 // Mock: the prepared request and the fee are values you hold.

@@ -2,7 +2,7 @@
 title: Storage and reconcile
 description: How an operation record persists — versioned, bigint-safe, secret-refusing — and how reconciliation walks it back into agreement with the chain when the app opens.
 breadcrumb: ['Docs', 'Headless', 'Storage and reconcile']
-importLine: "import { createMemoryStore, reconcileTo } from '@flare-kit/core'"
+importLine: "import { createMemoryStore, reconcileTo } from '@flarekit-dev/core'"
 prev: { href: '/docs/headless/adapters', label: 'Adapters' }
 next: { href: '/docs/headless/mock', label: 'The mock kit' }
 ---
@@ -16,7 +16,7 @@ Neither half needs a Resume button.
 Durable storage is pluggable and versioned. The interface is four methods:
 
 ```ts
-import type { OperationStore, ListFilter } from '@flare-kit/core'
+import type { OperationStore, ListFilter } from '@flarekit-dev/core'
 
 interface OperationStore {
   get(id: string): Promise<OperationRecord | undefined>
@@ -42,7 +42,7 @@ make it fit is not an option — that is precision loss on somebody's money.
 `encodeRecord` tags them instead, and `decodeRecord` reads the tag back:
 
 ```ts
-import { encodeRecord, decodeRecord } from '@flare-kit/core'
+import { encodeRecord, decodeRecord } from '@flarekit-dev/core'
 
 const text = encodeRecord(record) // bigints become { "$bigint": "…" }
 const restored = decodeRecord(text) // and come back as bigints
@@ -62,7 +62,7 @@ is how a paid mint gets re-paid.
 before writing anything, and throws `SECRET_IN_PERSISTED_RECORD` on a match.
 
 ```ts
-import { assertNoSecrets } from '@flare-kit/core'
+import { assertNoSecrets } from '@flarekit-dev/core'
 
 // Exported so every export path — a durable store, an activity export,
 // a support bundle — runs the same check rather than growing its own.
@@ -117,7 +117,7 @@ strand every step and awaiting update it carried.
 every capability:
 
 ```ts
-import { reconcileTo, waitSince, advance } from '@flare-kit/core'
+import { reconcileTo, waitSince, advance } from '@flarekit-dev/core'
 
 // Walk the legal table breadth-first, applying the patch at every hop —
 // including a same-state hop, which is what makes a repeat reconcile idempotent.

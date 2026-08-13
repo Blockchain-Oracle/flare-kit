@@ -2,7 +2,7 @@
 title: VaultCatalogue
 description: One row per configured vault — share model, live exchange rate, live fees and exit routes — with an unreadable value rendered unavailable rather than as a zero.
 breadcrumb: ['Docs', 'Components', 'VaultCatalogue']
-importLine: "import { VaultCatalogue } from '@flare-kit/react-ui'"
+importLine: "import { VaultCatalogue } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/pool-catalogue', label: 'PoolCatalogue' }
 next: { href: '/docs/components/deposit-card', label: 'DepositCard' }
 ---
@@ -28,9 +28,9 @@ is a row that says so — you do not have to hold the list back until every read
 lands.
 
 ```tsx
-import { vaultsFor } from '@flare-kit/core'
-import { VaultCatalogue } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { vaultsFor } from '@flarekit-dev/core'
+import { VaultCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Vaults({ reads, now }) {
   const rows = vaultsFor('coston2').map((config) => ({
@@ -47,7 +47,7 @@ export function Vaults({ reads, now }) {
 <PropsTable rows={[
   { name: 'rows', type: 'readonly VaultRow[]', required: true, description: 'One row per vault: its `VaultConfig`, the live `reads` when they were fetched, and the `provenance` observation behind them. Omit `reads` and the row renders unavailable rather than empty.' },
   { name: 'now', type: 'number', required: true, description: 'The host clock in unix seconds, for the provenance chip ages. A prop, never `Date.now()` inside the component, so a render is reproducible.' },
-  { name: 'networkLabel', type: 'string', description: 'The network named in the panel subtitle — `Coston2`, `Flare`. Vault addresses come from `@flare-kit/contracts`; this only labels them.' },
+  { name: 'networkLabel', type: 'string', description: 'The network named in the panel subtitle — `Coston2`, `Flare`. Vault addresses come from `@flarekit-dev/contracts`; this only labels them.' },
   { name: 'mockLabel', type: 'string', description: 'Names the mock driving the rows, which renders an explicit Mock note. Set it only when the data really is mock; it is never a fallback.' },
   { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
   { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the catalogue.' },
@@ -85,7 +85,7 @@ docs:
 
 The catalogue is prop-driven, so moving from the mock to a live network changes
 where the rows' reads come from, not the screen. Vault addresses come from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

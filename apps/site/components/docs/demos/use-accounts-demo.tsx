@@ -1,8 +1,8 @@
 'use client'
 
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { MOCK_EPOCH, parseReadOnlyIdentity, restoredSession } from '@flare-kit/core'
-import { useAccounts } from '@flare-kit/react'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { MOCK_EPOCH, parseReadOnlyIdentity, restoredSession } from '@flarekit-dev/core'
+import { useAccounts } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
@@ -27,7 +27,7 @@ const INITIAL_ACCOUNTS = {
   xrpl: restoredSession('xrpl', 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe', XRPL_TESTNET, MOCK_EPOCH),
 }
 
-const CODE = `import { useAccounts } from '@flare-kit/react'
+const CODE = `import { useAccounts } from '@flarekit-dev/react'
 
 function MintButton({ onQuote }) {
   const { evm, xrpl, bothReady, bind } = useAccounts()

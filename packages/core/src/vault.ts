@@ -1,5 +1,5 @@
 // packages/core/src/vault.ts
-import type { Address } from '@flare-kit/contracts'
+import type { Address } from '@flarekit-dev/contracts'
 import {
   type OperationRecord,
   type OperationStep,

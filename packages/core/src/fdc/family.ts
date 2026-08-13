@@ -1,4 +1,4 @@
-import type { AttestationFamilyRow } from '@flare-kit/contracts'
+import type { AttestationFamilyRow } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 
 /**
@@ -18,7 +18,7 @@ import { FlareKitError } from '../errors.js'
 export interface AttestationFamily<TInput, TRequest, TResponse> {
   /** The attestation type name, which is also the verifier path segment. */
   readonly name: string
-  /** The row from `@flare-kit/contracts` this family is an implementation of. */
+  /** The row from `@flarekit-dev/contracts` this family is an implementation of. */
   readonly row: AttestationFamilyRow
 
   /**

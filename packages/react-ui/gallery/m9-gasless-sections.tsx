@@ -5,8 +5,8 @@ import {
   type OperationStep,
   MOCK_EPOCH,
   amount,
-} from '@flare-kit/core'
-import { GaslessCard } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { GaslessCard } from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

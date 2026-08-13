@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react'
 import {
   type AddLiquidityOperation, type AddLiquidityQuote,
   amount, applyAddQuote, createAddLiquidity, startQuoting,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AddLiquidityCard } from '../src/AddLiquidityCard.js'
 
 const COSTON2 = 114

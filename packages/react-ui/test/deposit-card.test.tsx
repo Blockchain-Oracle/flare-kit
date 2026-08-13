@@ -5,7 +5,7 @@ import {
   type DepositOperation, type DepositPlanResult, type DepositQuoteResult,
   applyDepositQuote, buildDepositPlan, createDeposit, createMockVaultAdapter,
   quoteDeposit, startQuoting, vaultByKey,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { DepositCard } from '../src/DepositCard.js'
 
 const OWNER = '0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9' as const

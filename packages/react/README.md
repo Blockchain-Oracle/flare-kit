@@ -1,7 +1,7 @@
-# @flare-kit/react
+# @flarekit-dev/react
 
-[![npm](https://img.shields.io/npm/v/@flare-kit/react.svg)](https://www.npmjs.com/package/@flare-kit/react)
-[![license](https://img.shields.io/npm/l/@flare-kit/react.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/@flarekit-dev/react.svg)](https://www.npmjs.com/package/@flarekit-dev/react)
+[![license](https://img.shields.io/npm/l/@flarekit-dev/react.svg)](https://github.com/Blockchain-Oracle/flare-kit/blob/main/LICENSE)
 
 React provider and hooks over the Flare operation lifecycle. Works against a
 live kit or the mock, unchanged.
@@ -11,7 +11,7 @@ live kit or the mock, unchanged.
 ## Install
 
 ```bash
-npm i @flare-kit/react @flare-kit/core viem
+npm i @flarekit-dev/react @flarekit-dev/core viem
 ```
 
 Requires React 18.3 or 19.
@@ -19,8 +19,8 @@ Requires React 18.3 or 19.
 ## Usage
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, useDirectMint } from '@flare-kit/react'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, useDirectMint } from '@flarekit-dev/react'
 
 const kit = createMockKit() // swap for createFlareKit() to go live
 

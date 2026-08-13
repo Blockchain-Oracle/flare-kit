@@ -1,4 +1,4 @@
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import type { EvidenceItem } from './evidence.js'
 import { linkEvidence } from './links.js'
 import type { ObservationSource } from './observation.js'

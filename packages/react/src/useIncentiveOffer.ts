@@ -1,4 +1,4 @@
-import { type IncentiveQuote, type RoundReader, quoteIncentive } from '@flare-kit/core'
+import { type IncentiveQuote, type RoundReader, quoteIncentive } from '@flarekit-dev/core'
 import { type ObservedRead, useObservedRead } from './use-observed-read.js'
 
 /**

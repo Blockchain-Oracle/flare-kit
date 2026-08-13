@@ -2,7 +2,7 @@
 title: ScalingProofDetail
 description: One scaling-feed proof, with the two questions kept apart — did the proof arrive, and does the chain accept it — and a verdict that stays three-valued.
 breadcrumb: ['Docs', 'Components', 'ScalingProofDetail']
-importLine: "import { ScalingProofDetail } from '@flare-kit/react-ui'"
+importLine: "import { ScalingProofDetail } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/feed-history-table', label: 'FeedHistoryTable' }
 next: { href: '/docs/components/secure-random-panel', label: 'SecureRandomPanel' }
 ---
@@ -27,11 +27,11 @@ Retrieve with `useAnchorProof`, which fetches the leaves and verifies each one,
 then hand the panel the feed, its provenance and the verification.
 
 ```tsx
-import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flare-kit/core'
-import type { RoundReader } from '@flare-kit/core'
-import { useAnchorProof } from '@flare-kit/react'
-import { ScalingProofDetail } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flarekit-dev/core'
+import type { RoundReader } from '@flarekit-dev/core'
+import { useAnchorProof } from '@flarekit-dev/react'
+import { ScalingProofDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const FLR_USD = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
 
@@ -126,11 +126,11 @@ docs:
 
 The panel reads nothing itself; it renders what a `RoundReader` produced. Moving
 from the mock to a live network swaps the reader, not the screen. Addresses come
-from `@flare-kit/contracts`; network is configuration.
+from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
-import { createMockFtsoReader } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
 import { createPublicClient, http } from 'viem'
 
 // From this…

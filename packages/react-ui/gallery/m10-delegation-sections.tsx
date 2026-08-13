@@ -9,8 +9,8 @@ import {
   MOCK_EPOCH,
   amount,
   delegationPosition,
-} from '@flare-kit/core'
-import { DelegationCard, type DelegationOperation } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { DelegationCard, type DelegationOperation } from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

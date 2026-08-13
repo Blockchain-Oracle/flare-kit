@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dexFor } from '@flare-kit/contracts'
+import { dexFor } from '@flarekit-dev/contracts'
 import { amount } from '../src/amounts.js'
 import { applyQuote, buildSwapPlan, createSwap, startQuoting, type SwapIntent } from '../src/swap.js'
 import type { SwapQuote, SwapQuoteResult } from '../src/swap-quote.js'

@@ -2,7 +2,7 @@
 title: NetworkResolutionSheet
 description: The drift repair surface — what an action was approved for against what is connected now, what the mismatch invalidated, and the one action that moves forward.
 breadcrumb: ['Docs', 'Components', 'NetworkResolutionSheet']
-importLine: "import { NetworkResolutionSheet } from '@flare-kit/react-ui'"
+importLine: "import { NetworkResolutionSheet } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/connect-modal', label: 'ConnectModal' }
 next: { href: '/docs/components/portfolio-table', label: 'PortfolioTable' }
 ---
@@ -29,9 +29,9 @@ them against what is connected now. Hand the sheet that binding and the current
 context; it derives the mismatches itself.
 
 ```tsx
-import { useAccounts, useActionBinding } from '@flare-kit/react'
-import { NetworkResolutionSheet } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { useAccounts, useActionBinding } from '@flarekit-dev/react'
+import { NetworkResolutionSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Resolve() {
   const { context } = useAccounts()

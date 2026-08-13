@@ -1,14 +1,14 @@
 'use client'
 
-import { mockCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
+import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { mockCatalogue } from '@flare-kit/core'
-import { useAttestationFamilies } from '@flare-kit/react'
-import { AttestationCatalogue } from '@flare-kit/react-ui'
+const CODE = `import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
 
 function Families() {
   const { catalogue, loading, stale, refresh } = useAttestationFamilies({

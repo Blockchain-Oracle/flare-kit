@@ -6,7 +6,7 @@ import {
   fdcVerificationAbi,
   prepareRequestUrl,
   proofByRequestRoundUrl,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { keccak256 } from 'viem'
 import { FlareKitError } from '../errors.js'
 import { parseJsonWithBigInts } from '../json.js'

@@ -1,5 +1,5 @@
 {
-  "name": "@flare-kit/react-ui",
+  "name": "@flarekit-dev/react-ui",
   "version": "0.1.0",
   "description": "Styled, embeddable Flare widgets: MintFXRP, OperationTimeline, ConnectButton. Hand-written CSS on the DESIGN.md tokens.",
   "keywords": [
@@ -62,15 +62,15 @@
     "gallery": "vite --config gallery/vite.config.ts"
   },
   "dependencies": {
-    "@flare-kit/core": "workspace:^"
+    "@flarekit-dev/core": "workspace:^"
   },
   "peerDependencies": {
-    "@flare-kit/react": "workspace:^",
+    "@flarekit-dev/react": "workspace:^",
     "react": "^18.3.0 || ^19.0.0",
     "viem": "^2.21.0"
   },
   "devDependencies": {
-    "@flare-kit/react": "workspace:^",
+    "@flarekit-dev/react": "workspace:^",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

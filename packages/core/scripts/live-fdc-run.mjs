@@ -24,7 +24,7 @@ import {
   fdcHubAbi,
   registryFor,
   sourceFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import {
   createFdcClient,
   evmTransactionFamily,

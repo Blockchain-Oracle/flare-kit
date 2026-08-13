@@ -7,7 +7,7 @@ import {
   createAttestationOperation,
   mockCatalogue,
   reconcileAttestation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 
 /**
  * The shared shape signature for the surface tests — FDC's and, since M4,

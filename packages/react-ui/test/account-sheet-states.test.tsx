@@ -12,7 +12,7 @@ import {
   walletConnected,
   walletUnavailable,
   wrongNetwork,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AccountSheet } from '../src/AccountSheet.js'
 
 // SH-02's ten required states: disconnected, connecting, rejected, unavailable

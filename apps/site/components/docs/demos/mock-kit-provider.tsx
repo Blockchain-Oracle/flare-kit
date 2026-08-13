@@ -1,7 +1,7 @@
 'use client'
 
-import { type AccountContext, createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
+import { type AccountContext, createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
 import { type ReactNode, useMemo } from 'react'
 
 /**

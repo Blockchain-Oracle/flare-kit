@@ -1,5 +1,5 @@
-import type { AnchorFeedWithProof, Observation, VerificationResult } from '@flare-kit/core'
-import { amount, evidence, formatExact, isObserved, quoteAssetOf } from '@flare-kit/core'
+import type { AnchorFeedWithProof, Observation, VerificationResult } from '@flarekit-dev/core'
+import { amount, evidence, formatExact, isObserved, quoteAssetOf } from '@flarekit-dev/core'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { Note } from './primitives/Note.js'

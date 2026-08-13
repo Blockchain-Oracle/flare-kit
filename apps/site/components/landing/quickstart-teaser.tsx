@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { CodeBlock } from '../docs/code-block'
 import { InstallTabs } from '../docs/install-tabs'
 
-const MOCK_SNIPPET = `import { createMockKit } from '@flare-kit/core'
+const MOCK_SNIPPET = `import { createMockKit } from '@flarekit-dev/core'
 
 // A real, seeded state machine — no wallet, no chain, no funds.
 const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
@@ -35,7 +35,7 @@ export function QuickstartTeaser() {
           </Link>
         </div>
         <div className="qs-code">
-          <InstallTabs packages="@flare-kit/core @flare-kit/react @flare-kit/react-ui" />
+          <InstallTabs packages="@flarekit-dev/core @flarekit-dev/react @flarekit-dev/react-ui" />
           <CodeBlock code={MOCK_SNIPPET} language="ts" title="mock.ts" />
         </div>
       </div>

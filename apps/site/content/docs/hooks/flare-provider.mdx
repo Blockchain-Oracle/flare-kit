@@ -2,7 +2,7 @@
 title: FlareProvider
 description: The one piece of wiring every hook needs — a kit, an operation registry, the session's accounts and the single reconciliation clock, handed down through context.
 breadcrumb: ['Docs', 'Hooks', 'FlareProvider']
-importLine: "import { FlareProvider } from '@flare-kit/react'"
+importLine: "import { FlareProvider } from '@flarekit-dev/react'"
 prev: { href: '/docs/components/primitives', label: 'Primitives' }
 next: { href: '/docs/hooks/use-direct-mint', label: 'useDirectMint' }
 ---
@@ -33,9 +33,9 @@ telling you to wrap the app — and to pass `createMockKit()` to run without a
 wallet or network — rather than returning `undefined` for a caller to trip over.
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'demo' })
 
@@ -93,7 +93,7 @@ The provider is the seam. Nothing below it changes:
 <FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
 ```
 
-Network is configuration. Addresses come from `@flare-kit/contracts` and are
+Network is configuration. Addresses come from `@flarekit-dev/contracts` and are
 never hardcoded anywhere else.
 
 ## What it will not do

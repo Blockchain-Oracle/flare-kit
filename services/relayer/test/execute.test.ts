@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createWalletClient, http, type Address, type Hex, type PublicClient, type WalletClient } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { signPaymentRequest } from '@flare-kit/core'
-import { gaslessFor } from '@flare-kit/contracts'
+import { signPaymentRequest } from '@flarekit-dev/core'
+import { gaslessFor } from '@flarekit-dev/contracts'
 import { executePayment, type RelayerContext } from '../src/relayer-execute.js'
 
 const D = gaslessFor('coston2')!

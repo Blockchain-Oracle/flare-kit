@@ -1,6 +1,6 @@
 // packages/core/src/bridge-options.ts
 import { type Hex, concatHex, numberToHex } from 'viem'
-import type { BridgeRoute } from '@flare-kit/contracts'
+import type { BridgeRoute } from '@flarekit-dev/contracts'
 
 /**
  * The LayerZero V2 **type-3 executor option** encoder — the ONE place cross-chain

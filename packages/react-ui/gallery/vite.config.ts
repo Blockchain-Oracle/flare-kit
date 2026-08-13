@@ -13,7 +13,7 @@ export default defineConfig({
       // The sections import the package by name so the docs site can compile
       // them against dist. In gallery dev the name maps back to live source,
       // so editing src still hot-reloads without a build. Exact match only:
-      // '@flare-kit/react-ui/styles.css' must keep resolving via exports.
+      // '@flarekit-dev/react-ui/styles.css' must keep resolving via exports.
       {
         find: /^@flare-kit\/react-ui$/,
         replacement: fileURLToPath(new URL('../src/index.ts', import.meta.url)),

@@ -2,7 +2,7 @@
 title: Operation store
 description: The synchronous, capability-agnostic registry of live operations that React renders from, its one write door, and the rule that an older reading never overwrites a newer one.
 breadcrumb: ['Docs', 'Hooks', 'Operation store']
-importLine: "import { createOperationRegistry, openOperations } from '@flare-kit/react'"
+importLine: "import { createOperationRegistry, openOperations } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-staking', label: 'useStaking' }
 next: { href: '/docs/headless/lifecycle', label: 'The operation lifecycle' }
 ---
@@ -10,7 +10,7 @@ next: { href: '/docs/headless/lifecycle', label: 'The operation lifecycle' }
 Every operation surface in this package — the activity feed, the pending tray,
 the timeline — reads one registry. It is the provider's in-memory record of
 live operations, with subscriptions, and it is deliberately separate from the
-durable `OperationStore` in `@flare-kit/core`: that one is durable and async,
+durable `OperationStore` in `@flarekit-dev/core`: that one is durable and async,
 this one is the *synchronous* snapshot React renders from, which is what
 `useSyncExternalStore` needs to avoid tearing under concurrent rendering. The
 provider keeps the two in step, rather than either one knowing about the other.
@@ -35,7 +35,7 @@ You rarely construct one. `FlareProvider` creates it and hands it out through
 context — pass a durable `store` and operations survive a reload.
 
 ```tsx
-import { openOperations, useFlareContext } from '@flare-kit/react'
+import { openOperations, useFlareContext } from '@flarekit-dev/react'
 import { useSyncExternalStore } from 'react'
 
 function OpenCount() {

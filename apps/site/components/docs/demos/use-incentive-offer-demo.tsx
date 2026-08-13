@@ -1,14 +1,14 @@
 'use client'
 
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { OBSERVED_INCENTIVE_PRICING } from '@flare-kit/core'
-import { useIncentiveOffer } from '@flare-kit/react'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { OBSERVED_INCENTIVE_PRICING } from '@flarekit-dev/core'
+import { useIncentiveOffer } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import type { RoundReader } from '@flare-kit/core'
-import { useIncentiveOffer } from '@flare-kit/react'
-import { IncentiveComposer } from '@flare-kit/react-ui'
+const CODE = `import type { RoundReader } from '@flarekit-dev/core'
+import { useIncentiveOffer } from '@flarekit-dev/react'
+import { IncentiveComposer } from '@flarekit-dev/react-ui'
 
 export function Incentive({ reader, payer, onOffer }) {
   // The quote is for this exact widening. Changing it changes the price, so a
@@ -42,7 +42,7 @@ export function Incentive({ reader, payer, onOffer }) {
  * `createMockFtsoReader` deliberately answers no incentive-manager call: it
  * mocks what was observed on the feed contracts and refuses everything else. So
  * this replays the recorded reading here rather than inventing one, and the
- * rate and precision come from the constant in `@flare-kit/core` that owns them
+ * rate and precision come from the constant in `@flarekit-dev/core` that owns them
  * rather than being retyped.
  *
  * The point of driving the real `quoteIncentive` over them is that the price is

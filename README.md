@@ -17,10 +17,10 @@ describe the same operation the same way.
 
 | Package | What it is |
 | --- | --- |
-| [`@flare-kit/contracts`](packages/contracts) | Addresses, typed ABIs, and the per-capability verification flags. No address is hardcoded anywhere else. |
-| [`@flare-kit/core`](packages/core) | The operation lifecycle, protocol adapters, durable persistence and self-reconciliation, and mock mode. Headless. |
-| [`@flare-kit/react`](packages/react) | Provider and one hook per capability. |
-| [`@flare-kit/react-ui`](packages/react-ui) | Styled, embeddable widgets with every state built. Themed by runtime CSS custom properties. |
+| [`@flarekit-dev/contracts`](packages/contracts) | Addresses, typed ABIs, and the per-capability verification flags. No address is hardcoded anywhere else. |
+| [`@flarekit-dev/core`](packages/core) | The operation lifecycle, protocol adapters, durable persistence and self-reconciliation, and mock mode. Headless. |
+| [`@flarekit-dev/react`](packages/react) | Provider and one hook per capability. |
+| [`@flarekit-dev/react-ui`](packages/react-ui) | Styled, embeddable widgets with every state built. Themed by runtime CSS custom properties. |
 
 <img src="brand/packages.svg" alt="contracts feeds core, which feeds the React hooks, the widgets, and the two services" width="100%">
 
@@ -85,7 +85,7 @@ All four must pass before any release. Run the component gallery — every
 documented state, in both themes, against the mock:
 
 ```bash
-pnpm --filter @flare-kit/react-ui gallery
+pnpm --filter @flarekit-dev/react-ui gallery
 ```
 
 pnpm workspaces with Turborepo. `packages/*` publish; `services/*` are private

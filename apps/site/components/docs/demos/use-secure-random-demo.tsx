@@ -1,15 +1,15 @@
 'use client'
 
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '@flare-kit/core'
-import { useSecureRandom } from '@flare-kit/react'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import type { RoundReader } from '@flare-kit/core'
-import { isObserved, isRefusal } from '@flare-kit/core'
-import { useSecureRandom } from '@flare-kit/react'
-import { SecureRandomPanel } from '@flare-kit/react-ui'
+const CODE = `import type { RoundReader } from '@flarekit-dev/core'
+import { isObserved, isRefusal } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
 
 export function Random({ reader }: { reader: RoundReader }) {
   const { data, loading, error, refresh } = useSecureRandom({

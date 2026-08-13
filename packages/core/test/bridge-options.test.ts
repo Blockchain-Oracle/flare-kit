@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { routeByKey } from '@flare-kit/contracts'
+import { routeByKey } from '@flarekit-dev/contracts'
 import { encodeExecutorOptions, lzComposeOption, lzReceiveOption } from '../src/bridge-options.js'
 
 const bridge = routeByKey('coston2', 'coston2-sepolia')!

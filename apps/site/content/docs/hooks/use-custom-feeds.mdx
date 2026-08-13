@@ -2,7 +2,7 @@
 title: useCustomFeeds
 description: The custom feeds registered on one network, read as a dated observation — where an empty set is a real reading of a network that has none, not an error and not a missing feature.
 breadcrumb: ['Docs', 'Hooks', 'useCustomFeeds']
-importLine: "import { useCustomFeeds } from '@flare-kit/react'"
+importLine: "import { useCustomFeeds } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-feed-history', label: 'useFeedHistory' }
 next: { href: '/docs/hooks/use-secure-random', label: 'useSecureRandom' }
 ---
@@ -34,9 +34,9 @@ feeds `getSupportedFeedIds()` listed there on 2026-08-04.
 ## Usage
 
 ```tsx
-import type { RoundReader } from '@flare-kit/core'
-import { useCustomFeeds } from '@flare-kit/react'
-import { CustomFeedReview } from '@flare-kit/react-ui'
+import type { RoundReader } from '@flarekit-dev/core'
+import { useCustomFeeds } from '@flarekit-dev/react'
+import { CustomFeedReview } from '@flarekit-dev/react-ui'
 
 export function CustomFeeds({ reader }: { reader: RoundReader }) {
   const { data, loading, error } = useCustomFeeds(reader, 14)
@@ -96,8 +96,8 @@ are unreachable without an address supplied out of band.
 ## Mock to live
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
-import { createMockFtsoReader } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
 import { createPublicClient, http } from 'viem'
 
 // Shaped like Coston2: protocol feeds only, no custom ones.

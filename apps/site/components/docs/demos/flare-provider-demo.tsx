@@ -1,12 +1,12 @@
 'use client'
 
-import { useAccounts, useFlareContext } from '@flare-kit/react'
+import { useAccounts, useFlareContext } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { createMockKit } from '@flare-kit/core'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit } from '@flarekit-dev/core'
+import '@flarekit-dev/react-ui/styles.css'
 
 // One kit is one session. Create it once, outside render.
 const kit = createMockKit({ seed: 'demo' })

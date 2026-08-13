@@ -5,7 +5,7 @@ import {
   createMockKit,
   walletConnected,
   type DirectMintIntent,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { FlareProvider } from '../src/provider.js'
 import { useAccounts } from '../src/use-accounts.js'
 import { useDirectMint } from '../src/hooks.js'

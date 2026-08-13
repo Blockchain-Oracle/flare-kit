@@ -13,9 +13,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const CASES = M4_INCENTIVE_SECTIONS.find((section) => section.id === 'ftso-05')!.cases
 
-const CODE = `import { useIncentiveOffer } from '@flare-kit/react'
-import { IncentiveComposer } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useIncentiveOffer } from '@flarekit-dev/react'
+import { IncentiveComposer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 // The reader is the host's — a viem public client on the network it configured.
 // Signing belongs to the host too: this component quotes, it never spends.

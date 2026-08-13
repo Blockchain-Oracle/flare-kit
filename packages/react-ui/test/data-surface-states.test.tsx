@@ -8,7 +8,7 @@ import {
   MOCK_EPOCH,
   networkName,
   type PendingOperation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { PortfolioTable } from '../src/PortfolioTable.js'
 import { ActivityTable } from '../src/ActivityTable.js'
 import { SourceDrawer } from '../src/SourceDrawer.js'

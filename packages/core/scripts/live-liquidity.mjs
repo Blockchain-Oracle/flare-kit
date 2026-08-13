@@ -11,7 +11,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { ERC20_ABI, UNIV2_ROUTER_ABI, chainFor, dexFor } from '@flare-kit/contracts'
+import { ERC20_ABI, UNIV2_ROUTER_ABI, chainFor, dexFor } from '@flarekit-dev/contracts'
 import {
   buildAddPlan, buildRemovePlan, formatExact,
   quoteAddLiquidity, quoteRemoveLiquidity, readAllowance, readLpAllowance, readPosition,

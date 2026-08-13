@@ -1,5 +1,5 @@
-import { amount, createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
+import { amount, createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import axe from 'axe-core'

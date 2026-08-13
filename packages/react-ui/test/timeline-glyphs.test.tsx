@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render } from '@testing-library/react'
-import { type MockScenario, createMockKit } from '@flare-kit/core'
+import { type MockScenario, createMockKit } from '@flarekit-dev/core'
 import { OperationTimeline } from '../src/OperationTimeline.js'
 
 // R11: status is conveyed by text and shape as well as colour.

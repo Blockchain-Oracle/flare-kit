@@ -1,14 +1,14 @@
 'use client'
 
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flare-kit/core'
-import { useFeeds } from '@flare-kit/react'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flarekit-dev/core'
+import { useFeeds } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import type { PayableReader } from '@flare-kit/core'
-import { FEED_CATEGORY, encodeFeedId, formatExact, isObserved } from '@flare-kit/core'
-import { useFeeds } from '@flare-kit/react'
+const CODE = `import type { PayableReader } from '@flarekit-dev/core'
+import { FEED_CATEGORY, encodeFeedId, formatExact, isObserved } from '@flarekit-dev/core'
+import { useFeeds } from '@flarekit-dev/react'
 
 const FEED_IDS = [
   encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD'),

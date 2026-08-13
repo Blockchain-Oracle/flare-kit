@@ -1,5 +1,5 @@
-import { observe } from '@flare-kit/core'
-import { FeedCatalogue, FeedDetail, FeedHistoryTable } from '@flare-kit/react-ui'
+import { observe } from '@flarekit-dev/core'
+import { FeedCatalogue, FeedDetail, FeedHistoryTable } from '@flarekit-dev/react-ui'
 import type { GallerySection } from './m3-sections'
 import {
   ANCHOR_DIVERGENT,

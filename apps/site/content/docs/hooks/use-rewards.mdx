@@ -2,7 +2,7 @@
 title: useRewards
 description: The four Flare reward kinds tracked as four independent claims, each with its own operation, its own confirmation and its own reason for being empty.
 breadcrumb: ['Docs', 'Hooks', 'useRewards']
-importLine: "import { useRewards } from '@flare-kit/react'"
+importLine: "import { useRewards } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-delegation', label: 'useDelegation' }
 next: { href: '/docs/hooks/use-staking', label: 'useStaking' }
 ---
@@ -42,10 +42,10 @@ beneficiary, and this account has no claim in it.
 ## Usage
 
 ```tsx
-import { makeRewardsAdapter, type ClaimIntent } from '@flare-kit/core'
-import { rewardsFor } from '@flare-kit/contracts'
-import { useRewards } from '@flare-kit/react'
-import { ClaimCard } from '@flare-kit/react-ui'
+import { makeRewardsAdapter, type ClaimIntent } from '@flarekit-dev/core'
+import { rewardsFor } from '@flarekit-dev/contracts'
+import { useRewards } from '@flarekit-dev/react'
+import { ClaimCard } from '@flarekit-dev/react-ui'
 
 const adapter = makeRewardsAdapter(publicClient, rewardsFor('coston2'), fetch)
 const reconcile = (owner: `0x${string}`) => adapter.read(owner)

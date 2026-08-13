@@ -1,4 +1,4 @@
-import type { EvidenceItem } from '@flare-kit/core'
+import type { EvidenceItem } from '@flarekit-dev/core'
 import { CopyButton } from './CopyButton.js'
 import { ExplorerLink } from './ExplorerLink.js'
 

@@ -6,8 +6,8 @@ import {
   priceFor,
   readCustomFeeds,
   readFeeds,
-} from '@flare-kit/core'
-import { CustomFeedReview, type ExcludedCustomFeed, IncentiveComposer } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { CustomFeedReview, type ExcludedCustomFeed, IncentiveComposer } from '@flarekit-dev/react-ui'
 import type { GallerySection } from './m3-sections'
 import { COSTON2, M4_NOW, PAYER, SOURCE } from './m4-fixtures'
 

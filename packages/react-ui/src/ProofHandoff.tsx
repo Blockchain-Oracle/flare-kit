@@ -1,4 +1,4 @@
-import type { FamilyRow } from '@flare-kit/core'
+import type { FamilyRow } from '@flarekit-dev/core'
 import { CodeWindow } from './primitives/CodeWindow.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Panel } from './primitives/Panel.js'
@@ -62,7 +62,7 @@ export interface ProofHandoffProps {
 
 export function ProofHandoff({ row, abiStruct, className }: ProofHandoffProps) {
   const name = row.family.name
-  const code = `import { ${name.charAt(0).toLowerCase()}${name.slice(1)}Family } from '@flare-kit/core'
+  const code = `import { ${name.charAt(0).toLowerCase()}${name.slice(1)}Family } from '@flarekit-dev/core'
 
 // The proof, ABI-ready. Integers are bigint: a uint64 through Number is the
 // corruption FDC proofs fail silently on.

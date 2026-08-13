@@ -16,8 +16,8 @@ import {
   mockStakingDeployment,
   planStake,
   stakePosition,
-} from '@flare-kit/core'
-import { ClaimCard, StakeCard } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { ClaimCard, StakeCard } from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

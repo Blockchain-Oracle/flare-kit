@@ -1,14 +1,14 @@
 'use client'
 
-import { type DirectMintIntent } from '@flare-kit/core'
-import { useDirectMint, useOperation } from '@flare-kit/react'
+import { type DirectMintIntent } from '@flarekit-dev/core'
+import { useDirectMint, useOperation } from '@flarekit-dev/react'
 import { useEffect, useRef, useState } from 'react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { useOperation } from '@flare-kit/react'
-import { OperationTimeline } from '@flare-kit/react-ui'
+const CODE = `import { useOperation } from '@flarekit-dev/react'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
 
 function Operation({ id }: { id: string }) {
   // A read of the registry. It subscribes; it does not advance anything.

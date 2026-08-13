@@ -7,7 +7,7 @@ import type {
   DelegationPlanResult,
   DelegationPositionView,
   OperationRecord,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /**

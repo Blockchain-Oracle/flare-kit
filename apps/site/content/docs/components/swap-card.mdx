@@ -2,7 +2,7 @@
 title: SwapCard
 description: The swap composer over the V2 router — an honest getAmountsOut quote with its exact minimum received, and the approval and the swap kept as the two transactions they are.
 breadcrumb: ['Docs', 'Components', 'SwapCard']
-importLine: "import { SwapCard } from '@flare-kit/react-ui'"
+importLine: "import { SwapCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/custom-feed-review', label: 'CustomFeedReview' }
 next: { href: '/docs/components/token-selector', label: 'TokenSelector' }
 ---
@@ -28,10 +28,10 @@ renders — `ready` when the allowance covers the trade, `awaiting_approval` whe
 it does not.
 
 ```tsx
-import { dexFor } from '@flare-kit/contracts'
-import { applyQuote, createSwap, quoteSwap, readAllowance, startQuoting } from '@flare-kit/core'
-import { SwapCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { dexFor } from '@flarekit-dev/contracts'
+import { applyQuote, createSwap, quoteSwap, readAllowance, startQuoting } from '@flarekit-dev/core'
+import { SwapCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const dex = dexFor(114) // Coston2
 
@@ -61,7 +61,7 @@ export function Swap({ operation, result }) {
 
 <PropsTable rows={[
   { name: 'operation', type: 'SwapOperation', required: true, description: 'The swap record. Its state drives the CTA, the note, the spine and whether the quote is still shown as live.' },
-  { name: 'fromToken', type: 'DexToken', required: true, description: "The pay token. It comes from the network's dex registry in @flare-kit/contracts, never a literal." },
+  { name: 'fromToken', type: 'DexToken', required: true, description: "The pay token. It comes from the network's dex registry in @flarekit-dev/contracts, never a literal." },
   { name: 'toToken', type: 'DexToken', required: true, description: 'The receive token, from the same registry.' },
   { name: 'quoteResult', type: 'SwapQuoteResult', description: 'The latest reading — a quote, a no_route with its reason, or an unavailable read. Drives the receive amount and the detail rows.' },
   { name: 'priceImpactBips', type: 'number | null', description: 'Price impact in bips, measured against a reference quote. Null or omitted renders an em dash, because an uncomputed impact is not zero impact.' },

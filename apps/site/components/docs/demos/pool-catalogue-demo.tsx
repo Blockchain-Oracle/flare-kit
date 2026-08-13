@@ -12,8 +12,8 @@ const CATALOGUE_CASES = M6_LIQUIDITY_SECTIONS.find(
   (section) => section.id === 'm6-pool-catalogue',
 )!.cases
 
-const CODE = `import { PoolCatalogue } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { PoolCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Pools() {
   return <PoolCatalogue networkLabel="Coston2" />

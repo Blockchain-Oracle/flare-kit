@@ -19,7 +19,7 @@ gives the same trace every time — which is what makes it usable in tests as we
 as in docs.
 
 ```ts
-import { createMockKit } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
 
 const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
 
@@ -58,8 +58,8 @@ The provider takes a kit and asks nothing else of it, so moving from mock to liv
 is a change of construction, not a rewrite of any screen.
 
 ```tsx
-import { FlareProvider } from '@flare-kit/react'
-import { createMockKit } from '@flare-kit/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { createMockKit } from '@flarekit-dev/core'
 
 // Mock: no wallet, no chain.
 const kit = createMockKit({ seed: 'demo' })

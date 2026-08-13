@@ -20,10 +20,10 @@ const BRIDGE_CASES: Case[] = [
   ...prefix('redeem', section('m8-redeem')),
 ]
 
-const CODE = `import { type BridgeOperation, type BridgeQuote, routeByKey } from '@flare-kit/core'
-import { useBridge } from '@flare-kit/react'
-import { BridgeCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { type BridgeOperation, type BridgeQuote, routeByKey } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
+import { BridgeCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const route = routeByKey('coston2', 'coston2-sepolia')!
 

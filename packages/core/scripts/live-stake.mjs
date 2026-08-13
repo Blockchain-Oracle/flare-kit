@@ -26,7 +26,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, formatUnits, getAddress, hexToBytes, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { chainFor, stakingFor } from '@flare-kit/contracts'
+import { chainFor, stakingFor } from '@flarekit-dev/contracts'
 import {
   pAddressFromPubKey,
   planStake,

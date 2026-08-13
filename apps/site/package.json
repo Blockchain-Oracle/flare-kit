@@ -1,5 +1,5 @@
 {
-  "name": "@flare-kit/site",
+  "name": "@flarekit-dev/site",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,10 +13,10 @@
     "build:pagefind": "pagefind --site .next/server/app --output-path public/pagefind --glob \"{docs.html,docs/**/*.html}\""
   },
   "dependencies": {
-    "@flare-kit/contracts": "workspace:^",
-    "@flare-kit/core": "workspace:^",
-    "@flare-kit/react": "workspace:^",
-    "@flare-kit/react-ui": "workspace:^",
+    "@flarekit-dev/contracts": "workspace:^",
+    "@flarekit-dev/core": "workspace:^",
+    "@flarekit-dev/react": "workspace:^",
+    "@flarekit-dev/react-ui": "workspace:^",
     "fumadocs-core": "^16.9.3",
     "fumadocs-mdx": "^15.0.10",
     "next": "^16.2.6",

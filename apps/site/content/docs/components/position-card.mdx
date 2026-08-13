@@ -2,7 +2,7 @@
 title: PositionCard
 description: The live LP position — its composition read from reserves, partial withdrawal by percent, and a read that failed rendered as unavailable rather than as no position.
 breadcrumb: ['Docs', 'Components', 'PositionCard']
-importLine: "import { PositionCard } from '@flare-kit/react-ui'"
+importLine: "import { PositionCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/add-liquidity-card', label: 'AddLiquidityCard' }
 next: { href: '/docs/components/pool-catalogue', label: 'PoolCatalogue' }
 ---
@@ -27,9 +27,9 @@ position, no position, and a read that could not be made — the card renders ea
 differently, and the last is never collapsed into the second.
 
 ```tsx
-import { readPosition } from '@flare-kit/core'
-import { PositionCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { readPosition } from '@flarekit-dev/core'
+import { PositionCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 import { useState } from 'react'
 
 const CHAIN = 114 // Coston2
@@ -119,7 +119,7 @@ docs:
 The card takes a position and, optionally, a withdrawal record; it never reaches
 for a network itself. Whatever produces them — a mock or a live reader — the
 component is the same, so moving to a live network swaps what feeds it, not the
-screen. Pair and token addresses come from `@flare-kit/contracts`; network is
+screen. Pair and token addresses come from `@flarekit-dev/contracts`; network is
 configuration.
 
 ```tsx

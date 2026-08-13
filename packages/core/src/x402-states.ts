@@ -1,5 +1,5 @@
 // packages/core/src/x402-states.ts
-import type { FlareNetworkKey } from '@flare-kit/contracts'
+import type { FlareNetworkKey } from '@flarekit-dev/contracts'
 import {
   type OperationRecord,
   type OperationStep,

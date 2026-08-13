@@ -17,10 +17,10 @@ const CLAIM_CASES = [
   ...M11_STAKING_SECTIONS.find((section) => section.id === 'm11-staking-reward')!.cases,
 ]
 
-const CODE = `import { useRewards } from '@flare-kit/react'
-import { ClaimCard } from '@flare-kit/react-ui'
-import { createMockRewardsAdapter } from '@flare-kit/core'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useRewards } from '@flarekit-dev/react'
+import { ClaimCard } from '@flarekit-dev/react-ui'
+import { createMockRewardsAdapter } from '@flarekit-dev/core'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockRewardsAdapter()
 

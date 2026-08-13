@@ -1,5 +1,5 @@
-import type { Amount } from '@flare-kit/core'
-import { formatExact } from '@flare-kit/core'
+import type { Amount } from '@flarekit-dev/core'
+import { formatExact } from '@flarekit-dev/core'
 import type { ReactNode } from 'react'
 
 /**

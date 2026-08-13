@@ -14,9 +14,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const VAULT_CASES = M7_VAULT_SECTIONS.find((section) => section.id === 'm7-vault-catalogue')!.cases
 
-const CODE = `import { vaultsFor } from '@flare-kit/core'
-import { VaultCatalogue, type VaultReadsView } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { vaultsFor } from '@flarekit-dev/core'
+import { VaultCatalogue, type VaultReadsView } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Vaults({
   reads,

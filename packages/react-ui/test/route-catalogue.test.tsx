@@ -1,7 +1,7 @@
 // packages/react-ui/test/route-catalogue.test.tsx
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
-import { type Observation, amount, observe, routeByKey } from '@flare-kit/core'
+import { type Observation, amount, observe, routeByKey } from '@flarekit-dev/core'
 import { RouteCatalogue } from '../src/RouteCatalogue.js'
 import type { RouteRow } from '../src/route-catalogue-state.js'
 

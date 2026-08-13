@@ -11,11 +11,11 @@ import { GalleryDemo } from './gallery-demo'
  */
 const DETAIL_CASES = M4_SECTIONS.find((section) => section.id === 'ftso-02-detail')!.cases
 
-const CODE = `import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, isObserved, observe } from '@flare-kit/core'
-import { useAnchorProof, useFeedCatalogue, useFeeds } from '@flare-kit/react'
-import { FeedDetail } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, isObserved, observe } from '@flarekit-dev/core'
+import { useAnchorProof, useFeedCatalogue, useFeeds } from '@flarekit-dev/react'
+import { FeedDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader()
 const chainId = FLARE_NETWORKS.coston2.id

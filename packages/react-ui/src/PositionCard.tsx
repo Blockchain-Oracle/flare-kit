@@ -1,5 +1,5 @@
 // packages/react-ui/src/PositionCard.tsx
-import { type Amount, type DexToken, type Position, type RemoveLiquidityOperation, type RemoveLiquidityQuoteResult, formatExact } from '@flare-kit/core'
+import { type Amount, type DexToken, type Position, type RemoveLiquidityOperation, type RemoveLiquidityQuoteResult, formatExact } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

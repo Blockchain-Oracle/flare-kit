@@ -1,4 +1,4 @@
-import type { AccountContext, DirectMintKit, OperationStore } from '@flare-kit/core'
+import type { AccountContext, DirectMintKit, OperationStore } from '@flarekit-dev/core'
 import { createContext, useContext, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { type OperationRegistry, createOperationRegistry } from './store.js'

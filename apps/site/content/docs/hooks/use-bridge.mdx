@@ -2,7 +2,7 @@
 title: useBridge
 description: The delivery poll for a cross-chain send — it re-reads the destination chain while the operation is in flight, stops the moment it settles, and never concludes delivery from the source receipt.
 breadcrumb: ['Docs', 'Hooks', 'useBridge']
-importLine: "import { useBridge } from '@flare-kit/react'"
+importLine: "import { useBridge } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-incentive-offer', label: 'useIncentiveOffer' }
 next: { href: '/docs/hooks/use-gasless', label: 'useGasless' }
 ---
@@ -32,8 +32,8 @@ unsigned plan with the core functions and signs through its own wallet, and
 with `useCallback`, or the interval is torn down on every render.
 
 ```tsx
-import { type BridgeOperation, reconcileDelivery } from '@flare-kit/core'
-import { useBridge } from '@flare-kit/react'
+import { type BridgeOperation, reconcileDelivery } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
 import { useCallback } from 'react'
 
 function Delivery({ operation, adapter, guid, sinceBlock }) {

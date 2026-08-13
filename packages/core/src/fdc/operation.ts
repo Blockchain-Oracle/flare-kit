@@ -1,4 +1,4 @@
-import type { FamilySource } from '@flare-kit/contracts'
+import type { FamilySource } from '@flarekit-dev/contracts'
 import { type EvidenceItem, evidence } from '../evidence.js'
 import {
   type OperationRecord,

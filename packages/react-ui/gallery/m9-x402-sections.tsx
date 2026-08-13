@@ -3,8 +3,8 @@ import {
   type OperationStep,
   MOCK_EPOCH,
   mockX402Challenge,
-} from '@flare-kit/core'
-import { X402Card } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { X402Card } from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

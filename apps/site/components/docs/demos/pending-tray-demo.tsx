@@ -10,10 +10,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const TRAY_CASES = SECTIONS.find((section) => section.id === 'sh-10')!.cases
 
-const CODE = `import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, usePending } from '@flare-kit/react'
-import { PendingTray } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, usePending } from '@flarekit-dev/react'
+import { PendingTray } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'demo' })
 

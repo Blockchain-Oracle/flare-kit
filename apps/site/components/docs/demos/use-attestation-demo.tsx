@@ -1,16 +1,16 @@
 'use client'
 
-import { familyFor } from '@flare-kit/contracts'
-import { type AttestationChainState, type AttestationIntent } from '@flare-kit/core'
-import { useAttestation } from '@flare-kit/react'
+import { familyFor } from '@flarekit-dev/contracts'
+import { type AttestationChainState, type AttestationIntent } from '@flarekit-dev/core'
+import { useAttestation } from '@flarekit-dev/react'
 import { OWNER, SUBMITTED } from '@gallery/m3-sections'
 import { useEffect, useRef } from 'react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { useAttestation } from '@flare-kit/react'
-import { AttestationTimeline } from '@flare-kit/react-ui'
+const CODE = `import { useAttestation } from '@flarekit-dev/react'
+import { AttestationTimeline } from '@flarekit-dev/react-ui'
 
 function Attest({ intent, hasConsumer }) {
   const { request, operation, waitingReason } = useAttestation({

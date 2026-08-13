@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const RECOVERY_CASES = M1_SECTIONS.find((section) => section.id === 'm1-recovery')!.cases
 
-const CODE = `import { useOperation } from '@flare-kit/react'
-import { RecoveryPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useOperation } from '@flarekit-dev/react'
+import { RecoveryPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Recovery({ id }: { id: string }) {
   const operation = useOperation(id)

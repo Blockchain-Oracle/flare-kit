@@ -1,7 +1,7 @@
 'use client'
 
-import type { ActivityFilter } from '@flare-kit/core'
-import { useActivity } from '@flare-kit/react'
+import type { ActivityFilter } from '@flarekit-dev/core'
+import { useActivity } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 import { SeededRegistry } from './seed-registry'
@@ -13,8 +13,8 @@ import { SeededRegistry } from './seed-registry'
  */
 const REDEMPTIONS: ActivityFilter = { capability: 'fassets.redeem' }
 
-const CODE = `import { FlareProvider, useActivity } from '@flare-kit/react'
-import { ActivityTable } from '@flare-kit/react-ui'
+const CODE = `import { FlareProvider, useActivity } from '@flarekit-dev/react'
+import { ActivityTable } from '@flarekit-dev/react-ui'
 
 function History() {
   const { feed, entries, empty, filteredEmpty, exportError, exportJson } =

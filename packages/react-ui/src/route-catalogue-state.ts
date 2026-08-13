@@ -1,5 +1,5 @@
 // packages/react-ui/src/route-catalogue-state.ts
-import type { Amount, BridgeRoute, Observation } from '@flare-kit/core'
+import type { Amount, BridgeRoute, Observation } from '@flarekit-dev/core'
 
 /**
  * The pure state → chrome mapping for RouteCatalogue (M8-R7), split from the JSX at

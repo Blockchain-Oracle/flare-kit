@@ -1,4 +1,4 @@
-import { chainFor, randomNumberAbi, registryFor } from '@flare-kit/contracts'
+import { chainFor, randomNumberAbi, registryFor } from '@flarekit-dev/contracts'
 import { type Observation, observe } from '../observation.js'
 import type { RoundReader } from '../voting-round.js'
 

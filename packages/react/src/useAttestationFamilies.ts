@@ -1,5 +1,5 @@
-import type { FamilyRow, Observation } from '@flare-kit/core'
-import { isObserved, staleness } from '@flare-kit/core'
+import type { FamilyRow, Observation } from '@flarekit-dev/core'
+import { isObserved, staleness } from '@flarekit-dev/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**

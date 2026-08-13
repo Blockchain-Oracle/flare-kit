@@ -4,14 +4,14 @@ import {
   type StakeIntent,
   MOCK_STAKE_OBSERVED as OBSERVED,
   mockStakingDeployment,
-} from '@flare-kit/core'
-import { useStaking } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { useStaking } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { mockStakingDeployment } from '@flare-kit/core'
-import { useStaking } from '@flare-kit/react'
-import { StakeCard } from '@flare-kit/react-ui'
+const CODE = `import { mockStakingDeployment } from '@flarekit-dev/core'
+import { useStaking } from '@flarekit-dev/react'
+import { StakeCard } from '@flarekit-dev/react-ui'
 
 const deployment = mockStakingDeployment() // live: stakingFor('coston2')
 

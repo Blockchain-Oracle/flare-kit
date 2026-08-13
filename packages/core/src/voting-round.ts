@@ -1,4 +1,4 @@
-import { flareSystemsManagerAbi, relayAbi, registryFor, votingRoundIdAt } from '@flare-kit/contracts'
+import { flareSystemsManagerAbi, relayAbi, registryFor, votingRoundIdAt } from '@flarekit-dev/contracts'
 
 /**
  * The Flare Systems Protocol clock, shared by every protocol that publishes on

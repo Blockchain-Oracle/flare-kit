@@ -11,11 +11,11 @@ import { GalleryDemo } from './gallery-demo'
  */
 const HISTORY_CASES = M4_SECTIONS.find((section) => section.id === 'ftso-02-history')!.cases
 
-const CODE = `import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flare-kit/core'
-import { useFeedHistory } from '@flare-kit/react'
-import { FeedHistoryTable } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flarekit-dev/core'
+import { useFeedHistory } from '@flarekit-dev/react'
+import { FeedHistoryTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader()
 const chainId = FLARE_NETWORKS.coston2.id

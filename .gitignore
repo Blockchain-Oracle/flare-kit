@@ -39,3 +39,6 @@ developer-hub
 
 # Pagefind static index, emitted by the post-build step.
 apps/site/public/pagefind/
+
+# npm auth lives in ~/.npmrc, never in the repo
+.npmrc

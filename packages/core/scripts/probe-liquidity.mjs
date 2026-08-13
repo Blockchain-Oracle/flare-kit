@@ -8,7 +8,7 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http } from 'viem'
-import { UNIV2_FACTORY_ABI, UNIV2_PAIR_ABI, ERC20_ABI, chainFor, dexFor } from '@flare-kit/contracts'
+import { UNIV2_FACTORY_ABI, UNIV2_PAIR_ABI, ERC20_ABI, chainFor, dexFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const CHAIN_ID = 114

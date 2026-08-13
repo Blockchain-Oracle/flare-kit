@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const GASLESS_CASES = M9_GASLESS_SECTIONS.find((section) => section.id === 'm9-gasless')!.cases
 
-const CODE = `import type { GaslessOperation, GaslessPlanResult } from '@flare-kit/core'
-import { useGasless } from '@flare-kit/react'
-import { GaslessCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import type { GaslessOperation, GaslessPlanResult } from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
+import { GaslessCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const FXRP = { symbol: 'FTestXRP', address: '0x0b6A…3dc7', decimals: 6 } as const
 

@@ -2,7 +2,7 @@
 title: BridgeCard
 description: The cross-chain card — one send leg, one receive leg, the real quoted fee, and a delivery timeline that reaches Delivered only from a read of the destination chain.
 breadcrumb: ['Docs', 'Components', 'BridgeCard']
-importLine: "import { BridgeCard } from '@flare-kit/react-ui'"
+importLine: "import { BridgeCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/route-catalogue', label: 'RouteCatalogue' }
 next: { href: '/docs/components/gasless-card', label: 'GaslessCard' }
 ---
@@ -29,10 +29,10 @@ hands the send back to you. Because delivery settles elsewhere, pair it with
 stops the moment it settles.
 
 ```tsx
-import { type BridgeOperation, type BridgeQuote, routeByKey } from '@flare-kit/core'
-import { useBridge } from '@flare-kit/react'
-import { BridgeCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { type BridgeOperation, type BridgeQuote, routeByKey } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
+import { BridgeCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const route = routeByKey('coston2', 'coston2-sepolia')!
 
@@ -62,7 +62,7 @@ export function Bridge({ operation, quote, reconcile, onSend }: {
 
 <PropsTable rows={[
   { name: 'operation', type: 'OperationRecord', required: true, description: 'The record to read. Its canonical state drives the chip, the CTA and every leg of the delivery timeline — the card derives nothing about the outcome on its own.' },
-  { name: 'route', type: 'BridgeRoute', required: true, description: 'The route from `@flare-kit/contracts`, carrying the chain pair, the OFT addresses and the kind (`bridge` or `redeem`). The kind decides whether the timeline ends at delivery or continues to the XRPL settlement.' },
+  { name: 'route', type: 'BridgeRoute', required: true, description: 'The route from `@flarekit-dev/contracts`, carrying the chain pair, the OFT addresses and the kind (`bridge` or `redeem`). The kind decides whether the timeline ends at delivery or continues to the XRPL settlement.' },
   { name: 'sendToken', type: 'DexToken', required: true, description: 'The token on the source chain — the leg you pay from.' },
   { name: 'receiveToken', type: 'DexToken', required: true, description: 'The token on the destination chain. On the redeem route this is native XRP, not FXRP.' },
   { name: 'quote', type: 'BridgeQuote', description: 'The quoted terms: the real `quoteSend` fee, the dust-adjusted amount that would be delivered, the exact minimum under slippage. Absent, the card shows no terms rather than estimates any.' },
@@ -166,6 +166,6 @@ before it reads anything, and the card renders that refusal rather than a plan.
 Nor will it mint. The cross-chain mint — an XRPL payment, an FDC automint, then a
 bridge out through the shim — is configured but has not been driven live in this
 build. It ships present and reasoned, never faked. The shim's address is recorded in
-the M8 spec, not in `@flare-kit/contracts` — it enters the registry with the
+the M8 spec, not in `@flarekit-dev/contracts` — it enters the registry with the
 milestone that verifies the path, because the registry carries only what a
 recorded run stands behind.

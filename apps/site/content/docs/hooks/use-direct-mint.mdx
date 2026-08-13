@@ -2,7 +2,7 @@
 title: useDirectMint
 description: Quote a direct mint before a drop moves, start it as a durable operation, and let it reconcile itself on the provider's clock — with the refusal as a state you can render.
 breadcrumb: ['Docs', 'Hooks', 'useDirectMint']
-importLine: "import { useDirectMint } from '@flare-kit/react'"
+importLine: "import { useDirectMint } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/flare-provider', label: 'FlareProvider' }
 next: { href: '/docs/hooks/use-operation', label: 'useOperation' }
 ---
@@ -34,8 +34,8 @@ Quote during render — the terms on screen are then the terms of that render �
 and start from an event handler.
 
 ```tsx
-import { formatExact } from '@flare-kit/core'
-import { useDirectMint } from '@flare-kit/react'
+import { formatExact } from '@flarekit-dev/core'
+import { useDirectMint } from '@flarekit-dev/react'
 
 const intent = {
   amountXrp: '25.000000', // an exact decimal string, never a float

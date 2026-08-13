@@ -6,7 +6,7 @@ import type { DirectMintOperation } from '../../src/fassets/direct-mint.js'
 
 /**
  * The acceptance criteria, driven end to end against the mock kit. This is what
- * `pnpm --filter @flare-kit/core test:e2e:mock` runs.
+ * `pnpm --filter @flarekit-dev/core test:e2e:mock` runs.
  *
  * Nothing here stubs the lifecycle: the mock supplies observed chain state and
  * the real state machine runs, so a pass means the shipped code behaves this

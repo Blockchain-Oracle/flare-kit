@@ -2,7 +2,7 @@
 title: WithdrawCard
 description: The vault withdraw composer — an explicit instant-or-delayed route choice, and a request → wait → claim lifecycle where a request is never rendered as assets received.
 breadcrumb: ['Docs', 'Components', 'WithdrawCard']
-importLine: "import { WithdrawCard } from '@flare-kit/react-ui'"
+importLine: "import { WithdrawCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/deposit-card', label: 'DepositCard' }
 next: { href: '/docs/components/route-catalogue', label: 'RouteCatalogue' }
 ---
@@ -27,9 +27,9 @@ The card is prop-driven: you own the position read and the operation record, it
 renders them and calls `onSubmit`. It holds no wallet client and no key.
 
 ```tsx
-import { createMockVaultAdapter, readVaultPosition } from '@flare-kit/core'
-import { WithdrawCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockVaultAdapter, readVaultPosition } from '@flarekit-dev/core'
+import { WithdrawCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockVaultAdapter('upshift-fxrp')
 
@@ -52,7 +52,7 @@ export function Withdraw({ positionResult, nowSeconds, onSubmit }) {
 ## Props
 
 <PropsTable rows={[
-  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flare-kit/contracts`: its address, asset, share model and the exit routes it actually offers. The route tabs render only when there is more than one.' },
+  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flarekit-dev/contracts`: its address, asset, share model and the exit routes it actually offers. The route tabs render only when there is more than one.' },
   { name: 'now', type: 'number', required: true, description: 'The host clock in unix seconds, for the claimable countdown. A prop, never `Date.now()` inside the component.' },
   { name: 'operation', type: 'WithdrawOperation', description: 'The withdraw record from `createWithdraw`, once one exists. Its state drives the spine, the wait, the claim and the CTA. Omit it and the card is in its editing state.' },
   { name: 'positionResult', type: 'VaultPositionResult', description: 'The share-balance read: `position`, `no_position`, or `unavailable` with a reason. The three are distinct states, and a failed read is never shown as a zero balance.' },
@@ -115,7 +115,7 @@ docs:
 
 The card takes a `VaultConfig` and prop-driven results, so moving from the mock
 to a live network swaps the adapter behind the position and the quote, not the
-screen. Addresses come from `@flare-kit/contracts`; network is configuration.
+screen. Addresses come from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

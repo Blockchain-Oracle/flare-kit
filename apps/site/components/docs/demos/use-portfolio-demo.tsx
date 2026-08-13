@@ -1,12 +1,12 @@
 'use client'
 
-import { mockPortfolio } from '@flare-kit/core'
-import { usePortfolio } from '@flare-kit/react'
+import { mockPortfolio } from '@flarekit-dev/core'
+import { usePortfolio } from '@flarekit-dev/react'
 import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { FlareProvider, usePortfolio } from '@flare-kit/react'
+const CODE = `import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
 
 function Balances() {
   const { portfolio, loading, stale, error, refresh } = usePortfolio({

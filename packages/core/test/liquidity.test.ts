@@ -1,6 +1,6 @@
 // packages/core/test/liquidity.test.ts
 import { describe, expect, it } from 'vitest'
-import { dexFor } from '@flare-kit/contracts'
+import { dexFor } from '@flarekit-dev/contracts'
 import { amount } from '../src/amounts.js'
 import { buildAddPlan, buildRemovePlan, createAddLiquidity, createRemoveLiquidity, applyAddQuote, applyRemoveQuote, startQuoting } from '../src/liquidity.js'
 import type { AddLiquidityQuote, RemoveLiquidityQuote } from '../src/liquidity-quote.js'

@@ -5,7 +5,7 @@ import {
   type SwapQuoteResult,
   amount,
   formatExact,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'

@@ -1,5 +1,5 @@
 // packages/core/src/rewards.ts
-import type { ClaimKind, RewardsDeployment } from '@flare-kit/contracts'
+import type { ClaimKind, RewardsDeployment } from '@flarekit-dev/contracts'
 import type { OperationStep } from './operation.js'
 import type { FtsoReward, RewardsAdapter, RewardsCall, RewardsReads } from './rewards-adapter.js'
 

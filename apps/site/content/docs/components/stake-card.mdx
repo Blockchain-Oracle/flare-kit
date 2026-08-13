@@ -2,7 +2,7 @@
 title: StakeCard
 description: The staking composer — live-read validators and bounds, the irreversible stake lock stated in full before you sign, and a position that says "not read" rather than zero.
 breadcrumb: ['Docs', 'Components', 'StakeCard']
-importLine: "import { StakeCard } from '@flare-kit/react-ui'"
+importLine: "import { StakeCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/claim-card', label: 'ClaimCard' }
 next: { href: '/docs/components/primitives', label: 'Primitives' }
 ---
@@ -28,9 +28,9 @@ keyless reads — the validator set, the bounds, the position — and the card
 renders them.
 
 ```tsx
-import { useStaking } from '@flare-kit/react'
-import { StakeCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { useStaking } from '@flarekit-dev/react'
+import { StakeCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Stake({ input }) {
   const staking = useStaking(input)
@@ -127,7 +127,7 @@ pass never produced one.
 Nothing changes in the card. `StakeCard` renders whatever `useStaking` hands it,
 and `useStaking` reads through the kit — so a mock read pass and a Coston2 read
 pass differ in the input, not the screen. Addresses come from
-`@flare-kit/contracts`; network is configuration.
+`@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // The mock: the reads observed on Coston2, replayed through the real read

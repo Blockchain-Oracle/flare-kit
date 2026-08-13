@@ -19,9 +19,9 @@ const HANDOFF_CASES = M3_PROOF_SECTIONS.find((section) => section.id === 'fdc-04
   (entry) => HANDOFF_CASE_NAMES.includes(entry.name),
 )
 
-const CODE = `import { evmTransactionFamily } from '@flare-kit/core'
-import { ProofHandoff } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { evmTransactionFamily } from '@flarekit-dev/core'
+import { ProofHandoff } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Handoff({ row, proof }) {
   // The family module owns the ABI shape; this surface never rebuilds it.

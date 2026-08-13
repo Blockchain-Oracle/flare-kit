@@ -10,10 +10,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const SOURCE_CASES = SECTIONS.find((section) => section.id === 'user-03')!.cases
 
-const CODE = `import { createMockKit, mockPortfolio, type PortfolioPosition } from '@flare-kit/core'
-import { FlareProvider, usePortfolio } from '@flare-kit/react'
-import { SourceDrawer } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit, mockPortfolio, type PortfolioPosition } from '@flarekit-dev/core'
+import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
+import { SourceDrawer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'demo' })
 

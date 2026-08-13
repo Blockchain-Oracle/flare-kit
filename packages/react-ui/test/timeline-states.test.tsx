@@ -1,5 +1,5 @@
-import { createMockKit } from '@flare-kit/core'
-import type { DirectMintOperation } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
+import type { DirectMintOperation } from '@flarekit-dev/core'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { OperationTimeline } from '../src/OperationTimeline.js'

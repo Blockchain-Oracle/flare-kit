@@ -2,7 +2,7 @@
 title: useStaking
 description: The cross-substrate stake lifecycle as React state — live bounds and validators read keylessly, the value lock disclosed before signing, and succeeded only from the P-chain position read.
 breadcrumb: ['Docs', 'Hooks', 'useStaking']
-importLine: "import { useStaking } from '@flare-kit/react'"
+importLine: "import { useStaking } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-rewards', label: 'useRewards' }
 next: { href: '/docs/hooks/operation-store', label: 'Operation store' }
 ---
@@ -41,9 +41,9 @@ what it read, not what is written here.
 ## Usage
 
 ```tsx
-import { stakingFor } from '@flare-kit/contracts'
-import { useStaking } from '@flare-kit/react'
-import { StakeCard } from '@flare-kit/react-ui'
+import { stakingFor } from '@flarekit-dev/contracts'
+import { useStaking } from '@flarekit-dev/react'
+import { StakeCard } from '@flarekit-dev/react-ui'
 
 const deployment = stakingFor('coston2')
 

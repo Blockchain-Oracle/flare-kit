@@ -4,7 +4,7 @@ import {
   chainFor,
   decodeFeedId,
   registryFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import { type Observation, observe } from '../observation.js'
 

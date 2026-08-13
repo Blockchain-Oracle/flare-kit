@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const WITHDRAW_CASES = M7_VAULT_SECTIONS.find((section) => section.id === 'm7-withdraw')!.cases
 
-const CODE = `import { createMockVaultAdapter, readVaultPosition } from '@flare-kit/core'
-import { WithdrawCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockVaultAdapter, readVaultPosition } from '@flarekit-dev/core'
+import { WithdrawCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockVaultAdapter('upshift-fxrp')
 

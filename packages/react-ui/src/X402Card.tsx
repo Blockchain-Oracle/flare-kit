@@ -1,4 +1,4 @@
-import { type OperationRecord, type X402Challenge } from '@flare-kit/core'
+import { type OperationRecord, type X402Challenge } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

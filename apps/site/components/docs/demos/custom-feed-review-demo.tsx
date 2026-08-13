@@ -13,10 +13,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const CASES = M4_INCENTIVE_SECTIONS.find((section) => section.id === 'ftso-06')!.cases
 
-const CODE = `import { createMockFtsoReader } from '@flare-kit/core'
-import { useCustomFeeds, useFeeds } from '@flare-kit/react'
-import { CustomFeedReview } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockFtsoReader } from '@flarekit-dev/core'
+import { useCustomFeeds, useFeeds } from '@flarekit-dev/react'
+import { CustomFeedReview } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader({ customFeedNames: ['sFLR/USD'] })
 

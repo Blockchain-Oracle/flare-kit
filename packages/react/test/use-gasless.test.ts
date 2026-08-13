@@ -5,7 +5,7 @@ import {
   createMockGaslessAdapter,
   reconcileGaslessPayment,
   type GaslessOperation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useGasless } from '../src/use-gasless.js'

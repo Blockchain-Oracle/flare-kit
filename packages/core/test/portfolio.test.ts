@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { stakingFor } from '@flare-kit/contracts'
+import { stakingFor } from '@flarekit-dev/contracts'
 import { createAccountContext, supplyReadOnly, walletConnected } from '../src/account.js'
 import { unavailable } from '../src/observation.js'
 import {

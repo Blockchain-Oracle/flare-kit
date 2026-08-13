@@ -2,7 +2,7 @@
 title: ActivityTable
 description: Every operation this installation has started, with the XRP Ledger, Data Connector and Flare events behind each one kept as three separate identifiers rather than collapsed into a single transaction hash.
 breadcrumb: ['Docs', 'Components', 'ActivityTable']
-importLine: "import { ActivityTable } from '@flare-kit/react-ui'"
+importLine: "import { ActivityTable } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/portfolio-table', label: 'PortfolioTable' }
 next: { href: '/docs/components/source-drawer', label: 'SourceDrawer' }
 ---
@@ -28,10 +28,10 @@ Mount it under a `FlareProvider`. `useActivity` reads the operation registry, so
 the feed, the filtered view and the export all come from one source.
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, useActivity } from '@flare-kit/react'
-import { ActivityTable } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, useActivity } from '@flarekit-dev/react'
+import { ActivityTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 function History() {
   const { feed, entries, exportError, exportJson } = useActivity()
@@ -101,7 +101,7 @@ docs:
 
 `ActivityTable` renders whatever `useActivity` derived from the operation
 registry on the provider, so moving from the mock to a live network swaps the
-kit, not the screen. Addresses come from `@flare-kit/contracts`; network is
+kit, not the screen. Addresses come from `@flarekit-dev/contracts`; network is
 configuration.
 
 ```tsx

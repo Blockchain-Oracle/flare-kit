@@ -2,7 +2,7 @@
 title: Adapters
 description: The seam between the lifecycle and a chain — reads that return protocol truth, builders that return unsigned calls, and an executor the host injects. Core never holds a key.
 breadcrumb: ['Docs', 'Headless', 'Adapters']
-importLine: "import { makeVaultAdapter, makeBridgeAdapter } from '@flare-kit/core'"
+importLine: "import { makeVaultAdapter, makeBridgeAdapter } from '@flarekit-dev/core'"
 prev: { href: '/docs/headless/states', label: 'States and transitions' }
 next: { href: '/docs/headless/storage', label: 'Storage and reconcile' }
 ---
@@ -17,7 +17,7 @@ not sign, broadcast, poll or decide.
 Every contract-facing adapter in this package has the same three parts.
 
 ```ts
-import { makeVaultAdapter, type VaultAdapter } from '@flare-kit/core'
+import { makeVaultAdapter, type VaultAdapter } from '@flarekit-dev/core'
 
 const adapter = makeVaultAdapter(publicClient, vaultConfig)
 
@@ -60,7 +60,7 @@ exception a UI has to catch.
 seam. `createFlareKit` takes the readers it needs and nothing else:
 
 ```ts
-import { createFlareKit } from '@flare-kit/core'
+import { createFlareKit } from '@flarekit-dev/core'
 
 const kit = await createFlareKit({
   client, // ChainStateReader & RawCallReader — viem's PublicClient fits
@@ -81,7 +81,7 @@ router that guards the swap, because only the router can say what a swap will
 return; a pair with no pool is a first-class `no_route` rather than a zero.
 
 **Vaults** — `makeVaultAdapter(client, config)`, over the vault registry from
-`@flare-kit/contracts`. Reads cover the rate, previews, share and asset
+`@flarekit-dev/contracts`. Reads cover the rate, previews, share and asset
 balances, both allowances and availability. Writes cover approve, deposit,
 `requestWithdraw` on a `'delayed' | 'instant'` route, and `claim`.
 `withdrawalPhase` turns a pending withdrawal into
@@ -121,7 +121,7 @@ P-chain, then back, plus a C-chain reward claim. Those legs cannot be signed by
 a viem-only runtime, so core ships the shape and not an implementation.
 
 ```ts
-import type { PChainStakeExecutor, StakeIntent } from '@flare-kit/core'
+import type { PChainStakeExecutor, StakeIntent } from '@flarekit-dev/core'
 
 interface PChainStakeExecutor {
   getPAddress(): Promise<string>
@@ -141,7 +141,7 @@ published packages depend only on the shape. The bounds a plan is checked
 against are read live rather than assumed:
 
 ```ts
-import { readStakeLimits } from '@flare-kit/core'
+import { readStakeLimits } from '@flarekit-dev/core'
 
 const limits = await readStakeLimits(client, verifier)
 // { minAmount, maxAmount, minDuration, maxDuration }
@@ -159,7 +159,7 @@ with its own key — read and plan tools need no key at all.
 ## Network is configuration
 
 No address appears in an adapter. Deployments, vault entries, bridge routes and
-staking configuration all come from `@flare-kit/contracts` and are passed in.
+staking configuration all come from `@flarekit-dev/contracts` and are passed in.
 Switching from Coston2 to Flare mainnet is a different registry entry, not a
 different code path.
 

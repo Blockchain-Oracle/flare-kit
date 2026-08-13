@@ -2,7 +2,7 @@
 title: AttestationTimeline
 description: Where an attestation stands on the operation spine — with finalization and proof retrieval kept as two steps, because a finalized round does not mean the proof is there yet.
 breadcrumb: ['Docs', 'Components', 'AttestationTimeline']
-importLine: "import { AttestationTimeline } from '@flare-kit/react-ui'"
+importLine: "import { AttestationTimeline } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/attestation-request-builder', label: 'AttestationRequestBuilder' }
 next: { href: '/docs/components/proof-detail', label: 'ProofDetail' }
 ---
@@ -34,9 +34,9 @@ chain on the provider's interval, so opening the page and receiving a tick are
 the same code path — there is no Resume button and nothing here blocks.
 
 ```tsx
-import { useAttestation } from '@flare-kit/react'
-import { AttestationTimeline } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { useAttestation } from '@flarekit-dev/react'
+import { AttestationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Attestation({ operationId }: { operationId: string }) {
   const { operation } = useAttestation({ read: readChainState, operationId })

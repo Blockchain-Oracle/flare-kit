@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const TIMELINE_CASES = M3_PROOF_SECTIONS.find((section) => section.id === 'fdc-03')!.cases
 
-const CODE = `import { useAttestation } from '@flare-kit/react'
-import { AttestationTimeline } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useAttestation } from '@flarekit-dev/react'
+import { AttestationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Attestation({ operationId }: { operationId: string }) {
   // The provider's interval reconciles the record against the chain; nothing

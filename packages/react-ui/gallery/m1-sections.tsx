@@ -1,12 +1,12 @@
-import { MOCK_EPOCH, type MockScenario, amount, createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
+import { MOCK_EPOCH, type MockScenario, amount, createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
 import type { ReactNode } from 'react'
 import {
   MintFXRP,
   OperationTimeline,
   RecoveryPanel,
   RedeemFXRP,
-} from '@flare-kit/react-ui'
+} from '@flarekit-dev/react-ui'
 import type { Section } from './sections'
 
 /**

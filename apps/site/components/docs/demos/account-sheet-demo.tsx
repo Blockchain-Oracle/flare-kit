@@ -10,10 +10,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const ACCOUNT_CASES = SECTIONS.find((section) => section.id === 'sh-02')!.cases
 
-const CODE = `import { walletConnected } from '@flare-kit/core'
-import { useAccounts } from '@flare-kit/react'
-import { AccountSheet } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { walletConnected } from '@flarekit-dev/core'
+import { useAccounts } from '@flarekit-dev/react'
+import { AccountSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const COSTON2 = { name: 'Coston2', chainId: 114 }
 const XRPL_TESTNET = { name: 'XRPL Testnet' }

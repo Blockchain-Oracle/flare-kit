@@ -2,7 +2,7 @@
 title: useRedeem
 description: Quote a redemption in whole lots, say up front what happens if the agent does not pay, and track the request as an operation that reconciles itself.
 breadcrumb: ['Docs', 'Hooks', 'useRedeem']
-importLine: "import { useRedeem } from '@flare-kit/react'"
+importLine: "import { useRedeem } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-operation', label: 'useOperation' }
 next: { href: '/docs/hooks/use-accounts', label: 'useAccounts' }
 ---
@@ -35,8 +35,8 @@ a counterparty fails to.
 ## Usage
 
 ```tsx
-import { formatExact } from '@flare-kit/core'
-import { useRedeem } from '@flare-kit/react'
+import { formatExact } from '@flarekit-dev/core'
+import { useRedeem } from '@flarekit-dev/react'
 
 const intent = { lots: 3, redeemerUnderlyingAddress: 'rPT1Sjq2…dyfzbpAYe' }
 

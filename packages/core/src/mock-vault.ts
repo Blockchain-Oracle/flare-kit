@@ -1,6 +1,6 @@
 // packages/core/src/mock-vault.ts
 import type { Address, PublicClient } from 'viem'
-import { type VaultConfig, vaultByKey } from '@flare-kit/contracts'
+import { type VaultConfig, vaultByKey } from '@flarekit-dev/contracts'
 import { type VaultAdapter, makeVaultAdapter } from './vault-adapter.js'
 
 /**

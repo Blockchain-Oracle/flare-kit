@@ -12,10 +12,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const RANDOM_CASES = M4_PROOF_SECTIONS.find((section) => section.id === 'ftso-04')!.cases
 
-const CODE = `import type { RoundReader } from '@flare-kit/core'
-import { useSecureRandom } from '@flare-kit/react'
-import { SecureRandomPanel } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import type { RoundReader } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Random({ reader }: { reader: RoundReader }) {
   const { data, loading, refresh } = useSecureRandom({

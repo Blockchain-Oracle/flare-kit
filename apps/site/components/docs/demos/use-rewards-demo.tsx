@@ -4,15 +4,15 @@ import {
   type ClaimIntent,
   MOCK_REWARDS_OBSERVED as OBSERVED,
   createMockRewardsAdapter,
-} from '@flare-kit/core'
-import { type FtsoProofResult, useRewards } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { type FtsoProofResult, useRewards } from '@flarekit-dev/react'
 import { useEffect, useState } from 'react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { createMockRewardsAdapter } from '@flare-kit/core'
-import { useRewards } from '@flare-kit/react'
-import { ClaimCard } from '@flare-kit/react-ui'
+const CODE = `import { createMockRewardsAdapter } from '@flarekit-dev/core'
+import { useRewards } from '@flarekit-dev/react'
+import { ClaimCard } from '@flarekit-dev/react-ui'
 
 const adapter = createMockRewardsAdapter() // live: makeRewardsAdapter(client, rewardsFor('coston2'), fetch)
 const reconcile = (owner) => adapter.read(owner) // keyless: the read holds no key

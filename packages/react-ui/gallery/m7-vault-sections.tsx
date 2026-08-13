@@ -4,8 +4,8 @@ import {
   type WithdrawOperation, type WithdrawPlanResult, type WithdrawQuote, type WithdrawQuoteResult,
   MOCK_EPOCH, advanceSteps, amount, applyDepositQuote, applyTransition, applyWithdrawQuote,
   createDeposit, createWithdraw, observe, startQuoting, vaultByKey,
-} from '@flare-kit/core'
-import { DepositCard, VaultCatalogue, WithdrawCard, type VaultReadsView, type VaultRow } from '@flare-kit/react-ui'
+} from '@flarekit-dev/core'
+import { DepositCard, VaultCatalogue, WithdrawCard, type VaultReadsView, type VaultRow } from '@flarekit-dev/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M7 vault surfaces, in both themes (the one

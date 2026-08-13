@@ -2,7 +2,7 @@
 title: PendingTray
 description: The persistent list of operations still in flight, so navigating away from a mint does not mean losing it — with no Resume button, because operations reconcile themselves.
 breadcrumb: ['Docs', 'Components', 'PendingTray']
-importLine: "import { PendingTray } from '@flare-kit/react-ui'"
+importLine: "import { PendingTray } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/source-drawer', label: 'SourceDrawer' }
 next: { href: '/docs/components/attestation-catalogue', label: 'AttestationCatalogue' }
 ---
@@ -27,10 +27,10 @@ Mount it under a `FlareProvider`. `usePending` returns everything in the
 operation registry that has not reached a terminal state, newest first.
 
 ```tsx
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, usePending } from '@flare-kit/react'
-import { PendingTray } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, usePending } from '@flarekit-dev/react'
+import { PendingTray } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 function Tray() {
   const { pending } = usePending()
@@ -101,7 +101,7 @@ docs:
 
 `PendingTray` renders whatever `usePending` found in the operation registry on
 the provider, so moving from the mock to a live network swaps the kit, not the
-screen. Addresses come from `@flare-kit/contracts`; network is configuration.
+screen. Addresses come from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

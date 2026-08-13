@@ -13,10 +13,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const DELEGATION_CASES = M10_DELEGATION_SECTIONS.find((section) => section.id === 'm10-delegation')!.cases
 
-const CODE = `import { useDelegation } from '@flare-kit/react'
-import { DelegationCard } from '@flare-kit/react-ui'
-import { createMockDelegationAdapter } from '@flare-kit/core'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useDelegation } from '@flarekit-dev/react'
+import { DelegationCard } from '@flarekit-dev/react-ui'
+import { createMockDelegationAdapter } from '@flarekit-dev/core'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockDelegationAdapter()
 

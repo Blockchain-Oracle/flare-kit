@@ -5,7 +5,7 @@ import {
   decodeFeedId,
   ftsoRegistryFor,
   fastUpdatesConfigurationAbi,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Observation, observe } from '../observation.js'
 import type { RoundReader } from '../voting-round.js'
 import { type FeedRename, listSupportedFeedIds, readFeedRenames } from './feeds.js'

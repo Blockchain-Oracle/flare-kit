@@ -1,5 +1,5 @@
 // packages/react-ui/src/withdraw-card-state.ts
-import type { ExitRoute, VaultError, VaultPositionResult, WithdrawOperation, WithdrawPlanResult, WithdrawQuoteResult } from '@flare-kit/core'
+import type { ExitRoute, VaultError, VaultPositionResult, WithdrawOperation, WithdrawPlanResult, WithdrawQuoteResult } from '@flarekit-dev/core'
 import { type Cta, type CardNote, PRE_PLAN } from './card-chrome.js'
 
 /**

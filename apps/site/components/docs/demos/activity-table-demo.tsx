@@ -10,10 +10,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const ACTIVITY_CASES = SECTIONS.find((section) => section.id === 'user-02')!.cases
 
-const CODE = `import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, useActivity } from '@flare-kit/react'
-import { ActivityTable } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, useActivity } from '@flarekit-dev/react'
+import { ActivityTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'demo' })
 

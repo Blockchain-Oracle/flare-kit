@@ -1,5 +1,5 @@
-import type { DexToken, GaslessOperation, GaslessPlanResult } from '@flare-kit/core'
-import { applyGaslessPlan, applyTransition, createGasless, reconcileGaslessPayment } from '@flare-kit/core'
+import type { DexToken, GaslessOperation, GaslessPlanResult } from '@flarekit-dev/core'
+import { applyGaslessPlan, applyTransition, createGasless, reconcileGaslessPayment } from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { GaslessCard } from '../src/GaslessCard.js'

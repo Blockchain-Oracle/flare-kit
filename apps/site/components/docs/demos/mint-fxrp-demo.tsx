@@ -11,10 +11,10 @@ import { GalleryDemo } from './gallery-demo'
  */
 const MINT_CASES = M1_SECTIONS.find((section) => section.id === 'm1-mint')!.cases
 
-const CODE = `import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
-import { MintFXRP } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { MintFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'demo' })
 

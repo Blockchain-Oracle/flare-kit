@@ -13,7 +13,7 @@ import {
   disconnected,
   identityFor,
   parseReadOnlyIdentity,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useRef, useSyncExternalStore } from 'react'
 import { useFlareContext } from './provider.js'
 

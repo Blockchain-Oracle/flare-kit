@@ -1,4 +1,4 @@
-import type { RedemptionStatus } from '@flare-kit/contracts'
+import type { RedemptionStatus } from '@flarekit-dev/contracts'
 import type { RecoveryAction } from '../recovery.js'
 import type { OperationState, StepActor } from '../states.js'
 

@@ -1,4 +1,4 @@
-import { type Amount, type DexToken, formatExact } from '@flare-kit/core'
+import { type Amount, type DexToken, formatExact } from '@flarekit-dev/core'
 import { AssetLogo } from './primitives/AssetLogo.js'
 
 /**

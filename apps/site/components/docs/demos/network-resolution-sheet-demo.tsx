@@ -10,9 +10,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const RESOLVE_CASES = SECTIONS.find((section) => section.id === 'sh-03')!.cases
 
-const CODE = `import { useAccounts, useActionBinding } from '@flare-kit/react'
-import { NetworkResolutionSheet } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { useAccounts, useActionBinding } from '@flarekit-dev/react'
+import { NetworkResolutionSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 export function Resolve() {
   const { context } = useAccounts()

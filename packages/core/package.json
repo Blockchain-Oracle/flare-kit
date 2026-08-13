@@ -1,5 +1,5 @@
 {
-  "name": "@flare-kit/core",
+  "name": "@flarekit-dev/core",
   "version": "0.1.0",
   "description": "The durable operation lifecycle for Flare: intent, quote, unsigned plan, execution, evidence and recovery. Headless, no React.",
   "keywords": [
@@ -58,7 +58,7 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@flare-kit/contracts": "workspace:^"
+    "@flarekit-dev/contracts": "workspace:^"
   },
   "peerDependencies": {
     "viem": "^2.21.0"

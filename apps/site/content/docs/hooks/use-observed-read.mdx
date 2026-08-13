@@ -2,7 +2,7 @@
 title: useObservedRead
 description: The one async-read primitive every FTSO hook is built from — it holds what came back, keeps showing it while the next read is in flight, and never lets a failed read become an empty result.
 breadcrumb: ['Docs', 'Hooks', 'useObservedRead']
-importLine: "import { useObservedRead } from '@flare-kit/react'"
+importLine: "import { useObservedRead } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-activity', label: 'useActivity' }
 next: { href: '/docs/hooks/use-attestation-families', label: 'useAttestationFamilies' }
 ---
@@ -32,8 +32,8 @@ FTSO feed through the real `readFeeds` against the mock reader. There is no
 The reader is yours; the hook only sequences it.
 
 ```tsx
-import { readFeeds } from '@flare-kit/core'
-import { useObservedRead } from '@flare-kit/react'
+import { readFeeds } from '@flarekit-dev/core'
+import { useObservedRead } from '@flarekit-dev/react'
 
 function Price({ reader, chainId, feedIds }) {
   const { data, loading, error, refresh } = useObservedRead(

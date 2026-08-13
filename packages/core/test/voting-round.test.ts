@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FDC_PROTOCOL_ID, FTSO_PROTOCOL_ID, registryFor } from '@flare-kit/contracts'
+import { FDC_PROTOCOL_ID, FTSO_PROTOCOL_ID, registryFor } from '@flarekit-dev/contracts'
 import {
   isRoundFinalized,
   readVotingEpochs,

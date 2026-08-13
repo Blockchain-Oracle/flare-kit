@@ -2,7 +2,7 @@
 title: DepositCard
 description: The vault deposit composer — assets in, expected shares at the live rate, the exact minimum, and the approve and deposit steps as the two transactions they really are.
 breadcrumb: ['Docs', 'Components', 'DepositCard']
-importLine: "import { DepositCard } from '@flare-kit/react-ui'"
+importLine: "import { DepositCard } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/vault-catalogue', label: 'VaultCatalogue' }
 next: { href: '/docs/components/withdraw-card', label: 'WithdrawCard' }
 ---
@@ -27,9 +27,9 @@ The card is prop-driven: you own the operation record and the quote, it renders
 them and calls `onSubmit`. It holds no wallet client and no key.
 
 ```tsx
-import { createDeposit, quoteDeposit, createMockVaultAdapter } from '@flare-kit/core'
-import { DepositCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { createDeposit, quoteDeposit, createMockVaultAdapter } from '@flarekit-dev/core'
+import { DepositCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const adapter = createMockVaultAdapter('upshift-fxrp')
 
@@ -50,7 +50,7 @@ export function Deposit({ operation, quoteResult, onSubmit }) {
 
 <PropsTable rows={[
   { name: 'operation', type: 'DepositOperation', required: true, description: 'The deposit record from `createDeposit`. Its state drives the whole card — the editable amount, the spine, the CTA — so every state is reachable from props.' },
-  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flare-kit/contracts`: its address, deposit asset and share model. No vault address is ever hardcoded in a surface.' },
+  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flarekit-dev/contracts`: its address, deposit asset and share model. No vault address is ever hardcoded in a surface.' },
   { name: 'quoteResult', type: 'DepositQuoteResult', description: 'The quote, or `unavailable` with a reason. Without a quote the receive leg is `—` rather than a guessed number.' },
   { name: 'planResult', type: 'DepositPlanResult', description: 'The unsigned plan, or the gate that refused it — cap exceeded, insufficient balance, paused, expired. The refusal reason is read from here, never inferred.' },
   { name: 'amountInText', type: 'string', description: "The controlled text of the amount field. Omit it and the field shows the operation intent's own amount." },
@@ -100,7 +100,7 @@ docs:
 
 The card takes a `VaultConfig` and prop-driven results, so moving from the mock
 to a live network swaps the adapter behind the quote, not the screen. Addresses
-come from `@flare-kit/contracts`; network is configuration.
+come from `@flarekit-dev/contracts`; network is configuration.
 
 ```tsx
 // From this…

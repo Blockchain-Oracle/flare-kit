@@ -47,6 +47,16 @@ public registry API and must be confirmed at organisation creation. If it is
 taken, the fallback is `@flarekit-dev` with the product name unchanged, and
 this decision is amended rather than reopened.
 
+> **Amended 2026-08-13 — the fallback is executed.** At organisation creation
+> the `flare-kit` npm org turned out to exist already (a third-party org with
+> zero packages; `flarekit` is likewise a registered empty org). Verified in
+> the browser against npmjs.com on 2026-08-13. Per this decision the scope is
+> now **`@flarekit-dev`** — verified free the same day ("Scope not found") —
+> and the product name, domain (`flare-kit.xyz`), brand and repository stay
+> `flare-kit` unchanged. The unscoped package names `flare-kit` and
+> `create-flare-kit-app` remain free and are still to be reserved at first
+> publish. Abu confirmed executing the fallback in session on 2026-08-13.
+
 ## Why this and not the alternatives
 
 - **The unhyphenated form is unusable.** `flarekit` on npm is a Cloudflare

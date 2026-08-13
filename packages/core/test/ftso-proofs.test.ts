@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId } from '@flarekit-dev/contracts'
 import { fetchAnchorFeeds } from '../src/ftso/anchor.js'
 import { isProven, verifyAnchorFeed } from '../src/ftso/verify.js'
 import { readFeedHistory } from '../src/ftso/history.js'

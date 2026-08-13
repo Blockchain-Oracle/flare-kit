@@ -1,6 +1,6 @@
 'use client'
 
-import { CodeWindow } from '@flare-kit/react-ui'
+import { CodeWindow } from '@flarekit-dev/react-ui'
 
 /**
  * The live pane every hook page shares: the hook's actual return value,

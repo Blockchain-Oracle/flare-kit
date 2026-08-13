@@ -4,14 +4,14 @@ import {
   type DelegationIntent,
   MOCK_DELEGATION_OBSERVED as OBSERVED,
   createMockDelegationAdapter,
-} from '@flare-kit/core'
-import { useDelegation } from '@flare-kit/react'
+} from '@flarekit-dev/core'
+import { useDelegation } from '@flarekit-dev/react'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
-const CODE = `import { createMockDelegationAdapter } from '@flare-kit/core'
-import { useDelegation } from '@flare-kit/react'
-import { DelegationCard } from '@flare-kit/react-ui'
+const CODE = `import { createMockDelegationAdapter } from '@flarekit-dev/core'
+import { useDelegation } from '@flarekit-dev/react'
+import { DelegationCard } from '@flarekit-dev/react-ui'
 
 const adapter = createMockDelegationAdapter() // live: makeDelegationAdapter(client, delegationFor('coston2'))
 const reconcile = (owner) => adapter.read(owner) // keyless: the read holds no key

@@ -8,7 +8,7 @@ import {
   type SerializedError,
   buildRewardsClaimPlan,
   toSerializedError,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useState } from 'react'
 import { useBridge } from './use-bridge.js'
 

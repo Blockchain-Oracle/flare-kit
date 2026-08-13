@@ -1,6 +1,6 @@
 // packages/core/src/mock-rewards.ts
 import type { Address, Hex, PublicClient } from 'viem'
-import { type FlareNetworkKey, type RewardsDeployment, rewardsFor, stakingFor } from '@flare-kit/contracts'
+import { type FlareNetworkKey, type RewardsDeployment, rewardsFor, stakingFor } from '@flarekit-dev/contracts'
 import { type RewardsAdapter, makeRewardsAdapter } from './rewards-adapter.js'
 
 /**

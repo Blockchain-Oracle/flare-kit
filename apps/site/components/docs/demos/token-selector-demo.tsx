@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const SELECTOR_CASES = M5_SWAP_SECTIONS.find((section) => section.id === 'm5-token-selector')!.cases
 
-const CODE = `import { dexFor } from '@flare-kit/contracts'
-import { TokenSelector } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { dexFor } from '@flarekit-dev/contracts'
+import { TokenSelector } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const dex = dexFor(114) // Coston2
 

@@ -3,7 +3,7 @@ import {
   type Observation,
   type RoundReader,
   readCustomFeeds,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { type ObservedRead, useObservedRead } from './use-observed-read.js'
 
 /**

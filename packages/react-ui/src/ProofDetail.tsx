@@ -1,5 +1,5 @@
-import type { AttestationProof, FamilyRow } from '@flare-kit/core'
-import { decodeAttestationName, evidence } from '@flare-kit/core'
+import type { AttestationProof, FamilyRow } from '@flarekit-dev/core'
+import { decodeAttestationName, evidence } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'

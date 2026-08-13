@@ -7,7 +7,7 @@ import {
   evmTransactionFamily,
   xrpPaymentFamily,
   xrpPaymentNonexistenceFamily,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { ProofDetail } from '../src/ProofDetail.js'
 import { ProofHandoff, toProofLiteral } from '../src/ProofHandoff.js'
 import { rowFor } from './fdc-shapes.js'

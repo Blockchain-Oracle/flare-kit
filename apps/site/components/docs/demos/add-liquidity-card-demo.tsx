@@ -19,9 +19,9 @@ const CODE = `import {
   quoteAddLiquidity,
   readAllowance,
   startQuoting,
-} from '@flare-kit/core'
-import { AddLiquidityCard } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+} from '@flarekit-dev/core'
+import { AddLiquidityCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const CHAIN = 114 // Coston2
 

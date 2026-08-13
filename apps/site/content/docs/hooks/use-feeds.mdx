@@ -2,7 +2,7 @@
 title: useFeeds
 description: Block-latency FTSO feed values as React state, where every reading carries the exponent and timestamp that came back with it and the batch's fee is quoted before anything is sent.
 breadcrumb: ['Docs', 'Hooks', 'useFeeds']
-importLine: "import { useFeeds } from '@flare-kit/react'"
+importLine: "import { useFeeds } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-anchor-proof', label: 'useAnchorProof' }
 next: { href: '/docs/hooks/use-feed-history', label: 'useFeedHistory' }
 ---
@@ -39,9 +39,9 @@ The reader is a parameter, not context: this hook consumes no provider. Mount it
 with the reader your host already has.
 
 ```tsx
-import type { PayableReader } from '@flare-kit/core'
-import { FEED_CATEGORY, encodeFeedId, formatExact, isObserved } from '@flare-kit/core'
-import { useFeeds } from '@flare-kit/react'
+import type { PayableReader } from '@flarekit-dev/core'
+import { FEED_CATEGORY, encodeFeedId, formatExact, isObserved } from '@flarekit-dev/core'
+import { useFeeds } from '@flarekit-dev/react'
 
 const FEED_IDS = [
   encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD'),
@@ -75,7 +75,7 @@ that rebuilds it inline every render still completes a read.
 
 <PropsTable rows={[
   { name: 'reader', type: 'PayableReader', required: true, description: 'A reader with simulateContract. getFeedsById is payable and viem’s readContract silently drops a value, so the read goes out as a simulation carrying the fee — an eth_call with funds attached, which spends nothing and needs no signer.' },
-  { name: 'chainId', type: 'number', required: true, description: 'Which deployment to read. Addresses come from @flare-kit/contracts; network is configuration.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment to read. Addresses come from @flarekit-dev/contracts; network is configuration.' },
   { name: 'feedIds', type: 'readonly FeedId[]', required: true, description: 'The exact batch to read. The fee is quoted for this batch, because that is what getFeedsById charges for.' },
   { name: 'maxFeeWei', type: 'bigint', required: false, description: 'Refuse rather than spend above this. The refusal happens before anything is sent, and it is the caller’s own policy rather than a chain fault.' },
   { name: 'account', type: '0x${string}', required: false, description: 'Who pays. Required once the fee is non-zero: a call carrying value runs as 0x0 without one, and 0x0 has no balance. The fee is zero on Coston2 today, which hides this entirely, and it is governance-settable.' },
@@ -120,8 +120,8 @@ contract resolved a retired id to its current feed, the reading also carries
 The hook takes its reader as a parameter, so the swap is the reader alone.
 
 ```tsx
-import { chainFor } from '@flare-kit/contracts'
-import { createMockFtsoReader } from '@flare-kit/core'
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
 import { createPublicClient, http } from 'viem'
 
 // From this…

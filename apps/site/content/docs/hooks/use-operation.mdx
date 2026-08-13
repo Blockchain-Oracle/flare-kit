@@ -2,7 +2,7 @@
 title: useOperation
 description: One operation from the registry, by id, subscribed — the read half of the lifecycle, with no clock of its own and nothing to resume.
 breadcrumb: ['Docs', 'Hooks', 'useOperation']
-importLine: "import { useOperation } from '@flare-kit/react'"
+importLine: "import { useOperation } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-direct-mint', label: 'useDirectMint' }
 next: { href: '/docs/hooks/use-redeem', label: 'useRedeem' }
 ---
@@ -34,8 +34,8 @@ Give it an id you already have — from `start`, from a durable store, or from a
 route parameter. `undefined` is a legitimate argument and returns `undefined`.
 
 ```tsx
-import { useOperation } from '@flare-kit/react'
-import { OperationTimeline } from '@flare-kit/react-ui'
+import { useOperation } from '@flarekit-dev/react'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
 
 function Operation({ id }: { id: string }) {
   const operation = useOperation(id)

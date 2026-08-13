@@ -2,7 +2,7 @@
 title: Verified flags
 description: Every capability in the registry carries a boolean saying whether it has been driven live with transaction evidence. false means not proven — never broken, and never quietly rendered as proven.
 breadcrumb: ['Docs', 'Contracts', 'Verified flags']
-importLine: "import { vaultsFor, stakingFor } from '@flare-kit/contracts'"
+importLine: "import { vaultsFor, stakingFor } from '@flarekit-dev/contracts'"
 prev: { href: '/docs/contracts/networks', label: 'Networks and registries' }
 next: { href: '/docs/agent-kit/tools', label: 'Agent tools' }
 ---
@@ -107,7 +107,7 @@ it. The values are plain constants, so this costs nothing and works without a
 provider, a wallet or a network call.
 
 ```ts
-import { routesFor, stakingFor } from '@flare-kit/contracts'
+import { routesFor, stakingFor } from '@flarekit-dev/contracts'
 
 const staking = stakingFor('coston2')
 if (staking?.stakeVerified) {

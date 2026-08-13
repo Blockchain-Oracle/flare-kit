@@ -2,7 +2,7 @@
 title: useDelegation
 description: Wrap, delegate and undelegate as one polled operation, where the position and the operation's progress both come from the same on-chain read.
 breadcrumb: ['Docs', 'Hooks', 'useDelegation']
-importLine: "import { useDelegation } from '@flare-kit/react'"
+importLine: "import { useDelegation } from '@flarekit-dev/react'"
 prev: { href: '/docs/hooks/use-x402', label: 'useX402' }
 next: { href: '/docs/hooks/use-rewards', label: 'useRewards' }
 ---
@@ -32,10 +32,10 @@ everything visible came from the keyless read and the pure planner.
 ## Usage
 
 ```tsx
-import { makeDelegationAdapter, type DelegationIntent } from '@flare-kit/core'
-import { delegationFor } from '@flare-kit/contracts'
-import { useDelegation } from '@flare-kit/react'
-import { DelegationCard } from '@flare-kit/react-ui'
+import { makeDelegationAdapter, type DelegationIntent } from '@flarekit-dev/core'
+import { delegationFor } from '@flarekit-dev/contracts'
+import { useDelegation } from '@flarekit-dev/react'
+import { DelegationCard } from '@flarekit-dev/react-ui'
 
 const adapter = makeDelegationAdapter(publicClient, delegationFor('coston2'))
 const reconcile = (owner: `0x${string}`) => adapter.read(owner)

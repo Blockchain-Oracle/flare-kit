@@ -1,6 +1,6 @@
 // packages/core/src/delegation-adapter.ts
 import { type Abi, type Address, type PublicClient } from 'viem'
-import { type DelegationDeployment, IWNAT_ABI, IVPTOKEN_ABI } from '@flare-kit/contracts'
+import { type DelegationDeployment, IWNAT_ABI, IVPTOKEN_ABI } from '@flarekit-dev/contracts'
 
 /**
  * The `DelegationAdapter` — the reads/call-builder seam for the M10 delegation op,

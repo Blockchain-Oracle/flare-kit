@@ -4,7 +4,7 @@
     {
       "name": "site",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["--filter", "@flare-kit/site", "dev"],
+      "runtimeArgs": ["--filter", "@flarekit-dev/site", "dev"],
       "port": 3000
     }
   ]

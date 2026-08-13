@@ -12,9 +12,9 @@ import { GalleryDemo } from './gallery-demo'
  */
 const TIMELINE_CASES = M1_SECTIONS.find((section) => section.id === 'm1-timeline')!.cases
 
-const CODE = `import { createMockKit } from '@flare-kit/core'
-import { OperationTimeline } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+const CODE = `import { createMockKit } from '@flarekit-dev/core'
+import { OperationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const kit = createMockKit({ seed: 'docs', scenario: 'happy' })
 const trace = kit.trace(

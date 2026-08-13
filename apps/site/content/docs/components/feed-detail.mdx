@@ -2,7 +2,7 @@
 title: FeedDetail
 description: One FTSO feed shown as two claims side by side — the block-latency read with no proof attached, and the anchor value committed in a voting round — with neither resolved into a single price.
 breadcrumb: ['Docs', 'Components', 'FeedDetail']
-importLine: "import { FeedDetail } from '@flare-kit/react-ui'"
+importLine: "import { FeedDetail } from '@flarekit-dev/react-ui'"
 prev: { href: '/docs/components/feed-catalogue', label: 'FeedCatalogue' }
 next: { href: '/docs/components/feed-history-table', label: 'FeedHistoryTable' }
 ---
@@ -36,11 +36,11 @@ and time that batch arrived with, so the panel can still say who served it and
 when.
 
 ```tsx
-import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, isObserved, observe } from '@flare-kit/core'
-import { useAnchorProof, useFeedCatalogue, useFeeds } from '@flare-kit/react'
-import { FeedDetail } from '@flare-kit/react-ui'
-import '@flare-kit/react-ui/styles.css'
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, isObserved, observe } from '@flarekit-dev/core'
+import { useAnchorProof, useFeedCatalogue, useFeeds } from '@flarekit-dev/react'
+import { FeedDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
 
 const reader = createMockFtsoReader()
 const chainId = FLARE_NETWORKS.coston2.id
@@ -136,7 +136,7 @@ docs:
 `createMockFtsoReader()` is a reader, not a second implementation: the same
 `readFeeds` and `verifyAnchorFeed` run against it. Swapping in a viem public
 client for the network you want is the whole change, and addresses come from
-`@flare-kit/contracts`. The reader covers the chain reads only — anchor leaves
+`@flarekit-dev/contracts`. The reader covers the chain reads only — anchor leaves
 and their proofs are fetched from the data-availability host over HTTP, so
 `useAnchorProof` reaches the real host either way.
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { CopyButton } from '@flare-kit/react-ui'
+import { CopyButton } from '@flarekit-dev/react-ui'
 import { useState } from 'react'
 import { highlight } from '../../lib/highlight'
 

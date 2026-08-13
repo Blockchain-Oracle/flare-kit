@@ -1,5 +1,5 @@
 // packages/react-ui/src/DepositCard.tsx
-import { type Amount, type DepositOperation, type DepositPlanResult, type DepositQuoteResult, type DexToken, type VaultConfig, amount, formatExact } from '@flare-kit/core'
+import { type Amount, type DepositOperation, type DepositPlanResult, type DepositQuoteResult, type DexToken, type VaultConfig, amount, formatExact } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
