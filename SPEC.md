@@ -1036,6 +1036,44 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   `@import`-ed into `styles.css`.
 - `packages/react-ui/gallery/m11-staking-sections.tsx` — M11-AC6. Every required state driven from
   props, both themes; only states the live run observed (no invented active stake).
+- `packages/contracts/src/governance.ts` — M12-R1. `GovernanceVotePower` /
+  `PollingFoundation` / `PollingFtso` / `PollingManagementGroup` registry for
+  `coston2` + `flare`, with `governanceVerified` (false until the live delegate
+  round trip reads back).
+- `packages/contracts/src/governance-abis.ts` — M12-R1. `IGovernanceVotePower` /
+  `IGovernor` (`PollingFoundation`) / `IPollingFtso` viem fragments.
+- `packages/core/src/governance-adapter.ts` — M12-R2. Governance-VP + eligibility
+  reads (viem) and the delegate/undelegate `UnsignedCall` builders.
+- `packages/core/src/governance.ts` — M12-R2/R4. Intents → `governanceVerified`-gated
+  plan → lifecycle; invariants (all-or-nothing single delegate, never M10's bips).
+- `packages/core/src/governance-states.ts` — M12-R3. `reconcileGovernance`, the
+  delegate/undelegate spine over canonical states; `succeeded` only from the
+  `getDelegateOfAtNow` read back.
+- `packages/core/src/proposals.ts` — M12-R5/R6. Mainnet-read proposal
+  discovery/state + detail + eligibility, honest-empty when discovery finds
+  none within RPC limits; the carried `castVote` intent.
+- `packages/core/src/mock-governance.ts` — M12-R7. The governance mock, built
+  after the real run; copies observed, refuses unobserved.
+- `packages/core/scripts/probe-governance.mjs` — M12 Verification / M12-R1. Dev,
+  not shipped: keyless resolve on both networks + VP/delegate/eligibility/
+  proposal-discovery probe.
+- `packages/core/scripts/live-governance.mjs` — M12 Verification. Dev, not
+  shipped: keyless reads always, plus the gated delegate/undelegate round trip
+  (keys from `.secrets`, never logged); flips `governanceVerified`.
+- `packages/react/src/use-governance.ts` — M12-R9. The delegate/undelegate
+  operation hook.
+- `packages/react/src/use-proposals.ts` — M12-R9. The mainnet proposal
+  catalogue/detail read hook.
+- `packages/react-ui/src/GovernanceCard.tsx` (+ `packages/react-ui/src/governance-card-state.ts`)
+  — M12-R8. The GOVERNANCE write card: VP + delegate composer + eligibility.
+- `packages/react-ui/src/ProposalCatalogue.tsx` — M12-R8. The mainnet proposal
+  list (cross-network read, labelled).
+- `packages/react-ui/src/ProposalDetail.tsx` — M12-R8. One proposal, full state
+  + the carried vote affordance.
+- `packages/react-ui/src/governance.css` — M12-R8. The `fk-gov` classes, values
+  from tokens only, `@import`-ed into `styles.css`.
+- `packages/react-ui/gallery/m12-governance-sections.tsx` — M12-AC6. The state
+  matrix, both themes, observed states only.
 
 ## Integrations
 
