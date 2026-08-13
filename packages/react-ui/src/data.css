@@ -1,0 +1,367 @@
+/* ============================================================
+   @flare-kit/react-ui — the data surfaces.
+
+   The portfolio table, the activity table, the pending tray and
+   the source drawer. Every value derives from the tokens in
+   styles.css; nothing here declares a colour or a face of its
+   own.
+
+   The rule that shapes this file: exact values render in the
+   mono face with tabular numerals, carrying their asset and
+   full precision. A number in the body face is a bug, so the
+   numeric column sets the mono face once rather than each
+   screen remembering to.
+   ============================================================ */
+
+/* ---------- the shared table ---------- */
+
+.fk .fk-table-scroll {
+  /* Wide content scrolls inside its own container. The panel never scrolls
+     sideways, because the widget sits inside somebody else's page. */
+  overflow-x: auto;
+}
+
+.fk .fk-table {
+  width: 100%;
+  /* Separate, not collapse: the header pill needs rounded corners, and a
+     collapsed border model discards the radius on a cell. Row hairlines move
+     onto each td's bottom edge, which reads identically at border-spacing 0. */
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13px;
+}
+
+/* The header is a soft tinted pill, not an uppercase rule. Re-cut 2026-08-09:
+   Abu adopted Uniswap's data-table density, so the label recedes by weight and
+   tier (neutral2/500, sentence case) rather than by shouting in caps. The fill
+   is the translucent --fk-tint, not a solid surface, so the pill stays visible
+   on any backdrop — in dark theme --fk-surface equals the panel's --fk-card and
+   a solid fill would disappear. Not sticky: the scroll wrapper's overflow-x
+   makes it the scroll container with no height, so `position: sticky` never
+   engaged — an honest static pill rather than an inert declaration. */
+.fk .fk-table thead th {
+  text-align: left;
+  font-family: var(--fk-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--fk-text-muted);
+  background: var(--fk-tint);
+  padding: 9px 12px;
+  white-space: nowrap;
+}
+
+/* One radius pair caps both the header pill and the hovered row — they share
+   the same rounded left and right ends. */
+.fk .fk-table thead th:first-child,
+.fk .fk-table tbody tr:hover td:first-child {
+  border-top-left-radius: var(--fk-r-md);
+  border-bottom-left-radius: var(--fk-r-md);
+}
+
+.fk .fk-table thead th:last-child,
+.fk .fk-table tbody tr:hover td:last-child {
+  border-top-right-radius: var(--fk-r-md);
+  border-bottom-right-radius: var(--fk-r-md);
+}
+
+.fk .fk-table th[data-numeric='true'],
+.fk .fk-table td[data-numeric='true'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--fk-font-mono);
+}
+
+/* Roomy rows carry the re-cut's density: 64px is a floor, not a cap, so a cell
+   whose content stacks (a value over its decimals, wrapped evidence chips)
+   grows past it. Content centres in the taller row. */
+.fk .fk-table td {
+  height: 64px;
+  padding: 12px;
+  border-bottom: 1px solid var(--fk-border);
+  vertical-align: middle;
+  color: var(--fk-text);
+}
+
+.fk .fk-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Full-width tint fill on hover — Uniswap's hovered row, never a per-row card
+   or border at rest. Its rounded ends are set with the header pill's above. */
+.fk .fk-table tbody tr:hover td {
+  background: var(--fk-tint);
+}
+
+/* The pinned identity column is deliberately NOT here yet. A `position: sticky`
+   first cell must paint an opaque background to hide the values scrolling
+   behind it, but the right colour is the host container's — card in a panel,
+   surface in the gallery, unknown in an embed — which this primitive cannot
+   know. A guessed `--fk-card` showed a white stripe against the surface
+   backdrop even with no overflow. It needs the surface to declare its own
+   backdrop (a `--fk-table-pin-bg` var) or a JS overflow-detected class; queued
+   rather than shipped wrong. */
+
+.fk .fk-table-asset {
+  font-family: var(--fk-font-mono);
+  font-weight: 500;
+}
+
+.fk .fk-table-account {
+  display: block;
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  color: var(--fk-text-faint);
+}
+
+.fk .fk-table-empty td {
+  height: auto;
+  padding: 18px 0;
+  color: var(--fk-text-muted);
+  font-size: 13px;
+}
+
+.fk .fk-skeleton {
+  display: block;
+  height: 11px;
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-border);
+  /* No shimmer: an animation promises an arrival, and this value may turn out
+     to be one no source could read. */
+  opacity: 0.55;
+}
+
+/* ---------- a value that could not be read ----------
+   Deliberately not a dash and never a zero, in the body face rather than the
+   mono one: anything that looks like a quantity in the numeric column will be
+   read as a quantity. */
+
+.fk .fk-unread {
+  font-family: var(--fk-font-sans);
+  color: var(--fk-attention);
+  font-size: 12px;
+}
+
+/* ---------- source chips ---------- */
+
+.fk .fk-src {
+  gap: 5px;
+}
+
+.fk .fk-src-age {
+  font-family: var(--fk-font-mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  /* No opacity. At 0.8 this composited to 3.36:1 and failed AA — measured, not
+     guessed — on every SourceChip across M2, M3 and M4. How old an observation
+     is *is* the claim; a caption nobody can read is a caption that is not
+     making it. It recedes by sitting in the faint tier already. */
+}
+
+.fk .fk-src-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fk .fk-src-provider {
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  color: var(--fk-text-muted);
+  word-break: break-all;
+}
+
+.fk .fk-src-network {
+  font-size: 11px;
+  color: var(--fk-text-faint);
+}
+
+/* ---------- unbuilt position types ----------
+   Set apart by a dashed rule, because these are not holdings of yours that
+   happen to be empty. They are capabilities this build cannot see. */
+
+.fk .fk-unbuilt {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--fk-border);
+}
+
+.fk .fk-unbuilt-title {
+  font-family: var(--fk-font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+  margin-bottom: 8px;
+}
+
+.fk .fk-unbuilt-row {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr;
+  gap: 4px 12px;
+  padding: 5px 0;
+  font-size: 12px;
+}
+
+.fk .fk-unbuilt-kind {
+  font-family: var(--fk-font-mono);
+  color: var(--fk-text-muted);
+}
+
+.fk .fk-unbuilt-reason {
+  color: var(--fk-text-faint);
+}
+
+/* ---------- pending tray ---------- */
+
+.fk .fk-tray {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fk .fk-tray-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+}
+
+.fk .fk-tray-id {
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  color: var(--fk-text-faint);
+}
+
+.fk .fk-tray-cap {
+  font-size: 12px;
+  color: var(--fk-text);
+  flex: 1 1 auto;
+}
+
+/* ---------- source drawer ---------- */
+
+.fk .fk-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fk .fk-drawer-group {
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  padding: 11px 12px;
+  background: var(--fk-card);
+}
+
+.fk .fk-drawer-title {
+  font-family: var(--fk-font-display);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 7px;
+  color: var(--fk-text);
+}
+
+/* A disagreement between two sources is information, so it is shown as a
+   pair of claims side by side — never resolved down to one number. */
+.fk .fk-conflict {
+  display: grid;
+  gap: 6px;
+  padding: 9px 10px;
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-attention-soft);
+  border: 1px solid var(--fk-attention-line);
+}
+
+.fk .fk-conflict-claim {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-family: var(--fk-font-mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- shared inline control ----------
+   A control that reads as a link but is a button, because it acts on this page
+   rather than navigating. Never styled as a pill: a pill means "this is a tag". */
+
+.fk .fk-linkish {
+  color: var(--fk-primary);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  /* DESIGN.md: interactive targets are at least 24x24 CSS px. At 12px this
+     measured about 20px tall, and it is the only row-selection control on the
+     attestation catalogue as well as every "read it again" refresh. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding-inline: 2px;
+}
+
+.fk .fk-events-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.fk .fk-events-label {
+  font-family: var(--fk-font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+  min-width: 84px;
+}
+
+.fk .fk-tray-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fk .fk-tray-empty,
+.fk .fk-tray-loading {
+  font-size: 13px;
+  color: var(--fk-text-muted);
+}
+
+/* Every data surface is the same stack: a table, then the sentences the table
+   cannot say in a cell. One rule rather than one per family — the FTSO pair
+   arrived with an identical copy in `ftso.css`, which is exactly how two
+   surfaces end up 2px apart.
+
+   The three `fk-fdc-*` roots were applied by their components and defined
+   NOWHERE: M3 computed to `display: block` with no gap and compensated with a
+   margin on one child, while its FTSO twin was flex-column. A green suite could
+   not see it, because the old integrity test only checked defined-then-referenced
+   and never the reverse. `css-referenced-defined.test.ts` now checks that
+   direction, and it found three where the audit found one. */
+.fk .fk-portfolio,
+.fk .fk-activity,
+.fk .fk-fdc-catalogue,
+.fk .fk-fdc-builder,
+.fk .fk-fdc-proof,
+.fk .fk-ftso-catalogue,
+.fk .fk-ftso-history {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fk .fk-activity-actions {
+  display: flex;
+  gap: 10px;
+}

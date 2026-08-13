@@ -1,0 +1,109 @@
+/* ============================================================
+   @flare-kit/react-ui — the cross-chain surfaces (M8).
+
+   RouteCatalogue and BridgeCard reuse SwapLeg, the OperationTimeline
+   spine and the shared Panel/Note/DetailRow/SourceChip/EvidenceChip/
+   card-chrome, so this file adds only what cross-chain needs beyond
+   swap.css / vault.css: the catalogue's per-route rows and the durable
+   delivery-timeline block. Every value derives from a token in
+   primitives.css — nothing is a raw literal.
+   ============================================================ */
+
+.fk.fk-route {
+  max-width: 480px;
+}
+
+/* ---------- RouteCatalogue rows (M8-R7) ----------
+   One row per configured route, separated by a hairline rather than a
+   card each, so the list reads as one catalogue and not a stack. */
+.fk-route .fk-route-row {
+  padding: 14px 0;
+}
+.fk-route .fk-route-row + .fk-route-row {
+  border-top: 1px solid var(--fk-border);
+}
+.fk-route .fk-route-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fk-route .fk-route-row-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-right: auto;
+}
+.fk-route .fk-route-row-name {
+  font-family: var(--fk-font-display);
+  font-weight: 600;
+  color: var(--fk-text);
+}
+.fk-route .fk-route-row-kind {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* ---------- BridgeCard (M8-R8/R9) ----------
+   Reuses SwapLeg and the shared card chrome, so it adds only its width, the
+   header aside, and the durable delivery-timeline block. */
+.fk.fk-bridge-card {
+  max-width: 420px;
+}
+.fk-bridge-card .fk-bridge-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-bridge-card .fk-bridge-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-bridge-card .fk-bridge-spine {
+  margin-top: 12px;
+}
+
+/* The durable delivery timeline (M8-R3/R8): submitted (source tx + LayerZeroScan) →
+   awaiting-delivery → delivered, read from the destination chain. Distinct from the
+   operation spine, which carries the approve/send steps a wallet signs. */
+.fk-bridge-card .fk-bridge-timeline {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+.fk-bridge-card .fk-bridge-leg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+.fk-bridge-card .fk-bridge-leg + .fk-bridge-leg {
+  border-top: 1px dashed var(--fk-border);
+}
+.fk-bridge-card .fk-bridge-leg-label {
+  color: var(--fk-text-muted);
+  font-size: 0.85rem;
+  margin-right: auto;
+}
+.fk-bridge-card .fk-bridge-leg[data-state='active'] .fk-bridge-leg-label {
+  color: var(--fk-text);
+  font-weight: 600;
+}
+.fk-bridge-card .fk-bridge-leg[data-state='done'] .fk-bridge-leg-label {
+  color: var(--fk-text);
+}
+.fk-bridge-card .fk-bridge-leg-link {
+  font-size: 0.8rem;
+  color: var(--fk-primary);
+  text-decoration: none;
+  /* WCAG 2.5.8 target size — the evidence link is a 24px-tall hit target (the M4
+     fk-ev-link precedent), not a 20px line of text. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 4px;
+}
+.fk-bridge-card .fk-bridge-leg-link:hover {
+  text-decoration: underline;
+}

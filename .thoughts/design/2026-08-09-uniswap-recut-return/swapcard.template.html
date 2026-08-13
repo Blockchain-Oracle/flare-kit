@@ -1,0 +1,634 @@
+<title>SwapCard — flare-kit re-cut (design specimen)</title>
+<style>
+/* ============================================================
+   flare-kit — SwapCard re-cut direction screen.
+   Tokens, type and component anatomy are inherited VERBATIM from
+   the accepted DESIGN.md / fable5-direction-return system.
+   The re-cut adds: real bundled logos (→ seeded-monogram fallback),
+   a Swap / Limit segmented control, and the token-selector +
+   connect-wallet modals — patterns re-derived (not copied) from
+   Uniswap (GPL, read-only) and Jupiter (MIT).
+   ============================================================ */
+
+@font-face{font-family:'Bricolage Grotesque';src:url('__F_BRIC700__') format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Bricolage Grotesque';src:url('__F_BRIC800__') format('woff2');font-weight:800;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('__F_HANK400__') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('__F_HANK500__') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('__F_HANK600__') format('woff2');font-weight:600;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('__F_MONO400__') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:'JetBrains Mono';src:url('__F_MONO500__') format('woff2');font-weight:500;font-display:swap}
+
+:root{
+  --bg:#FDFCF9; --surface:#F7F6F1; --card:#FFFFFF;
+  --text:#221D18; --text-muted:#68625C; --text-faint:#75716B;
+  --border:#E1DFDB; --border-control:#8D8883;
+  --primary:#3959DA; --primary-hi:#2B45C5;
+  --brand:#E62058; --brand-text:#C51B4B;
+  --success:#00803F; --attention:#9F5F00; --danger:#BC2E27; --partial:#794DB6; --neutral:#68625C;
+  --primary-soft:rgba(57,89,218,.10); --primary-line:rgba(57,89,218,.32);
+  --success-soft:rgba(0,128,63,.11); --success-line:rgba(0,128,63,.30);
+  --attention-soft:rgba(159,95,0,.11); --attention-line:rgba(159,95,0,.30);
+  --danger-soft:rgba(188,46,39,.10); --danger-line:rgba(188,46,39,.30);
+  --brand-soft:rgba(230,32,88,.10); --brand-line:rgba(230,32,88,.30);
+  --display:'Bricolage Grotesque',system-ui,sans-serif;
+  --sans:'Hanken Grotesk',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;
+  --r-sm:5px; --r-md:9px; --r-lg:14px;
+  --sh-1:0 1px 2px oklch(.3 .02 70/.05),0 1px 1px oklch(.3 .02 70/.04);
+  --sh-2:0 2px 8px oklch(.3 .02 70/.06),0 1px 2px oklch(.3 .02 70/.05);
+  --sh-3:0 18px 50px -18px oklch(.3 .05 70/.22),0 2px 8px oklch(.3 .02 70/.06);
+  --logo-plate:#FFFFFF;
+  --maxw:1180px; --nav-h:60px;
+}
+:root[data-theme="light"]{
+  --bg:#FDFCF9; --surface:#F7F6F1; --card:#FFFFFF;
+  --text:#221D18; --text-muted:#68625C; --text-faint:#75716B;
+  --border:#E1DFDB; --border-control:#8D8883;
+  --primary:#3959DA; --primary-hi:#2B45C5; --brand:#E62058; --brand-text:#C51B4B;
+  --success:#00803F; --attention:#9F5F00; --danger:#BC2E27;
+  --primary-soft:rgba(57,89,218,.10); --primary-line:rgba(57,89,218,.32);
+  --success-soft:rgba(0,128,63,.11); --success-line:rgba(0,128,63,.30);
+  --attention-soft:rgba(159,95,0,.11); --attention-line:rgba(159,95,0,.30);
+  --danger-soft:rgba(188,46,39,.10); --danger-line:rgba(188,46,39,.30);
+  --brand-soft:rgba(230,32,88,.10); --brand-line:rgba(230,32,88,.30);
+  --sh-1:0 1px 2px oklch(.3 .02 70/.05),0 1px 1px oklch(.3 .02 70/.04);
+  --sh-2:0 2px 8px oklch(.3 .02 70/.06),0 1px 2px oklch(.3 .02 70/.05);
+  --sh-3:0 18px 50px -18px oklch(.3 .05 70/.22),0 2px 8px oklch(.3 .02 70/.06);
+  --logo-plate:#FFFFFF;
+}
+:root[data-theme="dark"]{
+  --bg:#0F1014; --surface:#17191E; --card:#17191E;
+  --text:#F1F0ED; --text-muted:#9FA5AC; --text-faint:#7B8187;
+  --border:#2B2E33; --border-control:#5F646A;
+  --primary:#7197FF; --primary-hi:#8EB2FF; --brand:#FA5574; --brand-text:#FF6C84;
+  --success:#5BCC80; --attention:#F0A646; --danger:#F97163;
+  --primary-soft:rgba(113,151,255,.16); --primary-line:rgba(113,151,255,.40);
+  --success-soft:rgba(91,204,128,.16); --success-line:rgba(91,204,128,.38);
+  --attention-soft:rgba(240,166,70,.16); --attention-line:rgba(240,166,70,.38);
+  --danger-soft:rgba(249,113,99,.16); --danger-line:rgba(249,113,99,.38);
+  --brand-soft:rgba(250,85,116,.16); --brand-line:rgba(250,85,116,.38);
+  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 3px 10px rgba(0,0,0,.45);
+  --sh-3:0 24px 60px -20px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.4);
+  --logo-plate:#0B0C10;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1014; --surface:#17191E; --card:#17191E;
+    --text:#F1F0ED; --text-muted:#9FA5AC; --text-faint:#7B8187;
+    --border:#2B2E33; --border-control:#5F646A;
+    --primary:#7197FF; --primary-hi:#8EB2FF; --brand:#FA5574; --brand-text:#FF6C84;
+    --success:#5BCC80; --attention:#F0A646; --danger:#F97163;
+    --primary-soft:rgba(113,151,255,.16); --primary-line:rgba(113,151,255,.40);
+    --success-soft:rgba(91,204,128,.16); --success-line:rgba(91,204,128,.38);
+    --attention-soft:rgba(240,166,70,.16); --attention-line:rgba(240,166,70,.38);
+    --danger-soft:rgba(188,46,39,.10); --danger-line:rgba(249,113,99,.38);
+    --brand-soft:rgba(250,85,116,.16); --brand-line:rgba(250,85,116,.38);
+    --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 3px 10px rgba(0,0,0,.45);
+    --sh-3:0 24px 60px -20px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.4);
+    --logo-plate:#0B0C10;
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box}
+*{margin:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;font-size:16px;
+  letter-spacing:-.005em;-webkit-font-smoothing:antialiased;transition:background-color .3s,color .3s}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;padding:0}
+input{font-family:inherit}
+svg{display:block}
+img{max-width:100%}
+::selection{background:var(--primary-soft)}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:3px}
+
+.container{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:28px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--text-muted)} .faint{color:var(--text-faint)}
+.eyebrow{font-family:var(--mono);font-size:.72rem;font-weight:500;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--text-faint);display:inline-flex;align-items:center;gap:8px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:.94rem;
+  padding:11px 18px;border-radius:var(--r-md);border:1px solid transparent;line-height:1;
+  transition:background-color .16s,border-color .16s,box-shadow .18s,transform .12s,color .16s;white-space:nowrap}
+.btn:active{transform:translateY(1px)}
+.btn-primary{color:#FDFCF9;
+  background:linear-gradient(180deg,#4B69E4 0%,var(--primary) 60%,var(--primary-hi) 100%);
+  border-color:#2740B4;
+  box-shadow:0 1px 0 oklch(.985 .004 95/.22) inset,0 -1px 0 oklch(.2 .02 265/.18) inset,
+    0 1px 2px oklch(.3 .02 70/.10),0 6px 18px -6px oklch(.52 .20 268/.45)}
+.btn-primary:hover{transform:translateY(-1px);
+  box-shadow:0 1px 0 oklch(.985 .004 95/.28) inset,0 -1px 0 oklch(.2 .02 265/.20) inset,
+    0 2px 3px oklch(.3 .02 70/.12),0 10px 24px -8px oklch(.52 .20 268/.60)}
+.btn-ghost{background:transparent;color:var(--text);border-color:var(--border-control);
+  box-shadow:0 1px 0 oklch(.985 .004 95/.04) inset}
+.btn-ghost:hover{background:var(--surface)}
+.btn-sm{padding:8px 13px;font-size:.86rem}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.72rem;
+  font-weight:500;padding:4px 9px;border-radius:999px;border:1px solid var(--border-control);
+  color:var(--text-muted);background:var(--card);white-space:nowrap}
+.badge .g{width:7px;height:7px;flex:none}
+.badge-primary{color:var(--primary);border-color:var(--primary-line);background:var(--primary-soft)}
+.badge-brand{color:var(--brand-text);border-color:var(--brand-line);background:var(--brand-soft)}
+.badge-ok{color:var(--success);border-color:var(--success-line);background:var(--success-soft)}
+.badge-ok .g{background:currentColor;border-radius:50%}
+.badge-att{color:var(--attention);border-color:var(--attention-line);background:var(--attention-soft)}
+.badge-att .g{background:currentColor}
+.badge-wait{color:var(--primary);border-color:var(--primary-line);background:var(--primary-soft)}
+.badge-wait .g{border:1.5px dashed currentColor;border-radius:50%}
+.badge-detected{color:var(--success);border-color:var(--success-line);background:var(--success-soft)}
+.badge-recent{color:var(--text-muted);border-color:var(--border-control);background:var(--surface)}
+
+/* specimen honesty bar */
+.specimen-bar{background:var(--surface);border-bottom:1px solid var(--border);
+  font-size:.8rem;color:var(--text-muted);padding:7px 0}
+.specimen-bar .container{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:40;height:var(--nav-h);display:flex;align-items:center;
+  background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border)}
+.nav-in{display:flex;align-items:center;gap:26px;width:100%}
+.brandmark{display:flex;align-items:center;gap:9px;font-family:var(--mono);font-weight:700;
+  font-size:.94rem;letter-spacing:-.01em}
+.brandmark .m{width:26px;height:26px;border-radius:7px;background:var(--text);
+  display:grid;place-items:center;flex:none}
+.brandmark .m i{display:block;width:11px;height:11px;background:var(--brand);
+  clip-path:polygon(0 0,100% 0,100% 58%,58% 100%,0 100%)}
+.nav-links{display:flex;gap:20px;font-size:.92rem;font-weight:500;color:var(--text-muted)}
+.nav-links a:hover{color:var(--text)}
+.nav-links a[aria-current="page"]{color:var(--text);font-weight:600}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-search{display:flex;align-items:center;gap:8px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-md);padding:6px 10px;
+  color:var(--text-faint);font-size:.86rem;min-width:190px}
+.nav-search .k{margin-left:auto;font-family:var(--mono);font-size:.7rem;
+  border:1px solid var(--border);border-radius:4px;padding:1px 5px}
+.iconbtn{width:32px;height:32px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--text-muted);
+  border:1px solid transparent}
+.iconbtn:hover{background:var(--surface);color:var(--text)}
+.acctchip{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:.8rem;
+  border:1px solid var(--border-control);border-radius:999px;padding:5px 11px 5px 8px;background:var(--card)}
+.acctchip .dot{width:8px;height:8px;border-radius:50%;background:var(--success)}
+
+/* page shell */
+.wrap{max-width:940px;margin-inline:auto;padding:38px 28px 90px}
+.crumb{font-family:var(--mono);font-size:.76rem;color:var(--text-faint);margin-bottom:14px}
+.crumb a:hover{color:var(--text)}
+.h1{font-family:var(--display);font-weight:800;font-size:clamp(2rem,4.4vw,2.9rem);letter-spacing:-.03em;
+  line-height:1.02}
+.lede{font-size:clamp(1.02rem,1.5vw,1.2rem);color:var(--text-muted);line-height:1.5;margin-top:12px;
+  max-width:60ch;text-wrap:balance}
+.importline{font-family:var(--mono);font-size:.82rem;color:var(--text-muted);background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-md);padding:9px 12px;margin-top:18px;display:inline-block}
+
+/* demo stage */
+.demo{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--card);
+  overflow:hidden;box-shadow:var(--sh-2);margin-top:26px}
+.demo-bar{display:flex;align-items:center;gap:6px;padding:8px 12px;
+  border-bottom:1px solid var(--border);background:var(--surface)}
+.demo-bar .lbl{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-faint)}
+.demo-stage{padding:30px 26px;display:grid;place-items:center;
+  background-image:radial-gradient(var(--border) 1px,transparent 1px);background-size:16px 16px}
+.hint{margin-top:16px;font-size:.8rem;color:var(--text-faint);text-align:center;max-width:38ch}
+.hint b{color:var(--text-muted);font-weight:600}
+
+/* ---------- the kit card ---------- */
+.kit{width:100%;max-width:424px;background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--sh-3);padding:14px}
+.kit-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 2px 12px}
+.segtabs{display:inline-flex;gap:2px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-md);padding:3px}
+.segtab{font-size:.9rem;font-weight:600;color:var(--text-muted);padding:6px 14px;border-radius:6px;
+  transition:background-color .15s,color .15s,box-shadow .15s}
+.segtab[aria-selected="true"]{background:var(--card);color:var(--text);box-shadow:var(--sh-1)}
+.kit-headtools{display:flex;align-items:center;gap:8px}
+.netchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.72rem;
+  color:var(--text-muted);border:1px solid var(--border);border-radius:999px;padding:3px 9px;background:var(--card)}
+.netchip .nd{width:6px;height:6px;border-radius:50%;background:var(--brand)}
+.gear{width:30px;height:30px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--text-faint);
+  border:1px solid transparent}
+.gear:hover{background:var(--surface);color:var(--text)}
+
+.leg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px}
+.leg + .leg{margin-top:4px}
+.leg-label{font-size:.78rem;color:var(--text-faint);margin-bottom:6px}
+.leg-main{display:flex;align-items:center;gap:12px}
+.leg-amount{flex:1;min-width:0;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  font-size:1.7rem;line-height:1.15;font-weight:500;letter-spacing:-.02em;color:var(--text);
+  background:none;border:none;padding:0;width:100%}
+.leg-amount:disabled{color:var(--text);opacity:1;-webkit-text-fill-color:var(--text)}
+.leg-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:7px}
+.leg-fiat{font-size:.8rem;color:var(--text-faint);font-variant-numeric:tabular-nums}
+.leg-bal{display:flex;align-items:center;gap:7px;font-size:.8rem;color:var(--text-faint)}
+.leg-bal .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.maxbtn{font-family:var(--mono);font-size:.7rem;font-weight:500;color:var(--primary);
+  border:1px solid var(--primary-line);background:var(--primary-soft);border-radius:var(--r-sm);padding:1px 6px}
+.maxbtn:hover{border-color:var(--primary)}
+
+/* token select button + REAL LOGO (the re-cut) */
+.tokbtn{display:inline-flex;align-items:center;gap:8px;flex:none;background:var(--card);
+  border:1px solid var(--border-control);border-radius:999px;padding:5px 12px 5px 5px;
+  font-weight:600;font-size:.95rem;box-shadow:var(--sh-1)}
+.tokbtn:hover{border-color:var(--text-faint)}
+.tokbtn .cr{color:var(--text-faint);font-size:.72rem;margin-left:1px}
+.tokmark{width:24px;height:24px;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;
+  background:var(--logo-plate);border:1px solid var(--border)}
+.tokmark img{width:100%;height:100%;object-fit:contain;padding:1px}
+.tokmark .ld{display:none}
+:root[data-theme="dark"] .tokmark .ll{display:none}
+:root[data-theme="dark"] .tokmark .ld{display:block}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]) .tokmark .ll{display:none}
+  :root:not([data-theme="light"]) .tokmark .ld{display:block}
+}
+/* seeded-monogram fallback — for assets with no bundled mark yet */
+.tokmark.mono-fallback{font-family:var(--mono);font-size:.6rem;font-weight:700;color:#fff;
+  letter-spacing:-.02em;border:none;padding:0}
+.tokmark.mono-fallback img{display:none}
+.seed-usdt{background:#26A17B} .seed-sflr{background:#7A5AF0} .seed-sgb{background:#C0642A}
+
+/* flip control */
+.flip{position:relative;height:0;display:grid;place-items:center;z-index:2}
+.flipbtn{width:32px;height:32px;border-radius:var(--r-md);background:var(--card);
+  border:1px solid var(--border-control);display:grid;place-items:center;color:var(--text-muted);
+  box-shadow:var(--sh-1);transform:translateY(-16px)}
+.flipbtn:hover{color:var(--text);border-color:var(--text-faint)}
+.flipbtn svg{width:15px;height:15px}
+
+/* limit-only price row */
+.limitrow{display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);
+  padding:12px 14px;margin-top:4px}
+.kit.mode-limit .limitrow{display:block}
+.limitrow .leg-label{display:flex;align-items:center;justify-content:space-between}
+.limitrow .setbtn{font-family:var(--mono);font-size:.68rem;color:var(--primary);border:1px solid var(--primary-line);
+  background:var(--primary-soft);border-radius:var(--r-sm);padding:1px 6px}
+.limit-expire{display:flex;align-items:center;justify-content:space-between;margin-top:9px;font-size:.8rem;
+  color:var(--text-faint)}
+.limit-expire .seg{display:inline-flex;gap:3px}
+.limit-expire .seg button{font-family:var(--mono);font-size:.72rem;color:var(--text-muted);border:1px solid var(--border);
+  border-radius:var(--r-sm);padding:2px 8px;background:var(--card)}
+.limit-expire .seg button[aria-pressed="true"]{border-color:var(--text);color:var(--text)}
+
+/* detail block */
+.details{margin-top:12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--card);overflow:hidden}
+.details[hidden]{display:none}
+.details-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 12px;font-size:.82rem}
+.details-row + .details-row{border-top:1px solid var(--border)}
+.details-row .k{color:var(--text-faint);display:inline-flex;align-items:center;gap:6px}
+.details-row .v{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;color:var(--text)}
+.details-row .v .sub{color:var(--text-faint)}
+.venue{display:inline-flex;align-items:center;gap:6px}
+.venue .dot{width:6px;height:6px;border-radius:50%;background:var(--success)}
+
+.kit-action{margin-top:12px}
+.kit-action .btn{width:100%;justify-content:center;padding:13px 18px;font-size:1rem}
+.kit-foot{font-size:.74rem;color:var(--text-faint);margin-top:8px;text-align:center}
+
+/* ---------- what changed callout ---------- */
+.changed{margin-top:26px;border:1px solid var(--border);border-radius:var(--r-lg);background:var(--card);
+  padding:20px 22px;box-shadow:var(--sh-1)}
+.changed h3{font-family:var(--display);font-weight:700;font-size:1.16rem;letter-spacing:-.02em;margin-bottom:4px}
+.changed .sub{font-size:.9rem;color:var(--text-muted);margin-bottom:16px}
+.changed ul{list-style:none;display:grid;gap:12px}
+.changed li{display:grid;grid-template-columns:22px 1fr;gap:11px;align-items:start}
+.changed li .n{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;margin-top:1px;
+  background:var(--primary-soft);color:var(--primary);border:1px solid var(--primary-line);
+  font-family:var(--mono);font-size:.68rem;font-weight:700}
+.changed li .t{font-size:.92rem;line-height:1.5}
+.changed li .t b{font-weight:600}
+.changed li .t .d{color:var(--text-muted)}
+
+/* ---------- overlay + modals ---------- */
+.overlay{position:fixed;inset:0;z-index:80;display:none;place-items:center;padding:22px;
+  background:rgba(15,16,20,.42);backdrop-filter:blur(3px)}
+.overlay.open{display:grid}
+.modal{width:100%;max-width:424px;max-height:min(660px,90vh);background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r-lg);box-shadow:var(--sh-3);overflow:hidden;display:flex;flex-direction:column}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 16px;
+  border-bottom:1px solid var(--border)}
+.modal-title{font-family:var(--display);font-weight:700;font-size:1.08rem;letter-spacing:-.02em}
+.xbtn{width:30px;height:30px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--text-faint);
+  border:1px solid var(--border)}
+.xbtn:hover{background:var(--surface);color:var(--text)}
+.modal-scroll{overflow-y:auto}
+
+/* token selector */
+.tsel-search{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border-control);
+  border-radius:var(--r-md);padding:10px 12px;color:var(--text-faint);font-size:.9rem;margin:14px 16px 6px}
+.tsel-search input{flex:1;border:none;background:none;outline:none;color:var(--text);font-size:.9rem}
+.tsel-pills{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px 12px;border-bottom:1px solid var(--border)}
+.tsel-pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;
+  padding:4px 12px 4px 4px;font-size:.84rem;font-weight:600;background:var(--card)}
+.tsel-pill:hover{border-color:var(--border-control)}
+.tsel-sec{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-faint);padding:12px 16px 4px}
+.tsel-row{display:flex;align-items:center;gap:12px;padding:9px 16px;width:100%;text-align:left}
+.tsel-row:hover{background:var(--surface)}
+.tsel-row .rmark{width:30px;height:30px}
+.tsel-row .meta{min-width:0}
+.tsel-row .nm{font-weight:600;font-size:.94rem}
+.tsel-row .sy{font-size:.78rem;color:var(--text-faint)}
+.tsel-row .bal{margin-left:auto;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.88rem}
+.tsel-row .bal .f{display:block;font-size:.74rem;color:var(--text-faint)}
+.tsel-note{font-size:.76rem;color:var(--text-faint);line-height:1.5;padding:12px 16px 16px;border-top:1px solid var(--border)}
+.tsel-note b{color:var(--text-muted);font-weight:600}
+
+/* wallet list */
+.wallet-sec{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-faint);padding:14px 16px 6px}
+.wallet-row{display:flex;align-items:center;gap:12px;padding:11px 16px;width:100%;text-align:left}
+.wallet-row:hover{background:var(--surface)}
+.wallet-tile{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;flex:none;
+  font-family:var(--display);font-weight:800;font-size:.9rem;color:#fff}
+.wallet-row .wn{font-weight:600;font-size:.94rem}
+.wallet-row .wmeta{margin-left:auto;display:flex;align-items:center;gap:8px}
+.wallet-xrpl{margin:8px 16px 0;padding:12px 14px;border:1px dashed var(--border-control);border-radius:var(--r-md);
+  background:var(--surface);font-size:.82rem;color:var(--text-muted);line-height:1.5}
+.wallet-xrpl b{color:var(--text)}
+.modal-foot{padding:13px 16px;border-top:1px solid var(--border);font-size:.78rem;color:var(--text-faint)}
+
+@media (max-width:560px){
+  .leg-amount{font-size:1.45rem}
+  .wrap{padding:26px 18px 70px}
+  .nav-links,.nav-search{display:none}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<div class="specimen-bar">
+  <div class="container">
+    <span class="badge badge-brand">Design specimen</span>
+    <span>Re-cut direction, not shipped. Conventional anatomy, our lifecycle. Every value is an <strong>illustrative</strong> fixture.</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="container nav-in">
+    <a class="brandmark" href="#"><span class="m"><i></i></span> flare-kit</a>
+    <div class="nav-links">
+      <a href="#">Docs</a><a href="#" aria-current="page">Components</a><a href="#">Hooks</a><a href="#">Agent Kit</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search"><span aria-hidden="true">⌕</span><span>Search docs</span><span class="k">⌘K</span></div>
+      <button class="iconbtn" id="theme" aria-label="Toggle colour theme" title="Toggle theme">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <button class="btn btn-primary btn-sm" id="nav-connect">Connect wallet</button>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="crumb"><a href="#">@flare-kit/react-ui</a> / <a href="#">Components</a> / SwapCard</div>
+  <div class="eyebrow" style="margin-bottom:12px">Components · assets</div>
+  <h1 class="h1">SwapCard</h1>
+  <p class="lede">A swap you already know how to use. The layout follows the convention every trader has
+    muscle memory for — now with the real asset marks, a Limit tab, and a wallet flow that names both
+    chains it touches. What differs underneath: the venue is named, the allowance is exact, and the swap
+    continues into a durable operation you can recover.</p>
+  <div class="importline">import { SwapCard } from "@flare-kit/react-ui"</div>
+
+  <div class="demo">
+    <div class="demo-bar">
+      <span class="lbl">Live preview</span>
+      <span style="flex:1"></span>
+      <span class="badge badge-primary">mock kit</span>
+    </div>
+    <div class="demo-stage">
+      <div class="kit" id="kit">
+        <div class="kit-head">
+          <div class="segtabs" role="tablist" aria-label="Order type">
+            <button class="segtab" role="tab" aria-selected="true" data-mode="swap">Swap</button>
+            <button class="segtab" role="tab" aria-selected="false" data-mode="limit">Limit</button>
+          </div>
+          <div class="kit-headtools">
+            <span class="netchip"><span class="nd"></span>Coston2</span>
+            <button class="gear" aria-label="Swap settings" title="Settings">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="leg">
+          <div class="leg-label">Sell</div>
+          <div class="leg-main">
+            <input class="leg-amount" id="amt-in" value="100.000000" aria-label="Amount to sell">
+            <button class="tokbtn" data-token="open">
+              <span class="tokmark"><img class="ll" src="__L_FXRP_L__" alt=""><img class="ld" src="__L_FXRP_D__" alt=""></span>
+              FXRP <span class="cr" aria-hidden="true">▾</span>
+            </button>
+          </div>
+          <div class="leg-foot">
+            <span class="leg-fiat">$49.86</span>
+            <span class="leg-bal">Balance <span class="v">247.500000</span> <button class="maxbtn">MAX</button></span>
+          </div>
+        </div>
+
+        <div class="flip"><button class="flipbtn" aria-label="Switch sell and buy">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 4v13M7 20l-3-3M7 4l3 3M17 20V7M17 4l3 3M17 20l-3-3"/></svg>
+        </button></div>
+
+        <div class="leg">
+          <div class="leg-label">Buy</div>
+          <div class="leg-main">
+            <input class="leg-amount" id="amt-out" value="49.820000" disabled aria-label="Amount to receive">
+            <button class="tokbtn" data-token="open">
+              <span class="tokmark mono-fallback seed-usdt">U₮<img class="ll" alt=""><img class="ld" alt=""></span>
+              USD₮0 <span class="cr" aria-hidden="true">▾</span>
+            </button>
+          </div>
+          <div class="leg-foot">
+            <span class="leg-fiat">$49.82</span>
+            <span class="leg-bal">Balance <span class="v">0.000000</span></span>
+          </div>
+        </div>
+
+        <div class="limitrow" id="limitrow">
+          <div class="leg-label">When 1 FXRP is worth <button class="setbtn" type="button">Market +1%</button></div>
+          <div class="leg-main">
+            <input class="leg-amount" id="limit-price" value="0.503200" aria-label="Limit price">
+            <span class="mono faint" style="font-size:.9rem">USD₮0</span>
+          </div>
+          <div class="limit-expire">
+            <span>Expires</span>
+            <span class="seg" role="group" aria-label="Expiry">
+              <button aria-pressed="false">1d</button><button aria-pressed="true">7d</button><button aria-pressed="false">30d</button>
+            </span>
+          </div>
+        </div>
+
+        <div class="details" id="details-swap">
+          <div class="details-row"><span class="k">Rate</span><span class="v">1 FXRP = 0.498200 USD₮0</span></div>
+          <div class="details-row"><span class="k">Route</span><span class="v"><span class="venue"><span class="dot"></span>SparkDEX</span> <span class="sub">FXRP→WFLR→USD₮0</span></span></div>
+          <div class="details-row"><span class="k">Network cost</span><span class="v">0.021 FLR <span class="sub">≈ $0.0005</span></span></div>
+          <div class="details-row"><span class="k">Venue fee</span><span class="v">0.140000 FXRP</span></div>
+          <div class="details-row"><span class="k">Max slippage</span><span class="v">0.50%</span></div>
+          <div class="details-row"><span class="k">Minimum received</span><span class="v">49.570900 USD₮0</span></div>
+        </div>
+
+        <div class="details" id="details-limit" hidden>
+          <div class="details-row"><span class="k">Limit price</span><span class="v">0.503200 USD₮0</span></div>
+          <div class="details-row"><span class="k">You receive at limit</span><span class="v">50.320000 USD₮0</span></div>
+          <div class="details-row"><span class="k">Expires</span><span class="v">7 days · 16 Aug 18:43 WAT</span></div>
+          <div class="details-row"><span class="k">Network cost</span><span class="v">0.021 FLR <span class="sub">≈ $0.0005</span></span></div>
+        </div>
+
+        <div class="kit-action">
+          <button class="btn btn-primary" id="cta">Review swap</button>
+        </div>
+        <p class="kit-foot" id="kitfoot">Only qualified route found. Quote expires 18:43:20 WAT.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint"><b>Try it:</b> switch <b>Swap / Limit</b>, tap a <b>token</b> to open the selector, or <b>Connect wallet</b> up top.</p>
+
+  <div class="changed">
+    <h3>What the re-cut changes</h3>
+    <p class="sub">Same anatomy you accepted — four deliberate additions, each mapped to a real Uniswap/Jupiter pattern.</p>
+    <ul>
+      <li><span class="n">1</span><span class="t"><b>Real asset marks, not monograms.</b> <span class="d">FXRP, FLR, XRP and FAssets render the official Flare SVG marks (MIT, already vendored in your repo). Assets without a bundled mark — USD₮0 here — fall back to a seeded monogram. Bundled → monogram, no network fetch, so it holds under a widget's strict CSP.</span></span></li>
+      <li><span class="n">2</span><span class="t"><b>Swap / Limit tabs.</b> <span class="d">One card, a segmented control, one shared currency context — Uniswap's structure. Limit adds a price row and expiry; the rest of the anatomy is untouched.</span></span></li>
+      <li><span class="n">3</span><span class="t"><b>A connect flow that names both chains.</b> <span class="d">EVM wallets (detected via EIP-6963, "Detected"/"Recent" badges) for the swap — and it says plainly that FAssets mint/redeem also links an XRPL wallet. Uniswap's modal never has to admit two chains; ours does.</span></span></li>
+      <li><span class="n">4</span><span class="t"><b>Palette untouched.</b> <span class="d">Every colour is still your accepted paper + cobalt. The logos are the only new colour, framed in your circle — real marks without becoming a full-colour crypto-dashboard wall.</span></span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- token selector modal -->
+<div class="overlay" id="ov-token" role="dialog" aria-modal="true" aria-label="Select a token">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Select a token</span>
+      <button class="xbtn" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="tsel-search"><span aria-hidden="true">⌕</span><input placeholder="Search name or paste address" aria-label="Search tokens"></div>
+    <div class="tsel-pills">
+      <button class="tsel-pill"><span class="tokmark" style="width:22px;height:22px"><img class="ll" src="__L_FXRP_L__" alt=""><img class="ld" src="__L_FXRP_D__" alt=""></span>FXRP</button>
+      <button class="tsel-pill"><span class="tokmark" style="width:22px;height:22px"><img class="ll" src="__L_FLR_L__" alt=""><img class="ld" src="__L_FLR_D__" alt=""></span>FLR</button>
+      <button class="tsel-pill"><span class="tokmark" style="width:22px;height:22px"><img class="ll" src="__L_XRP_L__" alt=""><img class="ld" src="__L_XRP_D__" alt=""></span>XRP</button>
+      <button class="tsel-pill"><span class="tokmark mono-fallback seed-usdt" style="width:22px;height:22px">U₮</span>USD₮0</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="tsel-sec">Your assets</div>
+      <button class="tsel-row">
+        <span class="tokmark rmark"><img class="ll" src="__L_FXRP_L__" alt=""><img class="ld" src="__L_FXRP_D__" alt=""></span>
+        <span class="meta"><div class="nm">FXRP</div><div class="sy">FAsset XRP</div></span>
+        <span class="bal">247.500000<span class="f">$123.44</span></span>
+      </button>
+      <button class="tsel-row">
+        <span class="tokmark rmark"><img class="ll" src="__L_FLR_L__" alt=""><img class="ld" src="__L_FLR_D__" alt=""></span>
+        <span class="meta"><div class="nm">FLR</div><div class="sy">Flare</div></span>
+        <span class="bal">312.400000<span class="f">$8.12</span></span>
+      </button>
+      <div class="tsel-sec">All tokens</div>
+      <button class="tsel-row">
+        <span class="tokmark rmark"><img class="ll" src="__L_XRP_L__" alt=""><img class="ld" src="__L_XRP_D__" alt=""></span>
+        <span class="meta"><div class="nm">XRP</div><div class="sy">XRP Ledger · underlying</div></span>
+        <span class="bal">0.000000<span class="f">$0.00</span></span>
+      </button>
+      <button class="tsel-row">
+        <span class="tokmark rmark"><img class="ll" src="__L_FASSETS_L__" alt=""><img class="ld" src="__L_FASSETS_D__" alt=""></span>
+        <span class="meta"><div class="nm">FBTC</div><div class="sy">FAsset BTC</div></span>
+        <span class="bal">0.000000<span class="f">$0.00</span></span>
+      </button>
+      <button class="tsel-row">
+        <span class="tokmark rmark mono-fallback seed-usdt">U₮</span>
+        <span class="meta"><div class="nm">USD₮0</div><div class="sy">Tether · no bundled mark yet</div></span>
+        <span class="bal">0.000000<span class="f">$0.00</span></span>
+      </button>
+      <button class="tsel-row">
+        <span class="tokmark rmark mono-fallback seed-sflr">sF</span>
+        <span class="meta"><div class="nm">sFLR</div><div class="sy">Sceptre staked FLR</div></span>
+        <span class="bal">0.000000<span class="f">$0.00</span></span>
+      </button>
+      <button class="tsel-row">
+        <span class="tokmark rmark mono-fallback seed-sgb">SG</span>
+        <span class="meta"><div class="nm">SGB</div><div class="sy">Songbird</div></span>
+        <span class="bal">0.000000<span class="f">$0.00</span></span>
+      </button>
+    </div>
+    <div class="tsel-note"><b>How the marks resolve:</b> bundled official SVG where we have one (FXRP, FLR, XRP, FAssets), a seeded monogram for the long tail (USD₮0, sFLR, SGB) until its mark is vendored. Never a remote image — safe inside a CSP-locked widget.</div>
+  </div>
+</div>
+
+<!-- connect wallet modal -->
+<div class="overlay" id="ov-connect" role="dialog" aria-modal="true" aria-label="Connect a wallet">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Connect a wallet</span>
+      <button class="xbtn" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="modal-scroll">
+      <div class="wallet-sec">Flare network · EVM</div>
+      <button class="wallet-row">
+        <span class="wallet-tile" style="background:#E8831D">M</span>
+        <span class="wn">MetaMask</span>
+        <span class="wmeta"><span class="badge badge-detected"><span class="g" style="background:currentColor;border-radius:50%"></span>Detected</span></span>
+      </button>
+      <button class="wallet-row">
+        <span class="wallet-tile" style="background:#7A5AF0">R</span>
+        <span class="wn">Rabby</span>
+        <span class="wmeta"><span class="badge badge-detected"><span class="g" style="background:currentColor;border-radius:50%"></span>Detected</span> <span class="badge badge-recent">Recent</span></span>
+      </button>
+      <button class="wallet-row">
+        <span class="wallet-tile" style="background:#3959DA">W</span>
+        <span class="wn">WalletConnect</span>
+        <span class="wmeta"><span class="faint mono" style="font-size:.74rem">QR</span></span>
+      </button>
+      <button class="wallet-row">
+        <span class="wallet-tile" style="background:#1B53E4">C</span>
+        <span class="wn">Coinbase Wallet</span>
+        <span class="wmeta"></span>
+      </button>
+      <div class="wallet-xrpl">
+        <b>Mint or redeem FXRP?</b> That also needs an XRP Ledger wallet (e.g. Xaman) — you'll link it
+        at the moment a mint asks for the XRPL payment, not before. The kit never hides that a FAsset
+        operation crosses two chains.
+      </div>
+    </div>
+    <div class="modal-foot">Wallet icons load from EIP-6963 at runtime — a detected wallet always shows its own mark.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  if(!root.getAttribute('data-theme')) root.setAttribute('data-theme','light');
+  document.getElementById('theme').addEventListener('click',function(){
+    root.setAttribute('data-theme',root.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+
+  // Swap / Limit tabs
+  var kit=document.getElementById('kit'), cta=document.getElementById('cta'),
+      foot=document.getElementById('kitfoot'),
+      dSwap=document.getElementById('details-swap'), dLimit=document.getElementById('details-limit'),
+      amtOut=document.getElementById('amt-out');
+  document.querySelectorAll('.segtab').forEach(function(t){
+    t.addEventListener('click',function(){
+      document.querySelectorAll('.segtab').forEach(function(o){o.setAttribute('aria-selected',String(o===t));});
+      var limit = t.dataset.mode==='limit';
+      kit.classList.toggle('mode-limit',limit);
+      dSwap.hidden=limit; dLimit.hidden=!limit;
+      cta.textContent = limit?'Place limit order':'Review swap';
+      foot.textContent = limit?'Order rests on SparkDEX until filled or expired.':'Only qualified route found. Quote expires 18:43:20 WAT.';
+      amtOut.value = limit?'50.320000':'49.820000';
+    });
+  });
+
+  // modals
+  function open(id){document.getElementById(id).classList.add('open');document.body.style.overflow='hidden';}
+  function closeAll(){document.querySelectorAll('.overlay').forEach(function(o){o.classList.remove('open');});document.body.style.overflow='';}
+  document.querySelectorAll('[data-token="open"]').forEach(function(b){b.addEventListener('click',function(){open('ov-token');});});
+  document.getElementById('nav-connect').addEventListener('click',function(){open('ov-connect');});
+  document.querySelectorAll('[data-close]').forEach(function(b){b.addEventListener('click',closeAll);});
+  document.querySelectorAll('.overlay').forEach(function(o){o.addEventListener('click',function(e){if(e.target===o)closeAll();});});
+  document.querySelectorAll('.tsel-row,.tsel-pill').forEach(function(r){r.addEventListener('click',closeAll);});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeAll();});
+})();
+</script>

@@ -1,0 +1,105 @@
+/* The download control on `ProofDetail`. The SVG was already vendored; without
+   this rule `.fk-i` masks `currentColor` with nothing and paints a solid
+   square, which no jsdom test can see — `css-integrity.test.ts` catches it. */
+.fk-i-code {
+  --fk-icon: url('./icons/code.svg');
+}
+
+/* ---------- FDC surfaces ----------
+   FDC-01 … FDC-04. Only what the four attestation screens add: everything
+   structural comes from `data.css`, `primitives.css` and `spine.css`, and a
+   rule that duplicates one of those is a rule that will drift from it. */
+
+.fk .fk-fdc-provenance {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* ---------- catalogue rows ----------
+   A family may be served under several groups on one network, so the source
+   cell stacks rather than joining with commas: `flr / testFLR` and
+   `eth / testETH` are two addressable pairs, not one list. */
+
+.fk .fk-fdc-source {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.fk .fk-fdc-source + .fk-fdc-source {
+  padding-top: 4px;
+  border-top: 1px solid var(--fk-border);
+}
+
+.fk .fk-fdc-source-id {
+  margin-left: 6px;
+  color: var(--fk-text-muted);
+}
+
+/* Prose under the family name: the consumer sentence, the deprecation note and
+   the proof-owner rule. Load-bearing claims — "no deployed consumer" is
+   something this kit says out loud — so they are readable body text with a
+   paragraph's width, not a caption squeezed into a column. */
+.fk .fk-fdc-note {
+  display: block;
+  margin-top: 6px;
+  max-width: 52ch;
+  font-size: 12px;
+  color: var(--fk-text-muted);
+  line-height: 1.45;
+}
+
+.fk .fk-fdc-note-label {
+  font-family: var(--fk-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+}
+
+/* ---------- request builder ---------- */
+
+.fk .fk-fdc-endpoint {
+  overflow-wrap: anywhere;
+  font-size: 11px;
+  color: var(--fk-text-muted);
+}
+
+.fk .fk-fdc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+/* Why a disabled action is disabled, stated rather than left to the cursor.
+   Attention rather than danger: a blocked request has not failed. */
+.fk .fk-fdc-blocked-why {
+  margin: 0;
+  font-size: 12px;
+  color: var(--fk-attention);
+}
+
+/* ---------- proof detail ----------
+   Attested values carry full precision and must not be truncated by a column
+   width. `uint64` max is 20 digits and has to read as 20 digits. */
+
+.fk .fk-fdc-value {
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- timeline ----------
+   The spine itself is `spine.css`. What an attestation adds is separation
+   between the spine and the unknown/failed note beneath it. */
+
+.fk .fk-fdc-timeline > .fk-note {
+  margin-top: 12px;
+}
+
+@media (max-width: 560px) {
+  .fk .fk-fdc-note {
+    max-width: none;
+  }
+}

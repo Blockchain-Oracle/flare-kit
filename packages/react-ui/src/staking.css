@@ -1,0 +1,130 @@
+/* ============================================================
+   @flare-kit/react-ui — the staking surface (M11-R8).
+
+   StakeCard reuses SwapLeg, the shared LegTimeline round-trip
+   spine, the OperationTimeline wallet spine and the shared
+   Panel/Note/DetailRow/StateChip/ToneChip/Timestamp/card-chrome,
+   so this file adds only the staking composer's own chrome: the
+   validator picker, the duration control, the live-read bounds
+   readout and the irreversible value-lock block. Every value
+   derives from a token in styles.css — nothing is a raw literal.
+   Theme is runtime, under data-theme.
+   ============================================================ */
+
+.fk.fk-stake-card {
+  max-width: 440px;
+}
+.fk-stake-card .fk-stake-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-stake-card .fk-stake-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* STK-01 — the live-read validator picker. Each node carries its active window; the
+   window is the ceiling a stake's end may not cross. */
+.fk-stake-card .fk-stake-validators {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.fk-stake-card .fk-stake-validators-title {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-stake-card .fk-stake-validators-empty {
+  font-size: 0.85rem;
+  color: var(--fk-text-muted);
+}
+.fk-stake-card .fk-stake-validator {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  color: var(--fk-text);
+  text-align: left;
+  cursor: pointer;
+}
+.fk-stake-card .fk-stake-validator[data-selected='true'] {
+  border-color: var(--fk-primary-line);
+  background: var(--fk-primary-soft);
+}
+.fk-stake-card .fk-stake-validator:disabled {
+  cursor: default;
+  color: var(--fk-text-muted);
+  background: var(--fk-surface);
+}
+.fk-stake-card .fk-stake-validator-id {
+  font-size: 0.85rem;
+}
+.fk-stake-card .fk-stake-validator-win {
+  font-size: 0.75rem;
+  color: var(--fk-text-muted);
+}
+
+/* STK-01 — the lock-duration control beside the amount leg. */
+.fk-stake-card .fk-stake-duration {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+}
+.fk-stake-card .fk-stake-duration-label {
+  font-size: 0.85rem;
+  color: var(--fk-text-muted);
+}
+.fk-stake-card .fk-stake-duration-input {
+  flex: 0 0 7rem;
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  color: var(--fk-text);
+  font-size: 0.9rem;
+  text-align: right;
+}
+.fk-stake-card .fk-stake-duration-input:disabled {
+  color: var(--fk-text-muted);
+  background: var(--fk-surface);
+}
+
+/* The live-read bounds readout. */
+.fk-stake-card .fk-stake-bounds {
+  margin-top: 12px;
+}
+
+/* The irreversible value-lock — set apart so the real commitment cannot be missed
+   before signing. */
+.fk-stake-card .fk-stake-lock {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--fk-attention-line);
+  border-radius: var(--fk-r-lg);
+  background: var(--fk-attention-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* STK-02 — the observed position readout. */
+.fk-stake-card .fk-stake-position {
+  margin-top: 12px;
+}
+
+/* STK-03 — the round-trip legs + the wallet-signed spine. */
+.fk-stake-card .fk-stake-legs {
+  margin-top: 12px;
+}
+.fk-stake-card .fk-stake-spine {
+  margin-top: 12px;
+}

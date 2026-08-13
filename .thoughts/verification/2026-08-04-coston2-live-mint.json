@@ -1,0 +1,80 @@
+{
+  "startedAt": "2026-08-04T06:06:15.640Z",
+  "network": "Flare Testnet Coston2",
+  "chainId": 114,
+  "steps": [
+    {
+      "step": "protocol-state",
+      "at": "2026-08-04T06:06:18.974Z",
+      "fAsset": "FTestXRP",
+      "coreVault": "rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p",
+      "feeBIPS": "25",
+      "minimumFeeUBA": "100000",
+      "executorFeeUBA": "100000",
+      "mintingPaused": false
+    },
+    {
+      "step": "quote",
+      "at": "2026-08-04T06:06:18.975Z",
+      "send": "25.000000 XRP",
+      "receive": "24.800000 FTestXRP",
+      "mintingFee": "0.100000 FTestXRP",
+      "executorFee": "0.100000 FTestXRP",
+      "canProceed": true,
+      "blockedReason": null
+    },
+    {
+      "step": "operation-created",
+      "at": "2026-08-04T06:06:18.977Z",
+      "id": "op_504p2a49630e5a4s0t3t",
+      "state": "ready"
+    },
+    {
+      "step": "unsigned-payment",
+      "at": "2026-08-04T06:06:21.448Z",
+      "destination": "rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p",
+      "amountDrops": "25000000",
+      "memo": "464250526641001800000000A4B05CDB545FA7CA12BE9F866D64E8A843A31BD9"
+    },
+    {
+      "step": "xrpl-payment",
+      "at": "2026-08-04T06:06:32.161Z",
+      "hash": "3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03",
+      "result": "tesSUCCESS",
+      "ledger": 19619920,
+      "explorer": "https://testnet.xrpl.org/transactions/3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03"
+    },
+    {
+      "step": "operation-submitted",
+      "at": "2026-08-04T06:06:32.162Z",
+      "state": "submitted"
+    },
+    {
+      "step": "waiting-finality",
+      "at": "2026-08-04T06:06:32.162Z",
+      "need": 3
+    },
+    {
+      "step": "xrpl-final",
+      "at": "2026-08-04T06:06:39.991Z",
+      "ledger": 19619920,
+      "head": 19619924,
+      "confirmations": 4
+    },
+    {
+      "step": "fdc-request-prepared",
+      "at": "2026-08-04T06:06:40.838Z",
+      "bytes": "0x5852505061796d656e740000…"
+    },
+    {
+      "step": "fdc-request-submitted",
+      "at": "2026-08-04T06:06:43.757Z",
+      "hash": "0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0",
+      "feeWei": "1000",
+      "explorer": "https://coston2-explorer.flare.network/tx/0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0"
+    }
+  ],
+  "outcome": "incomplete",
+  "error": "ContractFunctionExecutionError: Execution reverted for an unknown reason.  Raw Call Arguments:   to:    0xa10B672D1c62e5457b17af63d4302add6A99d7dE",
+  "finishedAt": "2026-08-04T06:06:43.925Z"
+}

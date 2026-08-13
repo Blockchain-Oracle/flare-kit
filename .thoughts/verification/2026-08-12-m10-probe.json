@@ -1,0 +1,137 @@
+{
+  "probe": "M10 delegation + claims substrate + funding (Coston2)",
+  "ranAt": "2026-08-12T10:42:42.909Z",
+  "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "coston2": {
+    "chainId": 114,
+    "rpcUrl": "https://coston2-api.flare.network/ext/C/rpc",
+    "block": "33963269"
+  },
+  "registry": {
+    "address": "0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019",
+    "resolved": {
+      "WNat": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+      "RewardManager": "0xB4f43E342c5c77e6fe060c0481Fe313Ff2503454",
+      "FtsoRewardManager": "0x7A0bFB85387314d7F8C0FcCD9D9B74A76115c322",
+      "RNat": "0x221D27529e7788B929E13533edc3b00ec1ac5e8A",
+      "DistributionToDelegators": "0xbd33bDFf04C357F7FC019E72D0504C24CF4Aa010",
+      "FlareSystemsManager": "0xA90Db6D10F856799b10ef2A77EBCbF460aC71e52",
+      "ClaimSetupManager": "0x5Ddb590530EF66775E6225671eaBD94959e9AE0e"
+    },
+    "drift": [],
+    "missing": []
+  },
+  "wnat": {
+    "address": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+    "balanceOf": "0",
+    "balanceHuman": "0",
+    "delegationModeOf": "0",
+    "delegationModeMeaning": "NOTSET (0)",
+    "delegatesOf": {
+      "delegateAddresses": [],
+      "bips": [],
+      "count": "0",
+      "delegationMode": "0"
+    },
+    "votePowerOf": "0",
+    "undelegatedVotePowerOf": "0"
+  },
+  "rewardManager": {
+    "address": "0xB4f43E342c5c77e6fe060c0481Fe313Ff2503454",
+    "getCurrentRewardEpochId": 5930,
+    "getRewardEpochIdsWithClaimableRewards": {
+      "startEpochId": 5902,
+      "endEpochId": 5929
+    },
+    "getStateOfRewards": [
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "getStateOfRewardsIsEmpty": true,
+    "getNextClaimableRewardEpochId": "5902",
+    "getRewardEpochIdToExpireNext": "5902"
+  },
+  "rnat": {
+    "address": "0x221D27529e7788B929E13533edc3b00ec1ac5e8A",
+    "getCurrentMonth": "26",
+    "getBalancesOf": "ERR:The contract function \"getBalancesOf\" reverted with the following reason:\nno RNat account"
+  },
+  "distribution": {
+    "address": "0xbd33bDFf04C357F7FC019E72D0504C24CF4Aa010",
+    "getClaimableMonths": "ERR:The contract function \"getClaimableMonths\" reverted with the following reason:\nalready finished",
+    "getCurrentMonth": "1265",
+    "getClaimableAmountOfEndMonth": null,
+    "note": "FlareDrop concluded 2026-01-30 — empty/legacy/revert here is the expected honest state, NOT a blocker."
+  },
+  "funding": {
+    "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "nativeC2flr": "47397233436830560487",
+    "nativeC2flrHuman": "47.39723343683056",
+    "floorC2flr": "2000000000000000000",
+    "floorHuman": "2",
+    "covers": "wrap + delegate + undelegate + unwrap (4 cheap Coston2 txs)"
+  },
+  "proofSource": {
+    "base": "https://gitlab.com/timivesel/ftsov2-testnet-rewards",
+    "official": false,
+    "network": "coston2",
+    "branch": "main",
+    "layout": "rewards-data/coston2/<rewardEpochId>/reward-distribution-data.json",
+    "note": "Unofficial community mirror — no official Coston2 reward API exists. Absence of tuples is the honest \"declared unavailable\" state, NOT a blocker.",
+    "reachable": true,
+    "baseStatus": 200,
+    "targetEpoch": 5929,
+    "newestEpochWithData": 5929,
+    "newestEpochRewardClaims": 26,
+    "targetEpochHasData": true
+  },
+  "abiSignaturesConfirmed": {
+    "WNat": [
+      "balanceOf(address)->uint256",
+      "delegationModeOf(address)->uint256",
+      "delegatesOf(address)->(address[],uint256[],uint256,uint256)",
+      "votePowerOf(address)->uint256",
+      "undelegatedVotePowerOf(address)->uint256"
+    ],
+    "RewardManager": [
+      "getCurrentRewardEpochId()->uint24",
+      "getRewardEpochIdsWithClaimableRewards()->(uint24,uint24)",
+      "getStateOfRewards(address)->tuple[][](uint24,bytes20,uint120,uint8,bool)",
+      "getNextClaimableRewardEpochId(address)->uint256",
+      "getRewardEpochIdToExpireNext()->uint256"
+    ],
+    "RNat": [
+      "getCurrentMonth()->uint256"
+    ],
+    "DistributionToDelegators": [
+      "getCurrentMonth()->uint256"
+    ]
+  },
+  "blockers": []
+}

@@ -1,0 +1,254 @@
+/* ============================================================
+   @flare-kit/react-ui — the FTSO surfaces.
+
+   FTSO-01 … FTSO-06. Only what the six screens add: the tables,
+   chips, panels, notes and evidence chips all come from
+   `data.css`, `primitives.css` and `state.css`, and a rule here
+   that duplicates one of those is a rule that will drift from it.
+
+   The shape this file exists to hold: **two claims side by
+   side, never resolved into one.** A block-latency reading and
+   an anchor reading of the same feed are different facts at
+   different exponents from different moments, so the layout
+   puts them in two columns of equal weight rather than one
+   above the other, where the upper one reads as the answer.
+   ============================================================ */
+
+/* ---------- the timestamp primitive ----------
+   Every instant renders the same way: ISO to the second, mono, tabular, UTC
+   named rather than assumed. */
+
+.fk .fk-ts {
+  display: inline-block;
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text-faint);
+  white-space: nowrap;
+}
+
+.fk .fk-ts-zone {
+  /* The zone is part of the value, not decoration — a time without one is
+     ambiguous by a day. It used to carry `opacity: 0.75`, which composited the
+     faint tier down to about 3.0:1 and put a load-bearing token below the AA
+     bar DESIGN.md sets. It recedes by sitting in the faint tier already; it
+     does not also get dimmed. */
+  font-weight: 400;
+}
+
+/* ---------- shared: an exact feed value ----------
+   The whole point of the kit. Full stored precision, its own asset, tabular so
+   a column of them lines up digit for digit. */
+
+.fk .fk-ftso-value {
+  display: block;
+  font-family: var(--fk-font-mono);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text);
+  /* A price can be long and must never be clipped to fit a column. */
+  overflow-wrap: anywhere;
+}
+
+.fk .fk-ftso-id {
+  font-size: 11px;
+  color: var(--fk-text-faint);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- shared: an inset well ----------
+   Three surfaces put a group of values inside the panel rather than loose on
+   it: the pair of claims, the proof nodes, the random. That frame is one
+   decision, so it is written once — three copies is how the radius on one of
+   them ends up a step off the other two. Each surface still owns its own
+   layout and padding below; only the frame is shared. */
+
+.fk .fk-ftso-claims,
+.fk .fk-ftso-proof,
+.fk .fk-ftso-random {
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-surface);
+}
+
+/* ---------- FTSO-01 catalogue ----------
+   Two provenance chips, because the feed list and the values are two separate
+   reads with two separate ages. One chip would let a current list vouch for
+   stale numbers.
+
+   `.fk-ftso-catalogue` and `.fk-ftso-history` are stacked by `data.css`
+   alongside `.fk-portfolio` and `.fk-activity` — they are the same surface
+   shape, so they share the one rule rather than carrying a copy here. */
+
+.fk .fk-ftso-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 16px;
+}
+
+.fk .fk-ftso-prov-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fk .fk-ftso-prov-label {
+  font-family: var(--fk-font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+}
+
+/* The feed pair carries its base-asset mark; name + id + former name stack
+   beside it as quiet lines (re-cut 2026-08-09). */
+.fk .fk-ftso-feed {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.fk .fk-ftso-feed-text {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+/* A renamed feed is one feed with a former name — stated quietly as a faint
+   secondary line, never a warning chip. The full explanation lives on FeedDetail. */
+.fk .fk-ftso-former {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--fk-text-faint);
+}
+
+/* ---------- FTSO-02 detail: the pair of claims ----------
+   Equal columns are the argument: neither path is the headline.
+
+   Deliberately **not** `.fk-conflict`. That class tints attention-amber because
+   it means two sources disagree; here two paths differing is the expected state,
+   and painting the happy path in the warning colour would spend the warning
+   everywhere else it is used. Verified by reading the computed background rather
+   than by looking — the two were byte-identical rgba(159, 95, 0, 0.11), which a
+   screenshot reads as "a boxed value". */
+
+.fk .fk-ftso-claims {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px 18px;
+  padding: 11px 12px;
+}
+
+.fk .fk-ftso-claim {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.fk .fk-ftso-claim-head {
+  font-family: var(--fk-font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fk-text-muted);
+}
+
+/* The claim's own value sits on the mono baseline the conflict pair sets, but
+   at reading size: this is the number somebody came for. */
+.fk .fk-ftso-claim .fk-ftso-value {
+  font-size: 15px;
+}
+
+/* ---------- FTSO-03 proof ----------
+   Proof nodes wrap as chips. A Merkle proof is a list of siblings, so the count
+   is stated and every node stays individually copyable. */
+
+.fk .fk-ftso-proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  /* `11px 12px`, matching the other two framed wells. It sat at `10px 11px`,
+     which was drift rather than intent: a wrapping chip row takes its breathing
+     room from its own `gap` and the chips' internal padding, not from the inset
+     of the frame around it, so there is no reason for this one to be tighter. */
+  padding: 11px 12px;
+}
+
+.fk .fk-ftso-proof .fk-ftso-claim-head {
+  flex-basis: 100%;
+}
+
+.fk .fk-ftso-verdict {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ---------- FTSO-04 secure random ----------
+   A 39-digit uint256 is the value, all of it. It wraps rather than truncating,
+   because a shortened random is a different number and there is no such thing
+   as an approximate one. */
+
+.fk .fk-ftso-random {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px 12px;
+}
+
+/* An insecure value still renders — nothing required otherwise — but it never
+   looks like a value that passed a check. The rule is on the container so the
+   marking cannot be lost by restyling the number. */
+.fk .fk-ftso-random[data-secure='false'] {
+  border-color: var(--fk-danger-line);
+  background: var(--fk-danger-soft);
+}
+
+.fk .fk-ftso-random-value {
+  font-family: var(--fk-font-mono);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text);
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+
+.fk .fk-ftso-refusal {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--fk-text-muted);
+}
+
+/* ---------- FTSO-05 measured effect ----------
+   Separated from the offer above it by a rule: what was bought is a reading of
+   the chain, not a restatement of what was asked for. */
+
+.fk .fk-ftso-effect {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--fk-border);
+}
+
+@media (max-width: 560px) {
+  /* Stacking is allowed; hiding is not. Both claims stay on screen at every
+     width, because the whole surface is the comparison. */
+  .fk .fk-ftso-claims {
+    grid-template-columns: 1fr;
+  }
+
+  .fk .fk-ftso-provenance {
+    justify-content: flex-start;
+  }
+}

@@ -1,0 +1,96 @@
+/* ============================================================
+   @flare-kit/react-ui — the liquidity surfaces (M6).
+
+   AddLiquidityCard reuses SwapLeg and the shared Panel/Note/DetailRow/
+   OperationTimeline chrome, so this file adds only what liquidity needs
+   beyond swap.css: the card's width (mirroring .fk-swap) and the gap
+   between the two ratio-locked supply legs. In SwapCard that gap is a
+   side effect of the flip button sitting on the seam between pay and
+   receive; AddLiquidityCard has no flip control, so the legs need their
+   own separation.
+   ============================================================ */
+
+.fk.fk-liq {
+  max-width: 420px;
+}
+.fk-liq .fk-leg + .fk-leg {
+  margin-top: 10px;
+}
+
+/* ---------- PercentPills (M6-R9, shared with M7 WithdrawCard) ----------
+   The partial-amount control. Mirrors the SegmentedTabs pill-row idiom:
+   an inline row of buttons in a bordered track. The active pill is told
+   apart by weight, border and a lifted surface — never by colour alone.
+   Scoped to the kit root `.fk` (not `.fk-liq`) because it is a shared
+   primitive: M6's PositionCard and M7's WithdrawCard both mount it, and a
+   `.fk-liq`-scoped rule left the vault card's pills unstyled (min-height 0,
+   failing the 24px target size) — caught in-browser, invisible to jsdom. */
+.fk .fk-pct {
+  display: inline-flex;
+  gap: 2px;
+  margin-top: 10px;
+  padding: 3px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+.fk .fk-pct-pill {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 6px 14px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--fk-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s,
+    font-weight 0.15s;
+}
+.fk .fk-pct-pill:hover {
+  color: var(--fk-text);
+}
+.fk .fk-pct-pill[data-active='true'] {
+  font-weight: 700;
+  color: var(--fk-text);
+  background: var(--fk-card);
+  border-color: var(--fk-border-control);
+  box-shadow: var(--fk-sh-1);
+}
+
+/* The exact-percent entry (R7). Sits beside the pill track rather than
+   inside it, so it reads as its own control, not a fifth preset — told
+   apart from the pills by shape and border, never colour. Matches the pill
+   row's height and the 24px+ WCAG 2.2 target size. */
+.fk .fk-pct-exact {
+  width: 52px;
+  min-height: 24px;
+  margin-left: 6px;
+  padding: 6px 8px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text);
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  text-align: right;
+}
+.fk .fk-pct-exact::placeholder {
+  color: var(--fk-text-faint);
+}
+/* Suppress the spinner: this control reads as a labelled field in a control
+   row, not a stepper — the presets already cover the common steps. */
+.fk .fk-pct-exact::-webkit-outer-spin-button,
+.fk .fk-pct-exact::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.fk .fk-pct-exact[type='number'] {
+  -moz-appearance: textfield;
+}

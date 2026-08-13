@@ -1,0 +1,24 @@
+{
+  "name": "@flare-kit/relayer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "flare-kit reference fee-free gasless relayer. Recovers the EIP-712 signer, validates, simulates, and submits GaslessPaymentForwarder.executePayment, paying the gas itself. Imports @flare-kit/core for the crypto (no re-declaration). Self-hostable; flare-kit is never a hosted operator.",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flare-kit/contracts": "workspace:^",
+    "@flare-kit/core": "workspace:^",
+    "express": "^4.21.2",
+    "viem": "^2.40.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.2"
+  }
+}

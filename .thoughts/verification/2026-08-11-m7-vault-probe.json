@@ -1,0 +1,58 @@
+{
+  "milestone": "M7 — vaults (ERC-4626)",
+  "kind": "read-only feasibility probe (real-first gate, no writes, no key)",
+  "date": "2026-08-11",
+  "network": "coston2",
+  "chainId": 114,
+  "rpc": "https://coston2-api.flare.network/ext/C/rpc",
+  "block": 33928587,
+  "asset_shared_with_dex": {
+    "note": "Both vaults hold the same FAsset the M5/M6 DEX config already carries.",
+    "address": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "symbol": "FTestXRP",
+    "decimals": 6
+  },
+  "firelight": {
+    "address": "0x91Bfe6A68aB035DFebb6A770FFfB748C03C0E40B",
+    "share_token": { "self": true, "name": "Staked (test) FXRP", "symbol": "stFXRP", "decimals": 6 },
+    "asset": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "totalAssets": "14994061",
+    "totalSupply": "14994061",
+    "exchange_rate_now": "1:1 (previewDeposit(1e6) == 1000000)",
+    "maxDeposit": "uint256 max (deposits open, no cap)",
+    "withdraw_model": "delayed request: withdraw()/redeem() create a request for currentPeriod, NO immediate transfer; claimWithdraw(period) after the period ends",
+    "currentPeriod": "333",
+    "currentPeriodEnd": 1786493151,
+    "nextPeriodEnd": 1786579551,
+    "period_duration_seconds": 86400,
+    "account_shares_now": "0"
+  },
+  "upshift": {
+    "address": "0x24c1a47cD5e8473b64EAB2a94515a196E10C7C81",
+    "asset": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "lp_token": { "self": false, "address": "0xe084F7328DDaB082a139b880782dCC424d20a1DB", "symbol": "vFXRP", "decimals": 6 },
+    "withdrawalsPaused": false,
+    "lagDuration_seconds": 86400,
+    "withdrawalFee_raw": "25",
+    "instantRedemptionFee_raw": "50",
+    "maxWithdrawalAmount_raw": "10000000000",
+    "maxWithdrawalAmount_fxrp": "10000.000000",
+    "getWithdrawalEpoch": { "year": 2026, "month": 8, "day": 12, "claimableEpoch_ts": 1786492800 },
+    "withdraw_model": "two routes: instantRedeem(shares,receiver,holder) burns LP for immediate assets at instantRedemptionFee; OR requestRedeem -> lagDuration -> claim(year,month,day,receiver) at (lower) withdrawalFee"
+  },
+  "fundability": {
+    "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "note": "signing account recorded in state.json m4_inherits; read-only here",
+    "c2flr": "97.822163012499987001",
+    "ftestxrp_raw": "23799999",
+    "ftestxrp": "23.799999",
+    "verdict": "funded for a real deposit -> withdraw-request -> claim round trip on both vaults"
+  },
+  "mainnet_reference": {
+    "note": "From developer-hub (Upshift app link) — NOT verified on-chain here; a mainnet live run is required before its withdraw path is trusted.",
+    "upshift_vault_chain14": "0x373D7d201C8134D4a2f7b5c63560da217e3dEA28",
+    "firelight_vault_chain14": "not published in vendored sources — declared-unbuilt-until-known"
+  },
+  "load_bearing_finding": "Deposit is standard ERC-4626 (immediate). Withdrawal is NON-standard and vault-specific: Firelight redeem/withdraw create a period-bound REQUEST (assets only via claimWithdraw); Upshift offers an instant route (higher fee) vs a lag+calendar-epoch request/claim route (lower fee). A mock copying 'standard ERC-4626 redeem' would render a withdrawal request as assets-received — the submitted-as-succeeded failure the hard rules forbid. The two vaults have materially different ABIs; the shared abstraction is the operation lifecycle, NOT one ABI (the M6 'venue-specific' lesson).",
+  "tooling": "read-only viem publicClient; script at scratchpad/vault-probe.mjs"
+}

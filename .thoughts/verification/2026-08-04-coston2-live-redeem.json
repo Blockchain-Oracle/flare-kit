@@ -1,0 +1,122 @@
+{
+  "startedAt": "2026-08-04T07:29:10.266Z",
+  "network": "Flare Testnet Coston2",
+  "chainId": 114,
+  "redeemer": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "xrplDestination": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+  "lots": 1,
+  "steps": [
+    {
+      "step": "start",
+      "at": "2026-08-04T07:29:11.664Z",
+      "kit": "Flare Testnet Coston2",
+      "isMock": false,
+      "fAsset": "FTestXRP",
+      "balanceBefore": "34.8",
+      "lotSizeXRP": 10
+    },
+    {
+      "step": "quote",
+      "at": "2026-08-04T07:29:11.665Z",
+      "burned": "10.000000 FTestXRP",
+      "fee": "0.050000 FTestXRP",
+      "receives": "9.950000 XRP",
+      "canProceed": true,
+      "blockedReason": null,
+      "ifAgentDoesNotPay": "If the agent does not pay within the window, you can claim 105% of the value in collateral on Flare instead. You would receive collateral, not XRP."
+    },
+    {
+      "step": "operation-created",
+      "at": "2026-08-04T07:29:11.667Z",
+      "id": "op_655s6s1d470b49096p1w",
+      "state": "ready"
+    },
+    {
+      "step": "redeem-submitted",
+      "at": "2026-08-04T07:29:12.703Z",
+      "hash": "0x29f01334a32fb1725a21d823442fb83798012bf7dddeddcc849ee4e470818680",
+      "status": "success",
+      "explorer": "https://coston2-explorer.flare.network/tx/0x29f01334a32fb1725a21d823442fb83798012bf7dddeddcc849ee4e470818680"
+    },
+    {
+      "step": "event",
+      "at": "2026-08-04T07:29:12.705Z",
+      "name": "RedemptionRequested",
+      "args": {
+        "agentVault": "0x5b89514d1F060AdbEA8B7294AFf81ed8dbAa7fC5",
+        "redeemer": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+        "requestId": "43165320",
+        "paymentAddress": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+        "valueUBA": "10000000",
+        "feeUBA": "50000",
+        "firstUnderlyingBlock": "19621452",
+        "lastUnderlyingBlock": "19621978",
+        "lastUnderlyingTimestamp": "1785829298",
+        "paymentReference": "0x464250526641000200000000000000000000000000000000000000000292a688",
+        "executor": "0x0000000000000000000000000000000000000000",
+        "executorFeeNatWei": "0"
+      }
+    },
+    {
+      "step": "operation-submitted",
+      "at": "2026-08-04T07:29:12.707Z",
+      "state": "submitted",
+      "requestId": "43165320",
+      "agent": "0x5b89514d1F060AdbEA8B7294AFf81ed8dbAa7fC5",
+      "agentPaysFrom": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+      "deadlineUnix": "1785829298"
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:29:13.034Z",
+      "state": "awaiting_external",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:29:43.462Z",
+      "state": "awaiting_external",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:30:14.412Z",
+      "state": "awaiting_external",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:30:45.257Z",
+      "state": "awaiting_external",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:31:16.120Z",
+      "state": "awaiting_external",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "reconcile",
+      "at": "2026-08-04T07:31:46.577Z",
+      "state": "succeeded",
+      "awaiting": "agent",
+      "actions": []
+    },
+    {
+      "step": "balances",
+      "at": "2026-08-04T07:31:46.993Z",
+      "beforeUBA": "34800000",
+      "afterUBA": "24800000",
+      "burnedUBA": "10000000"
+    }
+  ],
+  "finalState": "succeeded",
+  "outcome": "succeeded",
+  "finishedAt": "2026-08-04T07:31:46.994Z"
+}

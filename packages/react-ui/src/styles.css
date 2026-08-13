@@ -1,0 +1,268 @@
+/* ============================================================
+   @flare-kit/react-ui — the token contract.
+
+   Every value derives from /DESIGN.md, which is an accepted
+   contract and outranks every default and component library.
+   Ported from the accepted specimens under
+   .thoughts/design/fable5-direction-return/assets/.
+
+   Two rules shape this file, and both come from the package
+   being embeddable in somebody else's application:
+
+   1. Nothing is declared on html, body or *. A widget that
+      resets its host's page is a bug. Every token and every
+      rule is scoped to .fk, the root class the components put
+      on their own outermost element.
+   2. Every custom property is prefixed --fk-. That is what
+      makes R8's "themeable through CSS custom properties" a
+      documented API rather than a collision.
+
+   Theme is runtime, under data-theme, never a build variant.
+   ============================================================ */
+
+@import './primitives.css';
+@import './state.css';
+@import './compose.css';
+@import './spine.css';
+@import './data.css';
+@import './accounts.css';
+@import './fdc.css';
+@import './ftso.css';
+@import './swap.css';
+@import './liquidity.css';
+@import './vault.css';
+@import './bridge.css';
+@import './payments.css';
+@import './delegation.css';
+@import './staking.css';
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('./fonts/BricolageGrotesque-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('./fonts/BricolageGrotesque-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('./fonts/BricolageGrotesque-800.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('./fonts/HankenGrotesk-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('./fonts/HankenGrotesk-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Hanken Grotesk';
+  src: url('./fonts/HankenGrotesk-600.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/JetBrainsMono-400.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/JetBrainsMono-500.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./fonts/JetBrainsMono-700.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+.fk {
+  --fk-bg: #fdfcf9;
+  --fk-surface: #f7f6f1;
+  /* Pure white on warm paper is how a raised surface separates
+     without a shadow. There is no #000000 anywhere. */
+  --fk-card: #ffffff;
+  --fk-text: #221d18;
+  --fk-text-muted: #68625c;
+  --fk-text-faint: #6f6b65;
+  --fk-border: #e1dfdb;
+  --fk-border-control: #8d8883;
+  /* A translucent neutral for soft bands — the table header pill and row hover.
+     Being an alpha tint, it reads as a step on any backdrop (card, surface or an
+     embedder's own), where a solid fill cannot: in dark --fk-surface equals
+     --fk-card, so a solid pill would vanish against the panel behind it. */
+  --fk-tint: rgba(34, 29, 24, 0.06);
+  --fk-primary: #3959da;
+  --fk-primary-hi: #2b45c5;
+  /* Flare crimson is identity only: 4.34:1 on paper, so it never carries text. */
+  --fk-brand: #e62058;
+  --fk-brand-text: #c51b4b;
+  --fk-success: #00803f;
+  --fk-attention: #9f5f00;
+  --fk-danger: #bc2e27;
+  --fk-partial: #794db6;
+  --fk-neutral: #68625c;
+
+  --fk-primary-soft: rgba(57, 89, 218, 0.1);
+  --fk-primary-line: rgba(57, 89, 218, 0.32);
+  --fk-success-soft: rgba(0, 128, 63, 0.11);
+  --fk-success-line: rgba(0, 128, 63, 0.3);
+  --fk-attention-soft: rgba(159, 95, 0, 0.11);
+  --fk-attention-line: rgba(159, 95, 0, 0.3);
+  --fk-danger-soft: rgba(188, 46, 39, 0.1);
+  --fk-danger-line: rgba(188, 46, 39, 0.3);
+  --fk-partial-soft: rgba(121, 77, 182, 0.11);
+  --fk-partial-line: rgba(121, 77, 182, 0.3);
+  --fk-brand-soft: rgba(230, 32, 88, 0.1);
+  --fk-brand-line: rgba(230, 32, 88, 0.3);
+
+  --fk-font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --fk-font-sans: 'Hanken Grotesk', system-ui, sans-serif;
+  --fk-font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  --fk-r-sm: 5px;
+  --fk-r-md: 9px;
+  --fk-r-lg: 14px;
+
+  /* Warm-tinted. A pure black shadow on warm paper reads as dirt. */
+  --fk-sh-1: 0 1px 2px oklch(0.3 0.02 70 / 0.05), 0 1px 1px oklch(0.3 0.02 70 / 0.04);
+  --fk-sh-2: 0 2px 8px oklch(0.3 0.02 70 / 0.06), 0 1px 2px oklch(0.3 0.02 70 / 0.05);
+  --fk-sh-3: 0 18px 50px -18px oklch(0.3 0.05 70 / 0.22), 0 2px 8px oklch(0.3 0.02 70 / 0.06);
+
+  font-family: var(--fk-font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: -0.005em;
+  color: var(--fk-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark is a peer, not an inversion. Set data-theme on the widget root or on
+   any ancestor; both are supported so a host can drive the whole page. */
+.fk[data-theme='dark'],
+[data-theme='dark'] .fk {
+  --fk-bg: #0f1014;
+  --fk-surface: #17191e;
+  --fk-card: #17191e;
+  --fk-text: #f1f0ed;
+  --fk-text-muted: #9fa5ac;
+  --fk-text-faint: #858b91;
+  --fk-border: #2b2e33;
+  --fk-border-control: #5f646a;
+  --fk-tint: rgba(241, 240, 237, 0.07);
+  --fk-primary: #7197ff;
+  --fk-primary-hi: #8eb2ff;
+  --fk-brand: #fa5574;
+  --fk-brand-text: #ff6c84;
+  --fk-success: #5bcc80;
+  --fk-attention: #f0a646;
+  --fk-danger: #f97163;
+  --fk-partial: #b995f6;
+  --fk-neutral: #999fa6;
+
+  --fk-primary-soft: rgba(113, 151, 255, 0.16);
+  --fk-primary-line: rgba(113, 151, 255, 0.4);
+  --fk-success-soft: rgba(91, 204, 128, 0.16);
+  --fk-success-line: rgba(91, 204, 128, 0.38);
+  --fk-attention-soft: rgba(240, 166, 70, 0.16);
+  --fk-attention-line: rgba(240, 166, 70, 0.38);
+  --fk-danger-soft: rgba(249, 113, 99, 0.16);
+  --fk-danger-line: rgba(249, 113, 99, 0.38);
+  --fk-partial-soft: rgba(185, 149, 246, 0.16);
+  --fk-partial-line: rgba(185, 149, 246, 0.38);
+  --fk-brand-soft: rgba(250, 85, 116, 0.16);
+  --fk-brand-line: rgba(250, 85, 116, 0.38);
+
+  /* Warm tint vanishes against #0F1014, so these go neutral at higher alpha. */
+  --fk-sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --fk-sh-2: 0 3px 10px rgba(0, 0, 0, 0.45);
+  --fk-sh-3: 0 24px 60px -20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Scoped reset. :where() keeps specificity at zero so a host's own rules and a
+   consumer's overrides both win without !important. */
+.fk :where(*, *::before, *::after) {
+  box-sizing: border-box;
+}
+.fk :where(p, h1, h2, h3, h4, ul, ol, figure, pre) {
+  margin: 0;
+}
+.fk :where(ul, ol) {
+  padding: 0;
+  list-style: none;
+}
+/* `:where()` wraps the WHOLE selector, not just the element.
+   `.fk :where(button)` still scores (0,1,0) from `.fk`, which ties with
+   `.fk-btn-primary` — and being later in source order, the reset won. Every
+   primary button in the package rendered flat: no gradient, no cobalt, dark
+   text, against DESIGN.md's "no flat fills; every interactive surface earns its
+   weight". `:where(.fk button)` scores (0,0,0), so any component class beats it
+   whatever the import order. Found 2026-08-04 by reading a rendered button. */
+:where(.fk a) {
+  color: var(--fk-primary);
+  text-decoration: none;
+}
+:where(.fk a:hover) {
+  text-decoration: underline;
+}
+:where(.fk button) {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  padding: 0;
+}
+:where(.fk svg) {
+  display: block;
+}
+
+/* Never suppressed: 2px primary ring at 2px offset (DESIGN.md accessibility bar). */
+.fk :focus-visible {
+  outline: 2px solid var(--fk-primary);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* The exactness rule. Every amount, address, hash, identifier, round number,
+   deadline and duration renders here. A number in the body face is a bug. */
+.fk-mono {
+  font-family: var(--fk-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Only ever announced, never drawn. */
+.fk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fk :where(*, *::before, *::after) {
+    animation: none !important;
+    transition: none !important;
+  }
+}

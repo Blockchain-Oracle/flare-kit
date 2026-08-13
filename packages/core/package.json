@@ -1,0 +1,52 @@
+{
+  "name": "@flare-kit/core",
+  "version": "0.1.0",
+  "description": "The durable operation lifecycle for Flare: intent, quote, unsigned plan, execution, evidence and recovery. Headless, no React.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=21"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e:mock": "vitest run test/e2e",
+    "publint": "publint",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@flare-kit/contracts": "workspace:^"
+  },
+  "peerDependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@flarenetwork/flare-tx-sdk": "^1.5.2",
+    "viem": "^2.40.0",
+    "xrpl": "^4.5.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,0 +1,164 @@
+{
+  "startedAt": "2026-08-04T10:21:54.697Z",
+  "network": "Flare Testnet Coston2",
+  "chainId": 114,
+  "underlying": "XRP Ledger Testnet",
+  "accounts": {
+    "evm": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "xrpl": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio"
+  },
+  "custody": "read-only — this script holds no key",
+  "positions": [
+    {
+      "asset": "C2FLR",
+      "family": "evm",
+      "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+      "value": "99.672882949999999000 C2FLR",
+      "observed": true,
+      "sourceClass": "chain",
+      "provider": "https://coston2-api.flare.network/ext/C/rpc",
+      "sourceNetwork": "Flare Testnet Coston2",
+      "observedAt": "2026-08-04T10:21:54.698Z",
+      "ageMs": 843,
+      "stale": false
+    },
+    {
+      "asset": "FTestXRP",
+      "family": "evm",
+      "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+      "value": "24.800000 FTestXRP",
+      "observed": true,
+      "sourceClass": "chain",
+      "provider": "https://coston2-api.flare.network/ext/C/rpc",
+      "sourceNetwork": "Flare Testnet Coston2",
+      "observedAt": "2026-08-04T10:21:54.698Z",
+      "ageMs": 843,
+      "stale": false
+    },
+    {
+      "asset": "XRP",
+      "family": "xrpl",
+      "account": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+      "value": "84.949988 XRP",
+      "observed": true,
+      "sourceClass": "chain",
+      "provider": "https://xrpl-testnet-api.flare.network",
+      "sourceNetwork": "XRP Ledger Testnet",
+      "observedAt": "2026-08-04T10:21:54.698Z",
+      "ageMs": 843,
+      "stale": false
+    }
+  ],
+  "activity": [
+    {
+      "operationId": "op_504p2a49630e5a4s0t3t",
+      "capability": "fassets.direct-mint",
+      "evidence": [
+        {
+          "kind": "xrpl_tx",
+          "label": "XRPL payment",
+          "value": "3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03",
+          "chain": "validated, ledger 19619920"
+        },
+        {
+          "kind": "fdc_request",
+          "label": "FDC request",
+          "value": "0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0",
+          "chain": "success, block 33605685"
+        },
+        {
+          "kind": "flare_tx",
+          "label": "Flare execution",
+          "value": "0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0",
+          "chain": "success, block 33605685"
+        },
+        {
+          "kind": "executor_address",
+          "label": "Executor",
+          "value": "0x103b384064ae85577127097A7cCadfd6fb13f437",
+          "chain": "no chain lookup for this kind"
+        }
+      ]
+    },
+    {
+      "operationId": "op_m1_redeem",
+      "capability": "fassets.redeem",
+      "evidence": [
+        {
+          "kind": "flare_tx",
+          "label": "Redemption request",
+          "value": "0x29f01334a32fb1725a21d823442fb83798012bf7dddeddcc849ee4e470818680",
+          "chain": "success, block 33608131"
+        },
+        {
+          "kind": "xrpl_destination",
+          "label": "XRPL destination",
+          "value": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+          "chain": "no chain lookup for this kind"
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "evm": "covered",
+    "xrpl": "covered"
+  },
+  "partialCoverage": false,
+  "readOnly": true,
+  "unbuilt": [
+    {
+      "kind": "vault",
+      "reason": "No vault capability is built yet, so this account has not been checked for one."
+    },
+    {
+      "kind": "bridge-message",
+      "reason": "No bridge capability is built yet, so no message state can be shown."
+    },
+    {
+      "kind": "delegation",
+      "reason": "No delegation capability is built yet, so delegated weight is not read."
+    },
+    {
+      "kind": "stake",
+      "reason": "No staking capability is built yet, so stakes are not read."
+    }
+  ],
+  "activityCoverage": {
+    "sourceClass": "local",
+    "complete": false,
+    "reason": "This history covers the operations started in this installation. No indexer is connected, so an operation started elsewhere will not appear here."
+  },
+  "links": [
+    {
+      "operationId": "op_m1_redeem",
+      "kind": "flare_tx",
+      "href": "https://coston2-explorer.flare.network/tx/0x29f01334a32fb1725a21d823442fb83798012bf7dddeddcc849ee4e470818680"
+    },
+    {
+      "operationId": "op_m1_redeem",
+      "kind": "xrpl_destination",
+      "href": "https://testnet.xrpl.org/accounts/rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio"
+    },
+    {
+      "operationId": "op_504p2a49630e5a4s0t3t",
+      "kind": "xrpl_tx",
+      "href": "https://testnet.xrpl.org/transactions/3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03"
+    },
+    {
+      "operationId": "op_504p2a49630e5a4s0t3t",
+      "kind": "fdc_request",
+      "href": null
+    },
+    {
+      "operationId": "op_504p2a49630e5a4s0t3t",
+      "kind": "flare_tx",
+      "href": "https://coston2-explorer.flare.network/tx/0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0"
+    },
+    {
+      "operationId": "op_504p2a49630e5a4s0t3t",
+      "kind": "executor_address",
+      "href": "https://coston2-explorer.flare.network/address/0x103b384064ae85577127097A7cCadfd6fb13f437"
+    }
+  ],
+  "finishedAt": "2026-08-04T10:21:56.771Z"
+}

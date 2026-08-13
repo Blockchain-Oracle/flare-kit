@@ -1,0 +1,437 @@
+{
+  "startedAt": "2026-08-12T12:05:36.959Z",
+  "network": "coston2",
+  "chainId": 114,
+  "signer": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "wnat": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+  "wrapWei": "5000000000000000000",
+  "dry": {
+    "ranAt": "2026-08-12T12:05:43.078Z",
+    "broadcast": false,
+    "reads": {
+      "nativeBalance": "47397233436830560487",
+      "nativeHuman": "47.397233436830560487",
+      "wrappedBalance": "0",
+      "wrappedHuman": "0",
+      "mode": 0,
+      "modeMeaning": "NOTSET",
+      "delegateCount": 0,
+      "delegates": [],
+      "votePower": "0",
+      "undelegatedVotePower": "0"
+    },
+    "providerResolution": {
+      "provider": "0xB63C1E02a41e975f4d826BD06eccaFaCd5038B5D",
+      "providerVotePower": "583828928750000000000",
+      "voterRegistry": "0x6a0AF07b7972177B176d3D422555cbc98DfDe914",
+      "flareSystemsManager": "0xA90Db6D10F856799b10ef2A77EBCbF460aC71e52",
+      "currentEpoch": 5930,
+      "epochUsed": 5931,
+      "howChosen": "FlareContractRegistry.getAllContracts() -> VoterRegistry.getRegisteredVoters(epoch); ranked by WNat.votePowerOf; highest (most-delegated live provider) chosen",
+      "candidates": [
+        {
+          "address": "0xB63C1E02a41e975f4d826BD06eccaFaCd5038B5D",
+          "votePower": "583828928750000000000"
+        },
+        {
+          "address": "0x2848c61D11Ec0bB0212c012715569B49Cec90FC2",
+          "votePower": "0"
+        },
+        {
+          "address": "0x858517D68bf814d3719770998473C58791eB8eAd",
+          "votePower": "0"
+        },
+        {
+          "address": "0x882EE9cebe3d7B38eEbD640b89DE01B326351679",
+          "votePower": "0"
+        },
+        {
+          "address": "0x88Cb83fc10Dd2CD373201f835A3156A1E0259621",
+          "votePower": "0"
+        },
+        {
+          "address": "0xeE5cF0CA918515298e4ceEA92766e541fb72f6db",
+          "votePower": "0"
+        },
+        {
+          "address": "0x5b6f9B8d5b449710251Ed9BfBA2edDb12D04bB75",
+          "votePower": "0"
+        },
+        {
+          "address": "0xdDABE24EcDF200abc05016bc39ed6CAc94142BEE",
+          "votePower": "0"
+        },
+        {
+          "address": "0x08F332378FC4cf26D858386248E674E9F3Cb658f",
+          "votePower": "0"
+        }
+      ]
+    },
+    "verifiedGate": {
+      "realDeploymentVerified": false,
+      "result": "error",
+      "error": "not-verified"
+    },
+    "unwrapGuardCurrentState": {
+      "result": "error",
+      "error": {
+        "kind": "insufficient-wrapped",
+        "have": "0",
+        "need": "5000000000000000000"
+      }
+    },
+    "plans": {
+      "wrap": {
+        "kind": "plan",
+        "calls": [
+          {
+            "abiKind": "wnat",
+            "address": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+            "functionName": "deposit",
+            "args": [],
+            "value": "5000000000000000000"
+          }
+        ]
+      },
+      "delegate": {
+        "kind": "plan",
+        "calls": [
+          {
+            "abiKind": "vptoken",
+            "address": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+            "functionName": "delegate",
+            "args": [
+              "0xB63C1E02a41e975f4d826BD06eccaFaCd5038B5D",
+              "10000"
+            ]
+          }
+        ]
+      },
+      "undelegate": {
+        "kind": "plan",
+        "calls": [
+          {
+            "abiKind": "vptoken",
+            "address": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+            "functionName": "undelegateAll",
+            "args": []
+          }
+        ]
+      },
+      "unwrap": {
+        "kind": "plan",
+        "calls": [
+          {
+            "abiKind": "wnat",
+            "address": "0xC67DCE33D7A8efA5FfEB961899C73fe01bCe9273",
+            "functionName": "withdraw",
+            "args": [
+              "5000000000000000000"
+            ]
+          }
+        ]
+      }
+    },
+    "simulations": {
+      "wrap": {
+        "ok": true
+      },
+      "delegate": {
+        "ok": true
+      },
+      "undelegate": {
+        "ok": true
+      },
+      "unwrap": {
+        "ok": false,
+        "reason": "The contract function \"withdraw\" reverted with the following reason:",
+        "expectedUntilWrapped": true
+      }
+    },
+    "note": "READ-ONLY: adapter.read + resolveProvider + buildDelegationPlan + simulateContract (eth_call). No writeContract anywhere in dry."
+  },
+  "wrap": {
+    "tx": "0x68d6bb3551a445b68a60fe365cf5a9d31bc7b4919488d583143c826c27a5c572",
+    "explorer": "https://coston2-explorer.flare.network/tx/0x68d6bb3551a445b68a60fe365cf5a9d31bc7b4919488d583143c826c27a5c572",
+    "wrappedBefore": "0",
+    "wrappedAfter": "5000000000000000000",
+    "amount": "5000000000000000000",
+    "confirmedAt": "2026-08-12T12:18:49.349Z"
+  },
+  "delegate": {
+    "tx": "0x7b8fa4e1e0460680cb59d5da9291c4a7b9252553e956d801617ca9c54a22681a",
+    "explorer": "https://coston2-explorer.flare.network/tx/0x7b8fa4e1e0460680cb59d5da9291c4a7b9252553e956d801617ca9c54a22681a",
+    "provider": "0xB63C1E02a41e975f4d826BD06eccaFaCd5038B5D",
+    "delegatesOf": [
+      {
+        "address": "0xB63C1E02a41e975f4d826BD06eccaFaCd5038B5D",
+        "bips": 10000
+      }
+    ],
+    "votePower": "0",
+    "mode": 1,
+    "preSendState": "awaiting_external",
+    "opState": "succeeded",
+    "confirmedAt": "2026-08-12T12:20:26.212Z"
+  },
+  "undelegate": {
+    "tx": "0x70ed6dbb3b5dc698126f24a7187770d5848b8a7b0c1f85c152aab96f12167d3b",
+    "explorer": "https://coston2-explorer.flare.network/tx/0x70ed6dbb3b5dc698126f24a7187770d5848b8a7b0c1f85c152aab96f12167d3b",
+    "delegatesOf": [],
+    "opState": "succeeded",
+    "confirmedAt": "2026-08-12T12:20:46.780Z"
+  },
+  "unwrap": {
+    "tx": "0x8b4903ad95bce514ae1b1fb6e0a465099c16c34f9d3d6f22e5fc706869ab13f0",
+    "explorer": "https://coston2-explorer.flare.network/tx/0x8b4903ad95bce514ae1b1fb6e0a465099c16c34f9d3d6f22e5fc706869ab13f0",
+    "unwrappedBaseline": "5000000000000000000",
+    "wrappedAfter": "0",
+    "nativeBefore": "41859942136830560487",
+    "nativeAfter": "46750559486830560487",
+    "opState": "succeeded",
+    "confirmedAt": "2026-08-12T12:33:30.573Z"
+  },
+  "rewards": {
+    "ranAt": "2026-08-12T12:15:57.280Z",
+    "broadcast": false,
+    "keyless": true,
+    "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "rewardsDeployment": {
+      "rewardManager": "0xB4f43E342c5c77e6fe060c0481Fe313Ff2503454",
+      "ftsoRewardManager": "0x7A0bFB85387314d7F8C0FcCD9D9B74A76115c322",
+      "rnat": "0x221D27529e7788B929E13533edc3b00ec1ac5e8A",
+      "distribution": "0xbd33bDFf04C357F7FC019E72D0504C24CF4Aa010",
+      "flareSystemsManager": "0xA90Db6D10F856799b10ef2A77EBCbF460aC71e52",
+      "rewardsVerified": false
+    },
+    "reads": {
+      "currentRewardEpoch": 5930,
+      "expireNextEpoch": 5902,
+      "claimableEpochCount": 28,
+      "claimableEpochs": [
+        5902,
+        5903,
+        5904,
+        5905,
+        5906,
+        5907,
+        5908,
+        5909,
+        5910,
+        5911,
+        5912,
+        5913,
+        5914,
+        5915,
+        5916,
+        5917,
+        5918,
+        5919,
+        5920,
+        5921,
+        5922,
+        5923,
+        5924,
+        5925,
+        5926,
+        5927,
+        5928,
+        5929
+      ],
+      "ftsoCount": 0,
+      "ftso": [],
+      "ftsoRender": "no-entitlement: empty getStateOfRewards -> no amount rendered (dash), never a faked 0",
+      "rnat": {
+        "hasProject": false,
+        "month": 26,
+        "wNat": "0",
+        "rnat": "0",
+        "locked": "0"
+      },
+      "rnatRender": "no RNat account: \"no RNat account\" revert -> hasProject:false honest-empty, never a faked zero balance",
+      "flaredrop": {
+        "concluded": true,
+        "claimableMonths": [],
+        "amount": "0"
+      },
+      "flaredropRender": "concluded: FlareDrop ended 2026-01-30 (\"already finished\" revert -> claimableMonths:[]), a legacy state, not a claim"
+    },
+    "proofSource": {
+      "url": "https://gitlab.com/timivesel/ftsov2-testnet-rewards",
+      "official": false,
+      "probedEpochs": 28,
+      "anyTuplesForAccount": false,
+      "note": "unofficial community mirror; the account having no tuples is the declared proof-unavailable state, never a fabricated proof"
+    },
+    "proofProbe": [
+      {
+        "epoch": 5902,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5903,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5904,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5905,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5906,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5907,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5908,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5909,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5910,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5911,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5912,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5913,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5914,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5915,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5916,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5917,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5918,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5919,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5920,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5921,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5922,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5923,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5924,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5925,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5926,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5927,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5928,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      },
+      {
+        "epoch": 5929,
+        "hasTuples": false,
+        "state": "proof-unavailable (declared)"
+      }
+    ],
+    "gates": {
+      "notVerified": {
+        "rewardsVerified": false,
+        "result": "error",
+        "error": "not-verified"
+      },
+      "noEntitlement": {
+        "rewardsVerified": true,
+        "ftsoCount": 0,
+        "result": "error",
+        "error": "no-entitlement"
+      }
+    },
+    "honestExpectations": {
+      "all": true,
+      "failed": []
+    },
+    "carry": "rewardsVerified stays FALSE past M10 — the account earned nothing and no earned reward + official proof exist this milestone. The FTSO claim is CARRIED (coded, gated off); it settles + flips only when a real reward and its Merkle proof land in a later epoch.",
+    "note": "READ-ONLY: rewardsAdapter.read + fetchFtsoProof (public mirror GET) + buildRewardsClaimPlan (pure/sync). No writeContract, no key use anywhere in rewards."
+  },
+  "claim": {
+    "ranAt": "2026-08-12T12:16:08.638Z",
+    "broadcast": false,
+    "guard": "no-entitlement",
+    "ftsoCount": 0,
+    "planUnderVerifiedOverride": "no-entitlement",
+    "rewardsVerified": false,
+    "note": "CARRIED: nothing earned yet -> no proof to merge, no claim to sign, no broadcast. rewardsVerified stays false until a real reward + its proof settle on-chain."
+  }
+}

@@ -1,0 +1,251 @@
+/* ============================================================
+   @flare-kit/react-ui — state and evidence.
+
+   The part every surface shares verbatim: the state chip, the
+   fixed glyph vocabulary, and the one evidence-chip anatomy.
+   State colour is never the first signal — every state pairs
+   its colour with a glyph and a word (DESIGN.md).
+   ============================================================ */
+
+/* ---------- state chip ----------
+   Mono, pill, 1px border, tinted background, plus a glyph. */
+.fk-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--fk-border-control);
+  color: var(--fk-text-muted);
+  background: var(--fk-card);
+  white-space: nowrap;
+}
+.fk-chip-primary {
+  color: var(--fk-primary);
+  border-color: var(--fk-primary-line);
+  background: var(--fk-primary-soft);
+}
+.fk-chip-brand {
+  color: var(--fk-brand-text);
+  border-color: var(--fk-brand-line);
+  background: var(--fk-brand-soft);
+}
+.fk-chip-ok {
+  color: var(--fk-success);
+  border-color: var(--fk-success-line);
+  background: var(--fk-success-soft);
+}
+.fk-chip-att {
+  color: var(--fk-attention);
+  border-color: var(--fk-attention-line);
+  background: var(--fk-attention-soft);
+}
+.fk-chip-bad {
+  color: var(--fk-danger);
+  border-color: var(--fk-danger-line);
+  background: var(--fk-danger-soft);
+}
+.fk-chip-part {
+  color: var(--fk-partial);
+  border-color: var(--fk-partial-line);
+  background: var(--fk-partial-soft);
+}
+
+/* ---------- the glyph vocabulary ----------
+   Fixed, and identical at every size: filled disc = complete,
+   ring = working, dashed ring = waiting on an external actor,
+   filled square = your action required, half disc = partial,
+   cross = failed, dotted ring = outcome unknown.
+
+   Seven marks, seven shapes. None of them is distinguished from another by
+   colour, weight or opacity alone. */
+.fk-g {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  position: relative;
+  color: inherit;
+}
+.fk-g-done {
+  background: currentColor;
+  border-radius: 50%;
+}
+.fk-g-working {
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+}
+.fk-g-waiting {
+  border: 1.5px dashed currentColor;
+  border-radius: 50%;
+}
+.fk-g-action {
+  background: currentColor;
+  border-radius: 1px;
+}
+.fk-g-partial {
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+.fk-g-unknown {
+  /* Dotted, not dashed, and at full strength.
+     These two were the same 8x8 dashed ring separated only by `opacity: 0.6`,
+     which made the distinction a colour-channel signal — the exact thing the
+     glyph vocabulary exists to avoid — and composited the most-used mark on the
+     FTSO surfaces below the tier its contrast was verified at. Abu chose the
+     dotted ring on 2026-08-05. */
+  border: 1.5px dotted currentColor;
+  border-radius: 50%;
+}
+.fk-g-failed::before,
+.fk-g-failed::after {
+  content: '';
+  position: absolute;
+  inset: 50% -1px auto -1px;
+  height: 1.5px;
+  background: currentColor;
+}
+.fk-g-failed::before {
+  transform: rotate(45deg);
+}
+.fk-g-failed::after {
+  transform: rotate(-45deg);
+}
+
+/* A live chip adds a pulsing dot; under reduced motion the pulse
+   becomes a static LIVE tick, handled by the component. */
+.fk-g-live {
+  background: currentColor;
+  border-radius: 50%;
+  animation: fk-live 1.8s ease-in-out infinite;
+}
+@keyframes fk-live {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.78);
+  }
+}
+
+/* ---------- evidence chip ----------
+   One anatomy everywhere: mono type label, truncated identifier,
+   copy control revealing the full value. Identical in the widget,
+   the timeline, the receipt, the operator console and support. */
+.fk-ev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-sm);
+  padding: 2px 3px 2px 7px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.71rem;
+  max-width: 100%;
+}
+.fk-ev-label {
+  color: var(--fk-text-faint);
+  flex: none;
+}
+.fk-ev-value {
+  color: var(--fk-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- explorer link ----------
+   The one link anatomy for an identifier that has somewhere to be looked up.
+   Neutral, never accent-coloured — the re-cut cut the blue — and it dims on
+   hover instead of underlining. The trailing glyph says it leaves the page.
+   Without an href it is the same shortened value as plain text (`.fk-xl`
+   alone), so an identifier no explorer indexes still reads and copies; it just
+   stops being a link. */
+.fk-xl {
+  font-family: var(--fk-font-mono);
+  color: var(--fk-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fk-xl-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  /* WCAG 2.2 2.5.8: a short truncated id is only as tall/wide as its glyphs.
+     Height and width are both floored so even a short linked value is a target. */
+  min-height: 24px;
+  min-width: 24px;
+  color: var(--fk-text);
+  text-decoration: none;
+}
+.fk-xl-link:hover {
+  color: var(--fk-text-faint);
+}
+.fk-xl-link .fk-i-external {
+  color: var(--fk-text-faint);
+}
+
+/* ---------- copy control ----------
+   The copy affordance on its own: a faint 24x24 target that greens on a
+   successful write. One anatomy whether it sits inside an evidence chip or
+   beside a wallet address. */
+.fk-copy {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 3px;
+  color: var(--fk-text-faint);
+}
+.fk-copy:hover {
+  background: var(--fk-card);
+  color: var(--fk-text);
+}
+.fk-copy[data-copied='true'] {
+  color: var(--fk-success);
+}
+
+/* ---------- actor tag ----------
+   Every timeline row names its owning actor as a proper noun. */
+.fk-actor {
+  font-family: var(--fk-font-mono);
+  font-size: 0.7rem;
+  color: var(--fk-text-faint);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-sm);
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* A chip that labels rather than states an outcome carries no mark, so the
+   space the glyph occupied comes back as padding. The seven marks stay reserved
+   for operation outcomes; see `ToneChip`. */
+.fk .fk-chip-label {
+  padding-left: 9px;
+}
+
+/* The recovery action's own spacing, on the token scale. It was an inline
+   `style={{ marginTop: 10 }}` — the only inline spacing in the package, and 10
+   is on no scale DESIGN.md defines. */
+.fk .fk-recovery-action {
+  margin-top: 8px;
+}
+
+/* What the action actually does, under its own note. Tighter than a surface's
+   Details block: this is a footnote to a decision, not the decision. */
+.fk .fk-recovery-terms {
+  margin-top: 8px;
+}
+
+.fk .fk-recovery-pre {
+  font-size: 12px;
+}

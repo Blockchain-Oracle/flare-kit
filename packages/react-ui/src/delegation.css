@@ -1,0 +1,125 @@
+/* ============================================================
+   @flare-kit/react-ui — the delegation surface (M10).
+
+   DelegationCard reuses SwapLeg, the SegmentedTabs mode control,
+   the OperationTimeline spine and the shared
+   Panel/Note/DetailRow/StateChip/ToneChip/card-chrome, so this
+   file adds only the delegation composer's own chrome: the
+   provider rows and the current-mode indicator. Every value
+   derives from a token in styles.css — nothing is a raw literal.
+   Theme is runtime, under data-theme. (Task 12 adds `fk-claim`
+   rules to this same file.)
+   ============================================================ */
+
+/* ---------- DelegationCard (M10-R9) ---------- */
+.fk.fk-delegation-card {
+  max-width: 440px;
+}
+.fk-delegation-card .fk-delegation-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-delegation-card .fk-delegation-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* The full-amount-only unwrap caveat, stated where the leg is. */
+.fk-delegation-card .fk-delegation-hint {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* The observed position readout (DEL-02). */
+.fk-delegation-card .fk-delegation-position {
+  margin-top: 12px;
+}
+
+/* The provider rows + the current on-chain mode indicator (DEL-01). */
+.fk-delegation-card .fk-delegation-providers {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fk-delegation-card .fk-delegation-providers-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fk-delegation-card .fk-delegation-providers-title {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+/* The current on-chain delegation mode (NOTSET / PERCENTAGE / AMOUNT), in the mono
+   chip face — it governs mode-exclusivity, so it is stated, not implied. */
+.fk-delegation-card .fk-delegation-mode {
+  letter-spacing: 0.02em;
+}
+.fk-delegation-card .fk-delegation-provider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-delegation-card .fk-delegation-provider-addr,
+.fk-delegation-card .fk-delegation-provider-share {
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  color: var(--fk-text);
+  font-size: 0.9rem;
+}
+.fk-delegation-card .fk-delegation-provider-addr {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.fk-delegation-card .fk-delegation-provider-share {
+  flex: 0 0 6.5rem;
+  text-align: right;
+}
+.fk-delegation-card .fk-delegation-provider-addr:disabled,
+.fk-delegation-card .fk-delegation-provider-share:disabled {
+  color: var(--fk-text-muted);
+  background: var(--fk-surface);
+}
+
+.fk-delegation-card .fk-delegation-spine {
+  margin-top: 12px;
+}
+
+/* ---------- ClaimCard (M10-R10) — ONE component, three DISTINCT kinds ---------- */
+/* Reuses Panel/Details/DetailRow/Note/StateChip/ToneChip/SegmentedTabs and the shared
+   OperationTimeline spine, so this adds only the claim surface's own chrome. Every value
+   derives from a token in styles.css. Theme is runtime, under data-theme. */
+.fk.fk-claim-card {
+  max-width: 440px;
+}
+.fk-claim-card .fk-claim-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-claim-card .fk-claim-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+/* The per-kind readout (FTSO rewards / rNat split / FlareDrop archive). */
+.fk-claim-card .fk-claim-position {
+  margin-top: 12px;
+}
+/* CLAIM-01 — the FTSO proof source: the url beside its UNOFFICIAL-mirror label chip, so the
+   source is auditable and never dressed as an official protocol API. */
+.fk-claim-card .fk-claim-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.fk-claim-card .fk-claim-spine {
+  margin-top: 12px;
+}

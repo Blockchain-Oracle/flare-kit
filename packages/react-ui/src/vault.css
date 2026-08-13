@@ -1,0 +1,110 @@
+/* ============================================================
+   @flare-kit/react-ui — the vault surfaces (M7).
+
+   VaultCatalogue, DepositCard and WithdrawCard reuse SwapLeg,
+   PercentPills and the shared Panel/Note/DetailRow/SourceChip/
+   OperationTimeline chrome, so this file adds only what vaults
+   need beyond swap.css / liquidity.css: the catalogue's per-vault
+   rows and the live-countdown primitive that carries the durable
+   withdraw timeline. Every value derives from a token in
+   primitives.css — nothing is a raw literal.
+   ============================================================ */
+
+.fk.fk-vault {
+  max-width: 460px;
+}
+
+/* ---------- VaultCatalogue rows (M7-R7) ----------
+   One row per configured vault, separated by a hairline rather than a
+   card each, so the list reads as one catalogue and not a stack of
+   panels. */
+.fk-vault .fk-vault-row {
+  padding: 14px 0;
+}
+.fk-vault .fk-vault-row + .fk-vault-row {
+  border-top: 1px solid var(--fk-border);
+}
+.fk-vault .fk-vault-row-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fk-vault .fk-vault-row-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Push the SourceChip to the right edge of the row head. */
+  margin-right: auto;
+}
+.fk-vault .fk-vault-row-name {
+  font-family: var(--fk-font-display);
+  font-weight: 600;
+  color: var(--fk-text);
+}
+.fk-vault .fk-vault-row-model {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-vault .fk-vault-row-exits {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ---------- DepositCard / WithdrawCard (M7-R8/R9) ----------
+   The vault action cards reuse SwapLeg and the shared card chrome, so they add
+   only their own width and the gap between the two legs (as AddLiquidityCard does
+   over swap.css — the cards have no flip control on the seam between the legs). */
+.fk.fk-vault-card {
+  max-width: 420px;
+}
+.fk-vault-card .fk-leg + .fk-leg {
+  margin-top: 10px;
+}
+.fk-vault-card .fk-vault-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+/* The explicit exit-route choice (M7-R9): instant vs delayed, never collapsed —
+   reuses the SegmentedTabs pick-one control, so this adds only its top gap. */
+.fk-vault-card .fk-vault-route {
+  margin-top: 12px;
+}
+/* The durable-timeline block: the live Countdown while waiting, the CLAIMABLE
+   badge once the vault's period/epoch is reached. Set off from the note above it. */
+.fk-vault-card .fk-vault-timeline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+
+/* ---------- Countdown (M7-R9) ----------
+   The live-countdown primitive for the durable withdraw timeline. Pure and
+   prop-driven; the host advances `now`. The digits are mono with tabular
+   numerals so the width does not jitter as the seconds tick down. When the
+   target has passed the value reads "Ready" in the success tone — the
+   WithdrawCard swaps it for a CLAIMABLE badge at that point. */
+.fk-countdown {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.fk-countdown-label {
+  font-size: 0.82rem;
+  color: var(--fk-text-muted);
+}
+.fk-countdown-time {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text);
+}
+.fk-countdown[data-reached='true'] .fk-countdown-time {
+  color: var(--fk-success);
+}

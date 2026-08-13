@@ -1,0 +1,82 @@
+/* Gallery chrome only. Nothing here styles a kit surface — the point is to see
+   what the package itself produces, so a rule that leaked in would be a lie. */
+
+.g-root {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--fk-bg, #fdfcf9);
+  color: var(--fk-text, #221d18);
+  font-family: var(--fk-font-sans, system-ui, sans-serif);
+}
+
+.g-head h1 {
+  font-family: var(--fk-font-display, system-ui);
+  font-size: 22px;
+  margin: 0 0 6px;
+}
+
+.g-head p {
+  margin: 0 0 12px;
+  color: var(--fk-text-muted, #68625c);
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+.g-head button {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--fk-border, #e1dfdb);
+  background: var(--fk-card, #fff);
+  color: inherit;
+  cursor: pointer;
+}
+
+.g-section {
+  margin-top: 34px;
+}
+
+/* Direct child, not descendant. As `.g-section h2` this scored (0,1,1) and beat
+   `.fk-panel-title` at (0,1,0) — so every Panel in the gallery rendered its
+   title in mono 12px uppercase faint, and every M3 and M4 screenshot recorded
+   the wrong heading. It also uppercased asset symbols: `FMockXRP` became
+   `FMOCKXRP`, an identifier losing its casing. The gallery is chrome; it must
+   not restyle the thing it exists to show. */
+.g-section > h2 {
+  font-family: var(--fk-font-mono, monospace);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint, #75716b);
+  border-bottom: 1px solid var(--fk-border, #e1dfdb);
+  padding-bottom: 6px;
+  margin: 0 0 16px;
+}
+
+.g-cases {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(560px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.g-case {
+  margin: 0;
+  min-width: 0;
+}
+
+.g-case figcaption {
+  font-family: var(--fk-font-mono, monospace);
+  font-size: 11px;
+  color: var(--fk-text-faint, #75716b);
+  margin-bottom: 6px;
+}
+
+.g-mount {
+  border: 1px solid var(--fk-border, #e1dfdb);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--fk-surface, #f7f6f1);
+  overflow: hidden;
+}

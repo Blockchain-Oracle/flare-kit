@@ -1,0 +1,124 @@
+/* ============================================================
+   @flare-kit/react-ui — the operation spine.
+
+   The signature component. A vertical rail of steps where each
+   node carries the state glyph and each row names its owning
+   actor. Long waits state four things in order: current stage,
+   expected range, awaited actor, safe user action.
+
+   Operational density, not marketing density: 8/12 padding,
+   hairline separation, no card chrome per row.
+   ============================================================ */
+
+.fk-spine {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fk-spine-step {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 0 12px;
+  position: relative;
+  padding-bottom: 15px;
+}
+.fk-spine-step:last-child {
+  padding-bottom: 0;
+}
+
+/* The rail itself, drawn between nodes rather than behind them. */
+.fk-spine-step::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 18px;
+  bottom: 0;
+  width: 2px;
+  background: var(--fk-border);
+}
+.fk-spine-step:last-child::before {
+  display: none;
+}
+
+/* The node sits on the card so the rail appears to pass behind it. */
+.fk-spine-node {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  position: relative;
+  z-index: 1;
+  background: var(--fk-card);
+  display: grid;
+  place-items: center;
+}
+.fk-spine-node .fk-g {
+  width: 15px;
+  height: 15px;
+}
+
+.fk-spine-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.fk-spine-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.fk-spine-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* Tones for a step's own state, independent of the operation's. */
+.fk-spine-step[data-state='done'] .fk-spine-node {
+  color: var(--fk-success);
+}
+.fk-spine-step[data-state='active'] .fk-spine-node {
+  color: var(--fk-primary);
+}
+.fk-spine-step[data-state='blocked'] .fk-spine-node {
+  color: var(--fk-attention);
+}
+.fk-spine-step[data-state='pending'] .fk-spine-node {
+  color: var(--fk-border-control);
+}
+.fk-spine-step[data-state='failed'] .fk-spine-node {
+  color: var(--fk-danger);
+}
+
+/* The wait block: stage, expected range, awaited actor, safe action. */
+.fk-wait {
+  margin-top: 12px;
+  border: 1px solid var(--fk-primary-line);
+  background: var(--fk-primary-soft);
+  border-radius: var(--fk-r-md);
+  padding: 10px 13px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.fk-wait-actor {
+  font-weight: 600;
+  color: var(--fk-text);
+}
+.fk-wait-until {
+  font-family: var(--fk-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--fk-text);
+}
+.fk-wait-body {
+  color: var(--fk-text-muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 560px) {
+  /* Reflow, never hide: an exact amount, an authority or a recovery risk
+     stays on screen at every width. */
+  .fk-spine-top {
+    gap: 6px;
+  }
+}

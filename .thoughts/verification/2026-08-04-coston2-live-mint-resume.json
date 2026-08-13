@@ -1,0 +1,40 @@
+{
+  "resumedAt": "2026-08-04T06:12:00.353Z",
+  "network": "Flare Testnet Coston2",
+  "chainId": 114,
+  "reusedXrplPayment": "3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03",
+  "reusedAttestationRequest": "0xb5bf29512bae84f3837303721dad7241a6dae64dcf39c1568123ef4fc5715cd0",
+  "movedNewValue": false,
+  "steps": [
+    {
+      "step": "request-bytes-rederived",
+      "at": "2026-08-04T06:12:00.893Z",
+      "same": true
+    },
+    {
+      "step": "fdc-round",
+      "at": "2026-08-04T06:12:02.336Z",
+      "votingRoundId": "1415484",
+      "blockTimestamp": "1785823603",
+      "firstVotingRoundStartTs": "1658430000",
+      "votingEpochDurationSeconds": "90"
+    },
+    {
+      "step": "fdc-round-finalized",
+      "at": "2026-08-04T06:12:02.487Z",
+      "votingRoundId": "1415484"
+    },
+    {
+      "step": "fdc-proof",
+      "at": "2026-08-04T06:12:03.117Z",
+      "merkleNodes": 2,
+      "receivedAmountDrops": "25000000",
+      "sourceAddress": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+      "lowestUsedTimestamp": "1785823590",
+      "votingRound": "1415484"
+    }
+  ],
+  "outcome": "incomplete",
+  "error": "ContractFunctionExecutionError: The contract function \"executeDirectMinting\" reverted.  Error: PaymentAlreadyConfirmed()   Contract Call:",
+  "finishedAt": "2026-08-04T06:12:03.477Z"
+}

@@ -1,0 +1,59 @@
+{
+  "run": "M9 gasless FXRP (AC1/AC2)",
+  "network": "coston2",
+  "startedAt": "2026-08-12T08:03:25.302Z",
+  "operator": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "payer": "0xDddF991858311597bFD3D125cb342a0d4B56ea0a",
+  "recipient": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "forwarder": "0x7F358717afdEC6FD4AFEfCf2e7dD9ff3dF4b9c17",
+  "fxrp": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+  "phaseA": {
+    "fundFxrpTx": "0xba51002fbe3966eff113a11d7b6739b9551348825a7d57c4313f98397afb70ad",
+    "fundGasTx": "0xa913772a06c4c54aeefbb1c5cb8d234ef16c78aa7166b48b46e86d4a62701e82",
+    "payerFxrpAfter": "2000000",
+    "payerFxrpHuman": "2",
+    "payerC2flrAfter": "1365000000000000",
+    "payerC2flrHuman": "0.001365"
+  },
+  "phaseB": {
+    "approveTx": "0x753a184f770f1b745b5cc0698bcf540833b35cc73689cadf3583233682137ca5",
+    "gasUsed": "51565",
+    "payerC2flrBefore": "550000000000000000",
+    "payerC2flrAfter": "516482750000000000",
+    "payerGasCostWei": "33517250000000000",
+    "payerGasCostC2flr": "0.03351725",
+    "note": "approval already in place (prior run)"
+  },
+  "phaseC": {
+    "drainTx": "0x8e07318d2d5ef41fad810b08b5cb64013c5f92b2d7d5f32551d413f4e841fde2",
+    "payerC2flrResidualWei": "1365000000000000",
+    "payerC2flrResidual": "0.001365",
+    "note": "payer native ~0 — it cannot pay for the payment even if asked"
+  },
+  "phaseD": {
+    "relayReceipt": {
+      "accepted": true,
+      "txHash": "0x799d3c9eb0893643d418f334cb15d97cc6b2140d541bd46cef6901938f5b02d4"
+    },
+    "paymentTx": "0x799d3c9eb0893643d418f334cb15d97cc6b2140d541bd46cef6901938f5b02d4",
+    "confirmedAmount": "1000000",
+    "confirmedAmountHuman": "1",
+    "payerC2flrBeforePay": "1365000000000000",
+    "payerC2flrAfterPay": "1365000000000000",
+    "payerPaidGasForPayment": false,
+    "payerFxrpDelta": "-1000000",
+    "recipientFxrpDelta": "1000000",
+    "note": "payer C2FLR UNCHANGED across the payment (0 gas); the relayer paid. FXRP moved payer -amount, recipient +amount."
+  },
+  "lifecycle": {
+    "afterRelayHttp": "submitted",
+    "whileInFlight": {
+      "state": "awaiting_external",
+      "awaitingActor": "relayer"
+    },
+    "afterConfirmed": "succeeded",
+    "note": "submitted (HTTP 200) → awaiting_external(relayer) → succeeded; succeeded reached ONLY from the confirmed transfer read"
+  },
+  "completedAt": "2026-08-12T08:10:21.364Z",
+  "result": "PASS — real FXRP payment, payer paid 0 gas for it; approval was payer-gassed; succeeded only from the on-chain transfer read"
+}

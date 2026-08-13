@@ -1,0 +1,7 @@
+sources/
+developer-hub/
+.thoughts/
+.playwright-mcp/
+dist/
+node_modules/
+pnpm-lock.yaml

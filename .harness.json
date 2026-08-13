@@ -1,0 +1,19 @@
+{
+  "artifact_dir": ".thoughts",
+  "exempt_globs": [
+    "*.lock",
+    "*.min.*",
+    "*-lock.json",
+    "*.snap",
+    "*.svg",
+    "**/migrations/**",
+    "**/generated/**",
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/target/**",
+    "*/.thoughts/design/**",
+    "DESIGN.md"
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "run": "M9 x402 (AC3)",
+  "network": "coston2",
+  "startedAt": "2026-08-12T08:27:59.872Z",
+  "payer": "0xDddF991858311597bFD3D125cb342a0d4B56ea0a",
+  "token": "0x2dA725841FF6F5367E65C5d114aa66C034A3d97b",
+  "tokenLabel": "mUSDT0 (demo)",
+  "facilitator": "0x57da665Ef6Bd39F82Af6BC0764cd779E9C156DdA",
+  "challenge": {
+    "asset": "mUSDT0 (demo)",
+    "demoToken": true,
+    "maxAmountRequired": "100000",
+    "payTo": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "facilitator": "0x57da665Ef6Bd39F82Af6BC0764cd779E9C156DdA",
+    "expiresAt": 1786523579880
+  },
+  "settlement": {
+    "txHash": "0x2923aa74b5478b3cf6b5aa6e279acfdf120ece201afd8de8f0701d076e698158",
+    "paymentId": "0x3ef50c3d33ff5bd92b288c8427164b1e59abdf1df77e6206e0111903927843cc",
+    "txStatus": "success",
+    "tokenPayerDelta": "-100000",
+    "tokenPayeeDelta": "100000"
+  },
+  "resource": {
+    "httpStatus": 200,
+    "body": {
+      "demo": true,
+      "note": "Synthetic x402 demo resource — no real data. The payment flow and the on-chain settlement are real; this body is a placeholder.",
+      "servedAt": 1786523284,
+      "settlement": {
+        "paymentId": "0x3ef50c3d33ff5bd92b288c8427164b1e59abdf1df77e6206e0111903927843cc",
+        "txHash": "0x2923aa74b5478b3cf6b5aa6e279acfdf120ece201afd8de8f0701d076e698158"
+      }
+    },
+    "note": "settlement (fact 1) and resource (fact 2) are independent — recorded separately"
+  },
+  "lifecycle": {
+    "afterSubmit": "submitted",
+    "whileSettling": {
+      "state": "awaiting_external",
+      "actor": "provider"
+    },
+    "afterConfirmed": "succeeded",
+    "note": "submitted → awaiting_external(provider) → succeeded; succeeded only from settled + delivered. partially_succeeded (settled + resource failed) is unit-tested (x402-states.test.ts) — the fixture delivers atomically, so it is not live-reproducible here."
+  },
+  "completedAt": "2026-08-12T08:28:04.836Z",
+  "result": "PASS — real facilitator settlement + resource delivery, recorded as two independent facts; asset is the demo token throughout; succeeded only from settled + delivered"
+}

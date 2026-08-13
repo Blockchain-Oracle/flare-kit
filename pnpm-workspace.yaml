@@ -1,0 +1,15 @@
+packages:
+  - packages/*
+  - apps/*
+  - services/*
+
+# The vendored protocol clones under sources/ and the upstream developer-hub
+# checkout are reference material, never workspace members. reference/contracts
+# is a Hardhat project, not a JS workspace member, so it is not in the glob.
+
+onlyBuiltDependencies:
+  - esbuild
+
+linkWorkspacePackages: true
+preferWorkspacePackages: true
+strictPeerDependencies: false

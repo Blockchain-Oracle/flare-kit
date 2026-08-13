@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BridgeCard · flare-kit docs (Illustrative)</title>
+<link rel="stylesheet" href="assets/globals.css">
+<link rel="stylesheet" href="assets/components.css">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+
+<div class="specimen-bar">
+  <div class="container">
+    <span class="badge badge-brand">Design specimen</span>
+    <span>Source and destination settle independently. Every value is an <strong>Illustrative</strong> fixture.</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <div class="container nav-in">
+    <a class="brandmark" href="index.html"><span class="m"><i></i></span> flare-kit</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a><a href="#" aria-current="page">Components</a><a href="docs.html">Hooks</a><a href="docs.html">Agent Kit</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-search"><span class="i i-search" aria-hidden="true"></span><span>Search docs</span><span class="k">⌘K</span></div>
+      <button class="iconbtn" id="theme" aria-label="Toggle colour theme">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+      <a class="btn btn-primary btn-sm" href="#">Get started</a>
+    </div>
+  </div>
+</nav>
+
+<div class="docs">
+  <aside class="side" aria-label="Documentation">
+    <div class="side-group">
+      <h4>Components · assets</h4>
+      <a href="swap.html">SwapCard</a>
+      <a href="#" aria-current="page">BridgeCard</a>
+      <a href="#">SendCard</a><a href="#">MintFXRP</a><a href="#">RedeemFXRP</a>
+      <a href="#">VaultCard</a><a href="#">TokenSelector</a>
+    </div>
+    <div class="side-group">
+      <h4>Components · lifecycle</h4>
+      <a href="docs.html">OperationTimeline</a><a href="#">ExactReview <span class="side-tag">sheet</span></a>
+      <a href="#">RecoveryPanel</a><a href="#">Receipt</a>
+    </div>
+  </aside>
+
+  <main class="doc">
+    <div class="crumb"><a href="#">@flare-kit/react-ui</a> / <a href="#">Components</a> / BridgeCard</div>
+
+    <div class="doc-h1">
+      <h1>BridgeCard</h1>
+      <button class="btn btn-ghost btn-sm"><span class="i i-copy" aria-hidden="true"></span> Copy page</button>
+    </div>
+
+    <p class="doc-lede">The same spine as the swap, with three differences that matter: a chain on
+      each leg, an itemised fee breakdown instead of slippage, and a two-legged outcome. Source
+      final with destination pending is a real, stable state, not an error.</p>
+
+    <div class="importline">import { BridgeCard } from "@flare-kit/react-ui"</div>
+
+    <div class="callout">
+      <span class="i i-info" aria-hidden="true"></span>
+      <p><strong>Mock by default.</strong> No wallet, no chain, no testnet funds. Walk the states to
+        see the in-flight and partial outcomes, which is where most bridge UIs give up and show a
+        spinner.</p>
+    </div>
+
+    <h2 id="preview">Live preview</h2>
+
+    <div class="demo" id="demo">
+      <div class="demo-bar">
+        <button class="tab" aria-selected="true">Preview</button>
+        <button class="tab" aria-selected="false">Code</button>
+        <span style="flex:1"></span>
+        <span class="badge badge-primary">mock kit</span>
+      </div>
+      <div class="demo-stage">
+        <div class="statebar" role="group" aria-label="Component state">
+          <button class="statebtn" aria-pressed="true" data-s="ready">Ready</button>
+          <button class="statebtn" aria-pressed="false" data-s="flight">In flight</button>
+          <button class="statebtn" aria-pressed="false" data-s="partial">Partial outcome</button>
+          <button class="statebtn" aria-pressed="false" data-s="recover">Recovery</button>
+        </div>
+
+        <div class="kit">
+          <div class="kit-head">
+            <div>
+              <div class="kit-title">Bridge</div>
+              <div class="kit-sub">LayerZero OFT</div>
+            </div>
+            <button class="gear" aria-label="Bridge settings"><span class="i i-gear" aria-hidden="true"></span></button>
+          </div>
+
+          <div class="leg">
+            <div class="chainrow">
+              <span class="leg-label" style="margin:0">From</span>
+              <button class="chainsel">Coston2 <span class="i i-cdown" aria-hidden="true"></span></button>
+            </div>
+            <div class="leg-main">
+              <input class="leg-amount" value="100.000000" aria-label="Amount to bridge">
+              <button class="tokbtn"><span class="tok-logo tok-fxrp">FX</span> FXRP <span class="cr i i-cdown" aria-hidden="true"></span></button>
+            </div>
+            <div class="leg-foot">
+              <span class="leg-fiat">$49.86</span>
+              <span class="leg-bal">Balance <span class="v">247.500000</span><button class="maxbtn">MAX</button></span>
+            </div>
+          </div>
+
+          <div class="flip"><button class="flipbtn" aria-label="Switch source and destination">
+            <span class="i i-flip" aria-hidden="true"></span></button></div>
+
+          <div class="leg">
+            <div class="chainrow">
+              <span class="leg-label" style="margin:0">To</span>
+              <button class="chainsel">Arbitrum Sepolia <span class="i i-cdown" aria-hidden="true"></span></button>
+            </div>
+            <div class="leg-main">
+              <input class="leg-amount" value="100.000000" disabled aria-label="Amount received">
+              <button class="tokbtn"><span class="tok-logo tok-fxrp">FX</span> FXRP <span class="cr i i-cdown" aria-hidden="true"></span></button>
+            </div>
+            <div class="leg-foot">
+              <span class="leg-fiat">$49.86</span>
+              <span class="leg-bal">to <span class="v">0x71C7…0f3A</span>
+                <button class="maxbtn">EDIT</button></span>
+            </div>
+          </div>
+
+          <div id="body"></div>
+
+          <div class="kit-action"><button class="btn btn-primary" id="cta">Review bridge</button></div>
+          <p class="faint" id="foot" style="font-size:.74rem;margin-top:8px;text-align:center">
+            Only qualified route found. FXRP is 1:1; fees are paid in FLR.</p>
+        </div>
+      </div>
+      <div class="demo-code code"><pre><span class="tok-key">import</span> { BridgeCard } <span class="tok-key">from</span> <span class="tok-str">"@flare-kit/react-ui"</span>
+
+&lt;<span class="tok-fn">BridgeCard</span>
+  asset=<span class="tok-str">"FXRP"</span>
+  from=<span class="tok-str">"coston2"</span>
+  to=<span class="tok-str">"arbitrum-sepolia"</span>
+  recipient={address}
+  onOperation={(op) =&gt; <span class="tok-fn">router</span>.push(`/op/${op.id}`)}
+/&gt;</pre></div>
+    </div>
+
+    <h2 id="differs">What differs from a swap</h2>
+    <p><strong>A chain sits on each leg</strong>, and the flip control swaps both the chains and the
+      assets. <strong>Slippage is replaced by an arrival estimate</strong>, because a bridge does not
+      slip, it waits. <strong>Fees are itemised</strong> rather than rolled into one number: the
+      messaging fee, the destination gas someone must pay on the far side, and the executor.</p>
+    <p><strong>The recipient is editable.</strong> Bridging to an address you do not control on the
+      destination chain is the single most expensive mistake in this category, so the address is
+      shown on the leg rather than buried in settings.</p>
+
+    <h2 id="partial">The partial outcome</h2>
+    <p>This is the state the whole kit exists for. Source is final, destination has not completed,
+      and neither <em>success</em> nor <em>failure</em> is true. We name it, say exactly what moved,
+      and offer only actions that cannot double-spend.</p>
+    <ul class="states">
+      <li><span class="badge badge-wait"><span class="g"></span>submitted</span> source transaction broadcast</li>
+      <li><span class="badge badge-wait"><span class="g"></span>awaiting_external</span> message in flight, provider named</li>
+      <li><span class="badge badge-part"><span class="g"></span>partially_succeeded</span> delivered, compose outstanding</li>
+      <li><span class="badge badge-att"><span class="g"></span>action_required</span> retry or refund, provider-valid only</li>
+      <li><span class="badge badge-ok"><span class="g"></span>succeeded</span> destination credited</li>
+      <li><span class="badge badge-neu" style="border-style:dashed"><span class="g"></span>unknown</span> provider unreachable, never shown as failed</li>
+    </ul>
+
+    <div class="pn">
+      <a href="swap.html"><div class="d">← Previous</div><div class="n">SwapCard</div></a>
+      <a href="#" class="next"><div class="d">Next →</div><div class="n">SendCard</div></a>
+    </div>
+  </main>
+
+  <aside class="toc" aria-label="On this page">
+    <h4>On this page</h4>
+    <a href="#preview" aria-current="true">Live preview</a>
+    <a href="#differs">What differs</a>
+    <a href="#partial">The partial outcome</a>
+  </aside>
+</div>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  document.getElementById('theme').addEventListener('click',function(){
+    root.setAttribute('data-theme',root.getAttribute('data-theme')==='dark'?'light':'dark');
+  });
+  var demo=document.getElementById('demo');
+  demo.querySelectorAll('.tab').forEach(function(t){
+    t.addEventListener('click',function(){
+      demo.querySelectorAll('.tab').forEach(function(o){o.setAttribute('aria-selected',String(o===t));});
+      demo.classList.toggle('show-code', t.textContent.trim()==='Code');
+    });
+  });
+
+  var body=document.getElementById('body'), cta=document.getElementById('cta'), foot=document.getElementById('foot');
+
+  var FEES='<div class="details fees">'+
+    '<div class="details-row"><span class="k">Provider</span><span class="v">'+
+      '<span class="venue"><span class="dot"></span>LayerZero</span> <span class="sub">OFT</span></span></div>'+
+    '<div class="details-row"><span class="k">Messaging fee</span><span class="v">0.031 FLR</span></div>'+
+    '<div class="details-row"><span class="k">Destination gas</span><span class="v">0.0009 ETH <span class="sub">paid by executor</span></span></div>'+
+    '<div class="details-row"><span class="k">You receive</span><span class="v">100.000000 FXRP</span></div>'+
+    '<div class="details-row"><span class="k">Arrives in</span><span class="v">2–5 min</span></div>'+
+    '</div>';
+
+  function xleg(a,b,c,d,e){return '<div class="xstat-leg"><span class="dot '+a+'"></span><div class="tx">'+
+    '<div class="nm">'+b+c+'</div><div class="sb">'+d+'</div>'+(e||'')+'</div></div>';}
+
+  var S={
+    ready:{body:FEES,cta:'Review bridge',dis:false,
+      foot:'Only qualified route found. FXRP is 1:1; fees are paid in FLR.'},
+    flight:{cta:'Bridging',dis:true,foot:'Safe to close this window. Progress survives reload.',
+      body:'<div class="xstat">'+
+        xleg('done','Sent on Coston2','<span class="badge badge-ok"><span class="g"></span>final</span>',
+          '100.000000 FXRP left your account at 19:01 WAT.',
+          '<span class="ev"><span class="t">tx</span>0x23bf9a41…9e211a</span>')+
+        xleg('live','LayerZero message','<span class="badge badge-wait"><span class="g"></span>in flight</span>',
+          'Waiting on LayerZero · usually 2–5 min · the provider owes the next move.',
+          '<span class="ev"><span class="t">guid</span>0x4f92a312…c01e7a</span>')+
+        xleg('idle','Credited on Arbitrum Sepolia','<span class="badge badge-neu"><span class="g"></span>not started</span>',
+          'Credits 100.000000 FXRP to 0x71C7…0f3A on delivery.')+
+      '</div>'},
+    partial:{cta:'Complete the deposit on Arbitrum',dis:false,
+      foot:'Your FXRP is safe on Arbitrum Sepolia. Only the follow-on action is outstanding.',
+      body:'<div class="xstat">'+
+        xleg('done','Sent on Coston2','<span class="badge badge-ok"><span class="g"></span>final</span>',
+          '100.000000 FXRP left your account at 19:01 WAT.')+
+        xleg('done','Delivered by LayerZero','<span class="badge badge-ok"><span class="g"></span>delivered</span>',
+          '100.000000 FXRP credited to 0x71C7…0f3A at 19:04 WAT.',
+          '<span class="ev"><span class="t">guid</span>0x4f92a312…c01e7a</span>')+
+        xleg('act','Compose action','<span class="badge badge-att"><span class="g"></span>action_required</span>',
+          'The follow-on deposit did not execute. Your funds arrived and are not at risk.')+
+      '</div>'+
+      '<div class="inline-note in-att"><span class="i i-warn" aria-hidden="true"></span><div>'+
+        '<b>Partially completed, not failed.</b> The bridge delivered. Retrying runs only the '+
+        'compose step and <b>does not send FXRP again</b>.</div></div>'},
+    recover:{cta:'Retry compose only',dis:false,
+      foot:'Idempotent by message GUID. No second transfer is possible from this action.',
+      body:'<div class="details">'+
+        '<div class="details-row"><span class="k">What moved</span><span class="v">100.000000 FXRP delivered</span></div>'+
+        '<div class="details-row"><span class="k">What remains</span><span class="v">compose step only</span></div>'+
+        '<div class="details-row"><span class="k">This action signs</span><span class="v">Arbitrum Sepolia tx</span></div>'+
+        '<div class="details-row"><span class="k">Reuses</span><span class="v">existing message, no new send</span></div>'+
+        '<div class="details-row"><span class="k">If it fails again</span><span class="v">funds stay yours on Arbitrum</span></div>'+
+        '</div>'+
+      '<div class="inline-note in-info"><span class="i i-shield" aria-hidden="true"></span><div>'+
+        'Retry and refund are only offered when the provider reports them as valid. When neither is, '+
+        'we say so rather than showing a button that cannot work.</div></div>'}
+  };
+  function set(o){ body.innerHTML=o.body; cta.textContent=o.cta; cta.disabled=o.dis; foot.textContent=o.foot; }
+  document.querySelectorAll('.statebtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.statebtn').forEach(function(o){o.setAttribute('aria-pressed',String(o===b));});
+      set(S[b.dataset.s]);
+    });
+  });
+  set(S.ready);
+})();
+</script>
+</body>
+</html>

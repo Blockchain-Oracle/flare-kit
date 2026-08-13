@@ -1,0 +1,281 @@
+{
+  "probe": "M11 staking substrate — addresses, verifier limits, P-chain reality (Coston2)",
+  "ranAt": "2026-08-12T17:25:22.046Z",
+  "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "pChainAddress": "P-costwo1mxmg9atg27q2zav0kam8qswq32kkpvchnmnacj",
+  "coston2": {
+    "chainId": 114,
+    "cChainRpc": "https://coston2-api.flare.network/ext/C/rpc",
+    "pChainRpc": "https://coston2-api.flare.network/ext/bc/P",
+    "block": "33976187"
+  },
+  "registry": {
+    "address": "0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019",
+    "resolved": {
+      "PChainStakeMirror": "0xd2a1Bb23eB350814a30Dd6f9de78Bb2C8fdD9F1D",
+      "PChainStakeMirrorVerifier": "0xd61d6bEfB3B5C3e1D13b43C46CC1cebA3505a7aF",
+      "ValidatorRewardManager": "0x33913AcE907F682E305f36d7538D3cCd37E2cA5B"
+    },
+    "drift": [],
+    "missing": []
+  },
+  "verifierLimits": {
+    "address": "0xd61d6bEfB3B5C3e1D13b43C46CC1cebA3505a7aF",
+    "minStakeDurationSeconds": "1209600",
+    "maxStakeDurationSeconds": "31536000",
+    "minStakeAmountGwei": "50000000000000",
+    "maxStakeAmountGwei": "200000000000000000",
+    "minStakeDurationDays": "14",
+    "maxStakeDurationDays": "365",
+    "minStakeAmountFlr": "50000",
+    "maxStakeAmountFlr": "200000000",
+    "note": "amounts are Gwei (1e9 wei); FLR = Gwei / 1e9. Getters are public immutables (uint256)."
+  },
+  "minStake": {
+    "raw": {
+      "minValidatorStake": "1000000000000000",
+      "minDelegatorStake": "50000000000000"
+    },
+    "minValidatorStakeNflr": "1000000000000000",
+    "minDelegatorStakeNflr": "50000000000000",
+    "minValidatorStakeFlr": "1000000",
+    "minDelegatorStakeFlr": "50000",
+    "note": "P-chain amounts are nFLR (1e-9 FLR); FLR = value / 1e9."
+  },
+  "mirror": {
+    "address": "0xd2a1Bb23eB350814a30Dd6f9de78Bb2C8fdD9F1D",
+    "workingSelector": "balanceOf(address)->uint256",
+    "balanceOf": "0",
+    "votePowerOf": "ERR:Execution reverted for an unknown reason.",
+    "provenance": "ABI NOT vendored; selectors probed live. balanceOf and votePowerOf both tried against the blank-slate signer. Record which decodes cleanly — the adapter/Task 3 must call the working one."
+  },
+  "validatorRewardManager": {
+    "address": "0x33913AcE907F682E305f36d7538D3cCd37E2cA5B",
+    "getStateOfRewards": {
+      "totalReward": "0",
+      "claimedReward": "0",
+      "claimable": "0"
+    },
+    "signature": "getStateOfRewards(address)->(uint256 _totalReward,uint256 _claimedReward); claimable = total - claimed (per developer-hub claiming-rewards guide)."
+  },
+  "validators": {
+    "count": 8,
+    "sample": [
+      {
+        "nodeID": "NodeID-BR9YCsrXGVsc8sUoraVrBkWemnPGRSqYZ",
+        "txID": "nJaFC692BpiypHUNZrVX47DkFYz2HmmX2z98HjVS9MpcT8wdt",
+        "startTime": "1778834610",
+        "endTime": "1786611061",
+        "startTimeIso": "2026-05-15T08:43:30.000Z",
+        "endTimeIso": "2026-08-13T08:51:01.000Z",
+        "stakeDurationDays": "90.0",
+        "weightNflr": "5000000000000000",
+        "weightFlr": "5000000",
+        "delegationFee": "10.0000",
+        "uptime": "88.8605",
+        "connected": true,
+        "delegatorCount": "3",
+        "delegatorWeightNflr": "250210576969759"
+      },
+      {
+        "nodeID": "NodeID-NKqPQeBNRT82BSHjFT9hCygtYQQBSBST7",
+        "txID": "NJPi9kFD8id5SJzdo6VDg8nqw41qR6eF1kHVQFk1BX7CpJpcH",
+        "startTime": "1786025564",
+        "endTime": "1791367200",
+        "startTimeIso": "2026-08-06T14:12:44.000Z",
+        "endTimeIso": "2026-10-07T10:00:00.000Z",
+        "stakeDurationDays": "61.8",
+        "weightNflr": "1000000000000000",
+        "weightFlr": "1000000",
+        "delegationFee": "20.0000",
+        "uptime": "99.9502",
+        "connected": true,
+        "delegatorCount": "0",
+        "delegatorWeightNflr": "0"
+      },
+      {
+        "nodeID": "NodeID-87skCc745aTkJEtozqTJ2SBnZ8Vb8Ncbd",
+        "txID": "2f7Tyjn39afj3ueJC3uVLtTXX9yM8b4Q5iShNVvePBn1gNrKQc",
+        "startTime": "1777385020",
+        "endTime": "1806569305",
+        "startTimeIso": "2026-04-28T14:03:40.000Z",
+        "endTimeIso": "2027-04-01T08:48:25.000Z",
+        "stakeDurationDays": "337.8",
+        "weightNflr": "40000000000000000",
+        "weightFlr": "40000000",
+        "delegationFee": "10.0000",
+        "uptime": "99.9970",
+        "connected": true,
+        "delegatorCount": "0",
+        "delegatorWeightNflr": "0"
+      }
+    ],
+    "validatorFields": [
+      "txID",
+      "startTime",
+      "endTime",
+      "weight",
+      "nodeID",
+      "validationRewardOwner",
+      "delegationRewardOwner",
+      "potentialReward",
+      "accruedDelegateeReward",
+      "delegationFee",
+      "uptime",
+      "connected",
+      "signer",
+      "delegatorCount",
+      "delegatorWeight",
+      "delegators"
+    ]
+  },
+  "accountStake": {
+    "pChainAddress": "P-costwo1mxmg9atg27q2zav0kam8qswq32kkpvchnmnacj",
+    "raw": {
+      "staked": "0",
+      "stakeds": {},
+      "stakedOutputs": [],
+      "encoding": "hex"
+    },
+    "staked": "0",
+    "stakedFlr": "0",
+    "stakedOutputCount": 0
+  },
+  "funding": {
+    "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "nativeC2flr": "46750559486830560487",
+    "nativeC2flrHuman": "46.75055948683056",
+    "minDelegatorStakeFlr": "50000",
+    "note": "Read-only probe: native balance is informational here. A REAL Coston2 stake needs >= minDelegatorStake (50,000 FLR); the dev signer is far below that — flag for the live-run task, not a Task-1 blocker."
+  },
+  "rpcShapes": {
+    "endpoint": "https://coston2-api.flare.network/ext/bc/P",
+    "envelope": "JSON-RPC 2.0: POST {jsonrpc:\"2.0\",id:1,method,params}; result under .result, errors under .error.",
+    "platform.getMinStake": {
+      "params": {},
+      "resultKeys": [
+        "minValidatorStake",
+        "minDelegatorStake"
+      ],
+      "units": "nFLR (1e-9 FLR), string-encoded"
+    },
+    "platform.getCurrentValidators": {
+      "params": "{} (or {nodeIDs:[...]} to filter)",
+      "validatorFields": [
+        "txID",
+        "startTime",
+        "endTime",
+        "weight",
+        "nodeID",
+        "validationRewardOwner",
+        "delegationRewardOwner",
+        "potentialReward",
+        "accruedDelegateeReward",
+        "delegationFee",
+        "uptime",
+        "connected",
+        "signer",
+        "delegatorCount",
+        "delegatorWeight",
+        "delegators"
+      ],
+      "units": "weight/delegatorWeight in nFLR; startTime/endTime unix seconds (string)"
+    },
+    "platform.getStake": {
+      "params": {
+        "addresses": [
+          "P-costwo1…"
+        ]
+      },
+      "resultKeys": [
+        "staked",
+        "stakeds",
+        "stakedOutputs",
+        "encoding"
+      ],
+      "units": "staked in nFLR (string); stakedOutputs=[] when none"
+    }
+  },
+  "assertions": [
+    {
+      "name": "registry.PChainStakeMirror",
+      "ok": true,
+      "detail": "0xd2a1Bb23eB350814a30Dd6f9de78Bb2C8fdD9F1D vs expected 0xd2a1Bb23eB350814a30Dd6f9de78Bb2C8fdD9F1D"
+    },
+    {
+      "name": "registry.PChainStakeMirrorVerifier",
+      "ok": true,
+      "detail": "0xd61d6bEfB3B5C3e1D13b43C46CC1cebA3505a7aF vs expected 0xd61d6bEfB3B5C3e1D13b43C46CC1cebA3505a7aF"
+    },
+    {
+      "name": "registry.ValidatorRewardManager",
+      "ok": true,
+      "detail": "0x33913AcE907F682E305f36d7538D3cCd37E2cA5B vs expected 0x33913AcE907F682E305f36d7538D3cCd37E2cA5B"
+    },
+    {
+      "name": "minStakeDurationSeconds=14d",
+      "ok": true,
+      "detail": "1209600 (expect 1209600)"
+    },
+    {
+      "name": "maxStakeDurationSeconds=365d",
+      "ok": true,
+      "detail": "31536000 (expect 31536000)"
+    },
+    {
+      "name": "minStakeAmount=50k FLR",
+      "ok": true,
+      "detail": "50000000000000 Gwei = 50000 FLR (expect 50000)"
+    },
+    {
+      "name": "maxStakeAmount=200M FLR",
+      "ok": true,
+      "detail": "200000000000000000 Gwei = 200000000 FLR (expect 200000000)"
+    },
+    {
+      "name": "mirror read works (>=1 selector)",
+      "ok": true,
+      "detail": "working=balanceOf(address)->uint256 (balanceOf=0, votePowerOf=ERR:Execution reverted for an unknown reason.)"
+    },
+    {
+      "name": "mirror blank-slate (0 mirrored)",
+      "ok": true,
+      "detail": "balanceOf=0"
+    },
+    {
+      "name": "VRM reward state blank-slate",
+      "ok": true,
+      "detail": "total=0, claimed=0"
+    },
+    {
+      "name": "getMinStake.minDelegatorStake=50k FLR",
+      "ok": true,
+      "detail": "50000000000000 nFLR = 50000 FLR (expect 50000)"
+    },
+    {
+      "name": "getMinStake.minValidatorStake=1M FLR",
+      "ok": true,
+      "detail": "1000000000000000 nFLR = 1000000 FLR (expect 1000000)"
+    },
+    {
+      "name": ">=3 real validators",
+      "ok": true,
+      "detail": "count=8"
+    },
+    {
+      "name": "NodeIDs well-formed",
+      "ok": true,
+      "detail": "NodeID-BR9YCsrXGVsc8sUoraVrBkWemnPGRSqYZ, NodeID-NKqPQeBNRT82BSHjFT9hCygtYQQBSBST7, NodeID-87skCc745aTkJEtozqTJ2SBnZ8Vb8Ncbd"
+    },
+    {
+      "name": "account P-chain stake blank-slate",
+      "ok": true,
+      "detail": "staked=0, outputs=0"
+    }
+  ],
+  "concerns": [
+    "PChainStakeMirror.votePowerOf reverts (ERR:Execution reverted for an unknown reason.); the working mirror read is balanceOf(address) — the adapter/Task 3 MUST use balanceOf.",
+    "Native C2FLR 46.75055948683056 < minDelegatorStake 50000 FLR. A live Coston2 stake round-trip is NOT fundable at the current balance — surface for the live-run task."
+  ],
+  "blockers": []
+}

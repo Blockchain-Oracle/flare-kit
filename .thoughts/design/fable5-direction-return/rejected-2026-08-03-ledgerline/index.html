@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LEDGERLINE · Flare Application Layer · Direction return (Illustrative)</title>
+<style>
+/* ============================================================
+   LEDGERLINE · direction return living sample
+   Portable specimen. No CDN. No production-integration claim.
+   All values on screen are Illustrative fixtures.
+   ============================================================ */
+
+@font-face { font-family: 'IBM Plex Sans'; src: url('assets/fonts/IBMPlexSans-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'IBM Plex Sans'; src: url('assets/fonts/IBMPlexSans-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'IBM Plex Sans'; src: url('assets/fonts/IBMPlexSans-SemiBold.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('assets/fonts/IBMPlexMono-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('assets/fonts/IBMPlexMono-Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('assets/fonts/IBMPlexMono-SemiBold.woff2') format('woff2'); font-weight: 600; font-display: swap; }
+
+:root {
+  --page:#F2F3F4; --raised:#FBFCFC; --sunken:#E8EAED; --scrim:rgba(20,24,28,.44);
+  --ink:#191D21; --ink2:#3E454C; --ink3:#5C646C; --on-ink:#F2F3F4;
+  --hairline:#D9DCDF; --line-strong:#B9BFC5;
+  --ember:#B93A10; --ember-bright:#E4572E;
+  --live:#1F5A9E; --live-tint:#E7EEF7; --live-line:#9DB9DC;
+  --att:#7A5800; --att-tint:#F7EED2; --att-line:#D9C48A;
+  --part:#5B4394; --part-tint:#EEEAF6; --part-line:#BBABDC;
+  --ok:#1D6B41; --ok-tint:#E4F1E9; --ok-line:#9CC7AC;
+  --bad:#AC2318; --bad-tint:#F9E7E5; --bad-line:#DFA49D;
+  --neu:#555E66; --neu-tint:#EBEDEF; --neu-line:#C3C9CE;
+  --ui:'IBM Plex Sans', system-ui, sans-serif;
+  --mono:'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  --r-ctl:4px; --r-card:8px; --r-seal:2px;
+  --e-raised:0 1px 2px rgba(20,24,28,.05);
+  --e-overlay:0 16px 48px rgba(20,24,28,.22);
+  --ease:cubic-bezier(.2,0,0,1);
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:var(--ui); font-size:14px; line-height:22px; color:var(--ink);
+  background:var(--page); min-height:100dvh;
+}
+::selection { background:#F3C9BA; }
+
+/* --- type utilities --- */
+.mono, .ev-val, .amount { font-family:var(--mono); font-variant-numeric:tabular-nums; }
+.cap { font-size:12px; line-height:16px; color:var(--ink3); }
+.data { font-family:var(--mono); font-size:13px; line-height:20px; font-variant-numeric:tabular-nums; }
+h1 { font-size:18px; line-height:26px; font-weight:600; }
+h2 { font-size:16px; line-height:24px; font-weight:600; }
+h3 { font-size:14px; line-height:22px; font-weight:600; }
+.display { font-size:22px; line-height:30px; font-weight:600; }
+.amount-hero { font-family:var(--mono); font-size:28px; line-height:36px; font-weight:600; font-variant-numeric:tabular-nums; }
+a { color:var(--ember); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.sub { color:var(--ink2); }
+.dim { color:var(--ink3); }
+
+/* --- focus --- */
+:focus-visible { outline:2px solid var(--ember-bright); outline-offset:2px; border-radius:2px; }
+
+/* --- icons: local Phosphor SVGs via mask, recolorable --- */
+.i { display:inline-block; width:16px; height:16px; flex:none; background:currentColor;
+     -webkit-mask:var(--i) center/contain no-repeat; mask:var(--i) center/contain no-repeat; vertical-align:-3px; }
+.i.sm { width:13px; height:13px; vertical-align:-2px; }
+.i-copy{--i:url("assets/icons/copy.svg")} .i-out{--i:url("assets/icons/arrow-up-right.svg")}
+.i-right{--i:url("assets/icons/arrow-right.svg")} .i-clock{--i:url("assets/icons/clock.svg")}
+.i-check{--i:url("assets/icons/check.svg")} .i-x{--i:url("assets/icons/x.svg")}
+.i-warn{--i:url("assets/icons/warning.svg")} .i-warnc{--i:url("assets/icons/warning-circle.svg")}
+.i-shield{--i:url("assets/icons/shield-check.svg")} .i-wallet{--i:url("assets/icons/wallet.svg")}
+.i-robot{--i:url("assets/icons/robot.svg")} .i-down{--i:url("assets/icons/caret-down.svg")}
+.i-caret{--i:url("assets/icons/caret-right.svg")} .i-search{--i:url("assets/icons/magnifying-glass.svg")}
+.i-receipt{--i:url("assets/icons/receipt.svg")} .i-stack{--i:url("assets/icons/stack.svg")}
+.i-tray{--i:url("assets/icons/tray.svg")} .i-retry{--i:url("assets/icons/arrow-counter-clockwise.svg")}
+.i-seal{--i:url("assets/icons/seal-check.svg")} .i-hour{--i:url("assets/icons/hourglass-medium.svg")}
+.i-info{--i:url("assets/icons/info.svg")} .i-code{--i:url("assets/icons/code.svg")}
+.i-plug{--i:url("assets/icons/plugs-connected.svg")} .i-eye{--i:url("assets/icons/eye.svg")}
+.i-globe{--i:url("assets/icons/globe-simple.svg")}
+
+/* --- shell layout --- */
+.shell { display:grid; grid-template-columns:216px 1fr; grid-template-rows:52px 1fr;
+         grid-template-areas:"top top" "nav main"; min-height:100dvh; }
+.topbar { grid-area:top; display:flex; align-items:center; gap:12px; padding:0 16px;
+          background:var(--raised); border-bottom:1px solid var(--hairline); position:sticky; top:0; z-index:30; }
+.mark { display:flex; align-items:center; gap:8px; font-weight:600; font-size:13px; white-space:nowrap; }
+.mark-tick { width:10px; height:10px; background:var(--ember-bright);
+             clip-path:polygon(0 0,100% 0,100% 62%,62% 100%,0 100%); }
+.mark .cap { font-weight:400; }
+.top-env { display:flex; gap:6px; align-items:center; margin-left:4px; }
+.top-spacer { flex:1; }
+.top-accts { display:flex; gap:6px; align-items:center; min-width:0; overflow-x:auto; }
+
+/* chips */
+.chip { display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border:1px solid var(--hairline);
+        border-radius:var(--r-ctl); background:var(--raised); font-size:12px; line-height:18px; color:var(--ink2); white-space:nowrap; }
+.chip .data { font-size:12px; }
+.chip-acct { border-color:var(--line-strong); }
+.illustrative { position:relative; display:inline-flex; align-items:center; gap:5px; padding:2px 8px 2px 10px;
+  font-size:11px; line-height:16px; letter-spacing:.02em; color:var(--ink2);
+  background:var(--sunken); border:1px solid var(--line-strong); border-radius:var(--r-ctl);
+  clip-path:polygon(6px 0,100% 0,100% 100%,0 100%,0 6px); }
+
+/* state badges: tint + border + glyph + text, never color alone */
+.badge { display:inline-flex; align-items:center; gap:6px; padding:1px 8px; font-size:12px; line-height:18px;
+         font-weight:500; border-radius:var(--r-ctl); border:1px solid; white-space:nowrap; }
+.badge .g { width:8px; height:8px; flex:none; }
+.b-live  { color:var(--live); background:var(--live-tint); border-color:var(--live-line); }
+.b-live .g { border:2px solid currentColor; border-radius:50%; }
+.b-wait  { color:var(--live); background:var(--live-tint); border-color:var(--live-line); }
+.b-wait .g { border:1.5px dashed currentColor; border-radius:50%; }
+.b-att   { color:var(--att); background:var(--att-tint); border-color:var(--att-line); }
+.b-att .g { background:currentColor; }
+.b-part  { color:var(--part); background:var(--part-tint); border-color:var(--part-line); }
+.b-part .g { border:1.5px solid currentColor; border-radius:50%; background:linear-gradient(90deg,currentColor 50%,transparent 50%); }
+.b-ok    { color:var(--ok); background:var(--ok-tint); border-color:var(--ok-line); }
+.b-ok .g { background:currentColor; border-radius:50%; }
+.b-bad   { color:var(--bad); background:var(--bad-tint); border-color:var(--bad-line); }
+.b-bad .g { background:currentColor; clip-path:polygon(20% 0,50% 30%,80% 0,100% 20%,70% 50%,100% 80%,80% 100%,50% 70%,20% 100%,0 80%,30% 50%,0 20%); }
+.b-neu   { color:var(--neu); background:var(--neu-tint); border-color:var(--neu-line); }
+.b-neu .g { background:currentColor; opacity:.55; }
+.b-unknown { color:var(--neu); background:var(--neu-tint); border-color:var(--neu); border-style:dashed; }
+.b-unknown .g { border:1.5px dashed currentColor; border-radius:50%; }
+
+/* live pulse: motion is meaning; reduced motion gets a static LIVE tick */
+.pulse { position:relative; }
+.pulse::after { content:""; position:absolute; inset:-4px; border:2px solid var(--ember-bright);
+  border-radius:50%; opacity:0; animation:pulse 2s var(--ease) infinite; }
+@keyframes pulse { 0%{transform:scale(.6);opacity:.8} 70%{transform:scale(1.15);opacity:0} 100%{opacity:0} }
+.live-tick { display:none; font-size:10px; font-weight:600; letter-spacing:.06em; color:var(--ember); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation:none !important; transition:none !important; }
+  .live-tick { display:inline; }
+}
+
+/* nav */
+.nav { grid-area:nav; background:var(--raised); border-right:1px solid var(--hairline);
+       padding:16px 10px; display:flex; flex-direction:column; gap:2px; }
+.nav-label { font-size:11px; font-weight:600; letter-spacing:.05em; color:var(--ink3); padding:0 10px 6px; }
+.nav button { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:8px 10px;
+  border:0; background:none; font:inherit; font-weight:500; color:var(--ink2); border-radius:var(--r-ctl);
+  cursor:pointer; position:relative; }
+.nav button:hover { background:var(--sunken); }
+.nav button[aria-current="page"] { color:var(--ink); font-weight:600; background:var(--sunken); }
+.nav button[aria-current="page"]::before { content:""; position:absolute; left:-10px; top:6px; bottom:6px;
+  width:3px; background:var(--ember-bright); border-radius:0 2px 2px 0; }
+.nav .count { margin-left:auto; font-family:var(--mono); font-size:11px; color:var(--att);
+  background:var(--att-tint); border:1px solid var(--att-line); border-radius:var(--r-ctl); padding:0 5px; }
+.nav-foot { margin-top:auto; padding:10px; border-top:1px solid var(--hairline); }
+
+/* main */
+.main { grid-area:main; padding:24px 32px 72px; max-width:1240px; width:100%; }
+.view { display:none; }
+.view.active { display:block; }
+.view-head { display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:20px; }
+.view-head .vh-text { flex:1 1 320px; min-width:0; }
+.view-head h1 { margin-bottom:2px; }
+
+/* specimen controls: design tooling, visibly not product UI */
+.specimen { flex:none; border:1px dashed var(--line-strong); border-radius:var(--r-card);
+  padding:8px 10px; background:rgba(251,252,252,.6); max-width:100%; }
+.specimen .cap { margin-bottom:6px; }
+.specimen .row { display:flex; gap:4px; flex-wrap:wrap; }
+.specimen button { font:inherit; font-size:12px; line-height:18px; padding:2px 8px; cursor:pointer;
+  border:1px solid var(--hairline); background:var(--raised); border-radius:var(--r-ctl); color:var(--ink2); }
+.specimen button[aria-pressed="true"] { border-color:var(--ink); color:var(--ink); font-weight:600; }
+
+/* cards, panels */
+.card { background:var(--raised); border:1px solid var(--hairline); border-radius:var(--r-card); }
+.card.pad { padding:16px 20px; }
+.card + .card { margin-top:16px; }
+.well { background:var(--sunken); border:1px solid var(--hairline); border-radius:var(--r-card); }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+.grid-a { display:grid; grid-template-columns:minmax(300px,5fr) minmax(340px,7fr); gap:16px; align-items:start; }
+.split { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+hr.rule { border:0; border-top:1px solid var(--hairline); margin:12px 0; }
+
+/* definition rows */
+.kv { display:grid; grid-template-columns:minmax(120px,160px) 1fr; gap:2px 16px; font-size:13px; line-height:20px; }
+.kv dt { color:var(--ink3); padding:3px 0; }
+.kv dd { color:var(--ink); padding:3px 0; min-width:0; overflow-wrap:anywhere; }
+
+/* buttons */
+.btn { display:inline-flex; align-items:center; gap:8px; font:inherit; font-weight:500; font-size:13px;
+  line-height:20px; padding:6px 14px; border-radius:var(--r-ctl); cursor:pointer;
+  border:1px solid transparent; transition:transform 120ms var(--ease), background 120ms var(--ease); }
+.btn:active { transform:translateY(1px); }
+.btn-pri { background:var(--ink); color:var(--on-ink); }
+.btn-pri:hover { background:#2A3036; }
+.btn-sec { background:var(--raised); color:var(--ink); border-color:var(--line-strong); }
+.btn-sec:hover { background:var(--sunken); }
+.btn-danger-line { background:var(--raised); color:var(--bad); border-color:var(--bad-line); }
+.btn[disabled] { opacity:.45; cursor:not-allowed; }
+.btn[disabled]:active { transform:none; }
+.iconbtn { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+  border:1px solid transparent; border-radius:var(--r-ctl); background:none; color:var(--ink3); cursor:pointer; }
+.iconbtn:hover { background:var(--sunken); color:var(--ink); }
+
+/* evidence chip: one identifier anatomy everywhere */
+.ev { display:inline-flex; align-items:center; gap:8px; padding:3px 6px 3px 8px; background:var(--sunken);
+  border:1px solid var(--hairline); border-radius:var(--r-ctl); max-width:100%; }
+.ev .t { font-size:11px; line-height:16px; color:var(--ink3); white-space:nowrap; }
+.ev-val { font-size:12px; line-height:18px; color:var(--ink); overflow-wrap:anywhere; }
+.ev .iconbtn { width:20px; height:20px; }
+.ev-row { display:flex; gap:8px; flex-wrap:wrap; }
+
+/* actor chip */
+.actor { display:inline-flex; align-items:center; gap:6px; font-size:12px; line-height:18px; color:var(--ink2);
+  border:1px solid var(--hairline); background:var(--raised); border-radius:var(--r-ctl); padding:1px 8px; white-space:nowrap; }
+.actor .i { color:var(--ink3); }
+.actor.you { border-color:var(--line-strong); font-weight:500; color:var(--ink); }
+
+/* operation spine */
+.spine { list-style:none; }
+.spine > li { display:grid; grid-template-columns:24px 1fr; gap:0 14px; position:relative; padding-bottom:20px; }
+.spine > li:last-child { padding-bottom:0; }
+.spine > li::before { content:""; position:absolute; left:11px; top:22px; bottom:0; width:2px; background:var(--hairline); }
+.spine > li:last-child::before { display:none; }
+.node { width:16px; height:16px; margin:3px 0 0 3px; position:relative; z-index:1; background:var(--raised); }
+.n-done { background:var(--ink); border-radius:50%; }
+.n-done::after { content:""; position:absolute; inset:0; background:var(--on-ink);
+  -webkit-mask:url("assets/icons/check.svg") center/10px no-repeat; mask:url("assets/icons/check.svg") center/10px no-repeat; }
+.n-live { border:2.5px solid var(--live); border-radius:50%; background:var(--live-tint); }
+.n-wait { border:2px dashed var(--live); border-radius:50%; background:var(--raised); }
+.n-act { background:var(--att); border-radius:2px; }
+.n-act::after { content:""; position:absolute; inset:0; background:var(--on-ink);
+  -webkit-mask:url("assets/icons/warning.svg") center/11px no-repeat; mask:url("assets/icons/warning.svg") center/11px no-repeat; }
+.n-part { border:2px solid var(--part); border-radius:50%; background:linear-gradient(90deg,var(--part) 50%,var(--part-tint) 50%); }
+.n-fail { background:var(--bad); border-radius:50%; }
+.n-fail::after { content:""; position:absolute; inset:0; background:var(--on-ink);
+  -webkit-mask:url("assets/icons/x.svg") center/9px no-repeat; mask:url("assets/icons/x.svg") center/9px no-repeat; }
+.n-idle { border:2px solid var(--neu-line); border-radius:50%; background:var(--raised); }
+.step-head { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.step-head h3 { font-size:13px; line-height:20px; }
+.step-meta { margin-top:4px; }
+.step-body { margin-top:8px; display:grid; gap:8px; }
+
+/* seal: terminal outcomes only */
+.seal { display:inline-flex; align-items:center; gap:8px; padding:5px 12px; border:1.5px solid; border-radius:var(--r-seal);
+  font-size:12px; line-height:18px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; background:var(--raised); }
+.seal .i { width:14px; height:14px; }
+.seal-ok { color:var(--ok); border-color:var(--ok); box-shadow:inset 0 0 0 3px var(--ok-tint); }
+.seal-part { color:var(--part); border-color:var(--part); box-shadow:inset 0 0 0 3px var(--part-tint); }
+
+/* boundary rule: where value starts to move */
+.boundary { display:flex; align-items:center; gap:10px; margin:14px 0; color:var(--ink2); }
+.boundary::before, .boundary::after { content:""; flex:1; border-top:1.5px solid var(--line-strong); }
+.boundary .d { width:8px; height:8px; border:1.5px solid var(--ink2); transform:rotate(45deg); flex:none; }
+.boundary .lbl { font-size:11px; font-weight:600; letter-spacing:.05em; white-space:nowrap; }
+
+/* status panel (typed error / long wait) */
+.panel { border:1px solid; border-radius:var(--r-card); padding:12px 16px; }
+.p-att { border-color:var(--att-line); background:var(--att-tint); }
+.p-att .ttl { color:var(--att); }
+.p-bad { border-color:var(--bad-line); background:var(--bad-tint); }
+.p-bad .ttl { color:var(--bad); }
+.p-live { border-color:var(--live-line); background:var(--live-tint); }
+.p-live .ttl { color:var(--live); }
+.p-neu { border-color:var(--neu-line); background:var(--neu-tint); }
+.panel .ttl { font-weight:600; display:flex; gap:8px; align-items:center; font-size:13px; }
+.panel .body { margin-top:4px; font-size:13px; line-height:20px; color:var(--ink2); }
+.panel .body strong { color:var(--ink); }
+
+/* tables */
+table.tbl { width:100%; border-collapse:collapse; font-size:13px; line-height:20px; }
+.tbl th { text-align:left; font-size:11px; font-weight:600; letter-spacing:.04em; color:var(--ink3);
+  padding:6px 12px; border-bottom:1px solid var(--hairline); }
+.tbl td { padding:8px 12px; vertical-align:top; }
+.tbl tbody tr + tr td { border-top:1px solid var(--hairline); }
+.tbl .num { text-align:right; }
+
+/* skeleton loading matches final shape */
+.skel { position:relative; overflow:hidden; background:var(--sunken); border-radius:3px; color:transparent !important; }
+.skel::after { content:""; position:absolute; inset:0; transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,rgba(251,252,252,.8),transparent); animation:sk 1.4s infinite; }
+@keyframes sk { to { transform:translateX(100%); } }
+
+/* widget specimen frame (DC-1) */
+.wframe { border:1px solid var(--line-strong); border-radius:var(--r-card); background:var(--sunken); }
+.wframe-head { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 14px; border-bottom:1px solid var(--hairline); }
+.wframe-head select { font:inherit; font-size:12px; padding:2px 6px; border:1px solid var(--hairline);
+  border-radius:var(--r-ctl); background:var(--raised); color:var(--ink); }
+.wframe-body { padding:20px; display:flex; justify-content:center; }
+.wframe-foot { padding:10px 14px; border-top:1px solid var(--hairline); }
+.widget { width:100%; max-width:400px; background:var(--raised); border:1px solid var(--hairline);
+  border-radius:var(--r-card); box-shadow:var(--e-raised); padding:16px; }
+.wrow { display:flex; justify-content:space-between; gap:12px; padding:5px 0; font-size:13px; line-height:20px; }
+.wrow .k { color:var(--ink3); }
+.wrow .v { text-align:right; overflow-wrap:anywhere; }
+
+/* integration depth chooser */
+.depths { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+.depth { border:1px solid var(--hairline); border-radius:var(--r-ctl); background:var(--raised);
+  padding:8px 10px; font:inherit; text-align:left; cursor:pointer; }
+.depth:hover { background:var(--sunken); }
+.depth[aria-pressed="true"] { border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
+.depth .cap { display:block; }
+.depth b { font-size:13px; }
+
+/* config export block */
+.codeblock { background:var(--sunken); border:1px solid var(--hairline); border-radius:var(--r-card);
+  padding:12px 14px; font-family:var(--mono); font-size:12px; line-height:19px; overflow-x:auto; white-space:pre; color:var(--ink2); }
+
+/* pending tray drawer + sheets */
+.scrim { position:fixed; inset:0; background:var(--scrim); z-index:40; opacity:0; pointer-events:none; transition:opacity 200ms var(--ease); }
+.scrim.open { opacity:1; pointer-events:auto; }
+.drawer { position:fixed; top:0; right:0; bottom:0; width:min(420px,100%); background:var(--raised);
+  border-left:1px solid var(--hairline); box-shadow:var(--e-overlay); z-index:50; padding:20px;
+  transform:translateX(105%); transition:transform 200ms var(--ease); overflow-y:auto; }
+.drawer.open { transform:none; }
+.sheet { position:fixed; z-index:50; top:50%; left:50%; transform:translate(-50%,-46%) scale(.98); opacity:0;
+  pointer-events:none; width:min(560px, calc(100% - 24px)); max-height:min(86dvh, 720px); overflow-y:auto;
+  background:var(--raised); border:1px solid var(--hairline); border-radius:var(--r-card);
+  box-shadow:var(--e-overlay); padding:20px; transition:transform 200ms var(--ease), opacity 200ms var(--ease); }
+.sheet.open { transform:translate(-50%,-50%) scale(1); opacity:1; pointer-events:auto; }
+.sheet-head { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; }
+.sheet-head h2 { flex:1; }
+
+/* pending rows */
+.pend { display:grid; gap:8px; }
+.pend-row { display:grid; gap:4px; border:1px solid var(--hairline); border-radius:var(--r-ctl);
+  padding:10px 12px; background:var(--raised); text-align:left; font:inherit; cursor:pointer; }
+.pend-row:hover { border-color:var(--line-strong); background:var(--sunken); }
+.pend-row .l1 { display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-weight:500; }
+.pend-row .l2 { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+
+/* policy result: deterministic boundary, beside the conversation */
+.policy { border-left:3px solid var(--line-strong); }
+.policy.att { border-left-color:var(--att); }
+.policy.bad { border-left-color:var(--bad); }
+.policy.ok { border-left-color:var(--ok); }
+
+/* toast */
+.toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%, 8px); z-index:60; background:var(--ink);
+  color:var(--on-ink); font-size:13px; padding:8px 14px; border-radius:var(--r-ctl); opacity:0; pointer-events:none;
+  transition:opacity 200ms var(--ease), transform 200ms var(--ease); max-width:calc(100% - 32px); }
+.toast.show { opacity:1; transform:translate(-50%,0); }
+
+.sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+.skip { position:absolute; left:8px; top:-40px; z-index:100; background:var(--ink); color:var(--on-ink);
+  padding:6px 12px; border-radius:var(--r-ctl); transition:top 120ms var(--ease); }
+.skip:focus { top:8px; }
+
+/* responsive */
+@media (max-width: 960px) {
+  .shell { grid-template-columns:1fr; grid-template-rows:52px auto 1fr; grid-template-areas:"top" "nav" "main"; }
+  .nav { flex-direction:row; align-items:center; overflow-x:auto; border-right:0; padding:6px 10px;
+         border-bottom:1px solid var(--hairline); gap:4px; }
+  .nav-label, .nav-foot { display:none; }
+  .nav button { width:auto; white-space:nowrap; }
+  .nav button[aria-current="page"]::before { left:6px; right:6px; top:auto; bottom:-6px; width:auto; height:3px; border-radius:2px 2px 0 0; }
+  .main { padding:16px 16px 64px; }
+  .grid-a, .grid2 { grid-template-columns:1fr; }
+  .depths { grid-template-columns:repeat(2,1fr); }
+}
+@media (max-width: 640px) {
+  .topbar { flex-wrap:wrap; height:auto; min-height:52px; padding:8px 12px; position:static; }
+  .shell { grid-template-rows:auto auto 1fr; }
+  .top-accts { width:100%; order:9; }
+  .sheet { top:auto; bottom:0; left:0; transform:translateY(8%); width:100%; max-height:92dvh;
+           border-radius:var(--r-card) var(--r-card) 0 0; }
+  .sheet.open { transform:none; }
+  .kv { grid-template-columns:1fr; gap:0; }
+  .kv dt { padding-bottom:0; }
+  .kv dd { padding-top:0; padding-bottom:6px; }
+  .view-head { flex-direction:column; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div id="announce" class="sr" role="status" aria-live="polite"></div>
+
+<div class="shell">
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <div class="mark"><span class="mark-tick" aria-hidden="true"></span> Flare Application Layer <span class="cap">working label</span></div>
+    <div class="top-env">
+      <span class="chip data">Coston2 · chain 114</span>
+      <span class="chip data">XRPL Testnet</span>
+      <span class="illustrative" title="Every value in this specimen is an illustrative fixture, not live data."><span class="i sm i-info" aria-hidden="true"></span>Illustrative</span>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-accts">
+      <span class="chip chip-acct"><span class="i sm i-wallet" aria-hidden="true"></span><span class="data">0x71C7…0f3A</span><span class="cap">Coston2 · Connected</span></span>
+      <span class="chip chip-acct"><span class="i sm i-wallet" aria-hidden="true"></span><span class="data">rN7n7…Qn3</span><span class="cap">Xaman · XRPL Testnet · Connected</span></span>
+      <button class="btn btn-sec" id="tray-open" aria-haspopup="dialog" aria-controls="tray">
+        <span class="i i-tray" aria-hidden="true"></span> Pending <span class="data">3</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== NAV ===================== -->
+  <nav class="nav" aria-label="Application areas">
+    <div class="nav-label">Areas</div>
+    <button data-nav="build" aria-current="page"><span class="i i-code" aria-hidden="true"></span> Build</button>
+    <button data-nav="use"><span class="i i-wallet" aria-hidden="true"></span> Use <span class="count">3</span></button>
+    <button data-nav="automate"><span class="i i-robot" aria-hidden="true"></span> Automate</button>
+    <button data-nav="operate"><span class="i i-stack" aria-hidden="true"></span> Operate</button>
+    <button data-nav="verify"><span class="i i-seal" aria-hidden="true"></span> Verify</button>
+    <div class="nav-foot cap">Each area carries its own authority. Operator and support roles never share your wallet session.</div>
+  </nav>
+
+  <main class="main" id="main">
+
+  <!-- ===================== MOMENT A · BUILD (DC-1) ===================== -->
+  <section class="view active" id="view-build" aria-labelledby="h-build">
+    <div class="view-head">
+      <div class="vh-text">
+        <h1 id="h-build">Build · Capability: FAssets direct mint</h1>
+        <p class="cap">Catalogue → capability detail → integration depth → composed widget preview → exportable host configuration.</p>
+      </div>
+      <div class="specimen" role="group" aria-label="Specimen states for the widget preview">
+        <div class="cap"><span class="i sm i-eye" aria-hidden="true"></span> Specimen states · design preview control, not product UI</div>
+        <div class="row" id="ctl-widget">
+          <button aria-pressed="true" data-ws="ready">Ready</button>
+          <button aria-pressed="false" data-ws="loading">Loading</button>
+          <button aria-pressed="false" data-ws="empty">No wallet</button>
+          <button aria-pressed="false" data-ws="wrongnet">Wrong network</button>
+          <button aria-pressed="false" data-ws="degraded">Degraded</button>
+          <button aria-pressed="false" data-ws="error">Typed error</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-a">
+      <div>
+        <!-- capability detail card -->
+        <div class="card pad">
+          <div class="split">
+            <h2>FAssets · Direct mint</h2>
+            <span class="badge b-ok"><span class="g" aria-hidden="true"></span>Supported</span>
+          </div>
+          <p class="data dim" style="margin:2px 0 10px">fassets.fxrp.direct-mint</p>
+          <dl class="kv">
+            <dt>Availability</dt><dd class="data">Supported · Coston2 + XRPL Testnet</dd>
+            <dt>Authority</dt><dd class="data">XRPL signature + Flare executor</dd>
+            <dt>Typical duration</dt><dd class="data">8–15 min</dd>
+            <dt>Providers</dt><dd class="data">2 providers</dd>
+            <dt>Surfaces</dt><dd class="data">Widget · React · Headless · Agent plan</dd>
+            <dt>Qualification</dt><dd class="data">qualified 03 Aug 2026</dd>
+          </dl>
+          <hr class="rule">
+          <div class="cap">Integration depth · same operation contract at every depth</div>
+          <div class="depths" role="group" aria-label="Integration depth" style="margin-top:8px">
+            <button class="depth" aria-pressed="true"><b>Widget</b><span class="cap">Styled, embeddable</span></button>
+            <button class="depth" aria-pressed="false"><b>React</b><span class="cap">Providers + hooks</span></button>
+            <button class="depth" aria-pressed="false"><b>Headless</b><span class="cap">Typed TypeScript</span></button>
+            <button class="depth" aria-pressed="false"><b>Agent plan</b><span class="cap">Plan, no signing</span></button>
+          </div>
+        </div>
+
+        <!-- host configuration export (ART-03) -->
+        <div class="card pad">
+          <div class="split">
+            <h3><span class="i i-code" aria-hidden="true"></span> Host configuration export</h3>
+            <span class="illustrative">Illustrative</span>
+          </div>
+          <p class="cap" style="margin:4px 0 10px">Widget boundaries stay host-owned: theme, locale, providers, policy. No secret values are ever exported.</p>
+          <div class="codeblock" aria-label="fxrp-mint.widget-config.json">// fxrp-mint.widget-config.json
+{
+  "capability": "fassets.fxrp.direct-mint",
+  "network": "coston2",
+  "theme": "@host/theme-tokens",
+  "locale": "en-NG",
+  "providers": { "executor": "executor-north" },
+  "policy": "@host/route-allowlist",
+  "events": ["operation.state", "operation.receipt"]
+}</div>
+          <div style="margin-top:10px"><button class="btn btn-sec" data-toast="Specimen only. In the product this downloads fxrp-mint.widget-config.json."><span class="i i-copy" aria-hidden="true"></span> Copy configuration</button></div>
+        </div>
+      </div>
+
+      <!-- composed widget preview -->
+      <div>
+        <div class="wframe">
+          <div class="wframe-head">
+            <strong style="font-size:13px">Composed widget preview</strong>
+            <span class="illustrative">Illustrative</span>
+            <span style="flex:1"></span>
+            <span style="display:inline-flex; gap:6px; align-items:center; white-space:nowrap"><label class="cap" for="w-theme">Theme</label>
+            <select id="w-theme"><option>Reference light</option><option>Host slot (bound in HOST-01)</option></select></span>
+            <span style="display:inline-flex; gap:6px; align-items:center; white-space:nowrap"><label class="cap" for="w-locale">Locale</label>
+            <select id="w-locale"><option value="en">en-NG</option><option value="long">Long-string stress</option></select></span>
+          </div>
+          <div class="wframe-body">
+
+            <!-- widget: ready -->
+            <div class="widget" data-wstate="ready">
+              <div class="split" style="margin-bottom:8px">
+                <h3 data-l10n="Acquire FXRP" data-long="Acquire FXRP (direct mint via XRPL payment)">Acquire FXRP</h3>
+                <span class="badge b-ok"><span class="g" aria-hidden="true"></span>Supported</span>
+              </div>
+              <div class="wrow"><span class="k" data-l10n="You pay" data-long="Amount you pay from your XRPL account">You pay</span><span class="v amount">250.000000 XRP</span></div>
+              <div class="wrow"><span class="k" data-l10n="You receive" data-long="Estimated amount credited to your Flare account">You receive</span><span class="v amount">247.500000 FXRP</span></div>
+              <div class="wrow"><span class="k" data-l10n="Fees" data-long="Protocol and executor fees, charged in XRP">Fees</span><span class="v data">2.000000 XRP protocol + 0.500000 XRP executor</span></div>
+              <div class="wrow"><span class="k" data-l10n="XRPL destination" data-long="Exact XRPL destination for the one payment">XRPL destination</span><span class="v data">rCore…4vM · no tag · extended memo</span></div>
+              <div class="wrow"><span class="k" data-l10n="Recipient" data-long="Flare recipient account for minted FXRP">Recipient</span><span class="v data">0x71C7…0f3A</span></div>
+              <div class="wrow"><span class="k" data-l10n="Executor" data-long="Named executor that finalizes on Flare">Executor</span><span class="v data">Executor North</span></div>
+              <div class="wrow"><span class="k" data-l10n="Typical duration" data-long="Typical time across XRPL finality, FDC proof and execution">Typical duration</span><span class="v data">8–15 min</span></div>
+              <hr class="rule">
+              <div class="split">
+                <span class="cap"><span class="i sm i-shield" aria-hidden="true"></span> One XRPL payment only · signed in your wallet</span>
+                <button class="btn btn-pri" data-toast="Specimen only. In the product this opens the exact action review (SH-04).">Review exact action</button>
+              </div>
+            </div>
+
+            <!-- widget: loading skeleton, mirrors final shape -->
+            <div class="widget" data-wstate="loading" hidden aria-label="Loading quote">
+              <div class="split" style="margin-bottom:8px"><h3 class="skel">Acquire FXRP</h3><span class="skel" style="width:72px">.</span></div>
+              <div class="wrow"><span class="k">You pay</span><span class="v skel" style="width:120px">.</span></div>
+              <div class="wrow"><span class="k">You receive</span><span class="v skel" style="width:132px">.</span></div>
+              <div class="wrow"><span class="k">Fees</span><span class="v skel" style="width:180px">.</span></div>
+              <div class="wrow"><span class="k">XRPL destination</span><span class="v skel" style="width:150px">.</span></div>
+              <div class="wrow"><span class="k">Executor</span><span class="v skel" style="width:100px">.</span></div>
+              <hr class="rule">
+              <p class="cap">Quoting · usually under 10 s · quote service · Safe to wait or close.</p>
+            </div>
+
+            <!-- widget: no wallet (legitimate empty) -->
+            <div class="widget" data-wstate="empty" hidden>
+              <h3 style="margin-bottom:4px">Acquire FXRP</h3>
+              <p class="sub" style="margin-bottom:12px">Connect an XRPL account to quote this mint, or supply a read-only identity to observe it.</p>
+              <div style="display:flex; gap:8px; flex-wrap:wrap">
+                <button class="btn btn-pri" data-toast="Specimen only. In the product this opens the wallet sheet (SH-02).">Connect XRPL wallet</button>
+                <button class="btn btn-sec" data-toast="Specimen only.">Supply read-only identity</button>
+              </div>
+              <p class="cap" style="margin-top:10px">Read-only identity cannot sign. Connecting a wallet authorizes nothing by itself.</p>
+            </div>
+
+            <!-- widget: wrong network -->
+            <div class="widget" data-wstate="wrongnet" hidden>
+              <div class="panel p-att">
+                <div class="ttl"><span class="i i-warn" aria-hidden="true"></span>Wrong network for this capability</div>
+                <div class="body">This mint quotes on <strong class="data">Coston2 · chain 114</strong>. Your connected account is on <span class="data">Flare · chain 14</span>. Switching invalidates any open quote and re-runs preflight.</div>
+              </div>
+              <div style="margin-top:12px; display:flex; gap:8px">
+                <button class="btn btn-pri" data-toast="Specimen only. In the product this requests the network switch (SH-03).">Switch to Coston2</button>
+                <button class="btn btn-sec" data-toast="Specimen only.">Keep current network</button>
+              </div>
+            </div>
+
+            <!-- widget: degraded provider -->
+            <div class="widget" data-wstate="degraded" hidden>
+              <div class="panel p-att" style="margin-bottom:10px">
+                <div class="ttl"><span class="i i-warn" aria-hidden="true"></span>Executor North degraded</div>
+                <div class="body">Quotes still fill · execution may exceed the usual 8–15 min · upstream status checked 18:35 WAT.</div>
+              </div>
+              <div class="wrow"><span class="k">You pay</span><span class="v amount">250.000000 XRP</span></div>
+              <div class="wrow"><span class="k">You receive</span><span class="v amount">247.500000 FXRP</span></div>
+              <div class="wrow"><span class="k">Executor</span><span class="v data">Executor North · <span style="color:var(--att)">Degraded</span></span></div>
+              <hr class="rule">
+              <div class="split">
+                <span class="cap">Provider identity stays visible when degraded.</span>
+                <button class="btn btn-pri" data-toast="Specimen only.">Review exact action</button>
+              </div>
+            </div>
+
+            <!-- widget: typed error -->
+            <div class="widget" data-wstate="error" hidden>
+              <div class="panel p-bad">
+                <div class="ttl"><span class="i i-warnc" aria-hidden="true"></span>QUOTE_EXPIRED · Quote expired before review</div>
+                <div class="body">Source: quote service · expired 18:43:20 WAT. No payment was made and no value moved. A fresh quote may change the FXRP estimate.</div>
+              </div>
+              <div style="margin-top:12px"><button class="btn btn-pri" data-toast="Specimen only. Refreshing a quote never moves value."><span class="i i-retry" aria-hidden="true"></span> Refresh quote</button></div>
+            </div>
+
+          </div>
+          <div class="wframe-foot split">
+            <span class="cap">Embedded format · one delivery format of the application, not the application itself.</span>
+            <button class="btn btn-sec" id="open-in-app">Open this operation in the full application <span class="i i-right" aria-hidden="true"></span></button>
+          </div>
+        </div>
+
+        <div class="card pad" style="margin-top:16px">
+          <h3>Why this seam matters</h3>
+          <p class="sub" style="margin-top:4px; font-size:13px">The widget above and the operation timeline in Use share one lifecycle, one state language and one receipt schema. A host can embed only this widget; the person using it still gets durable pending work, recovery and evidence in the full application.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MOMENT A · USE (portfolio + pending) ===================== -->
+  <section class="view" id="view-use" aria-labelledby="h-use">
+    <div class="view-head">
+      <div class="vh-text">
+        <h1 id="h-use">Use · Portfolio</h1>
+        <p class="cap">Accounts stay distinct. Sources and freshness stay visible. Pending work survives navigation.</p>
+      </div>
+      <div class="specimen" role="group" aria-label="Specimen states for the portfolio">
+        <div class="cap"><span class="i sm i-eye" aria-hidden="true"></span> Specimen states · design preview control, not product UI</div>
+        <div class="row" id="ctl-port">
+          <button aria-pressed="true" data-ps="ready">Ready</button>
+          <button aria-pressed="false" data-ps="loading">Loading</button>
+          <button aria-pressed="false" data-ps="readonly">Read-only, empty</button>
+          <button aria-pressed="false" data-ps="degraded">Source degraded</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ready -->
+    <div data-pstate="ready">
+      <div class="grid2">
+        <div class="card">
+          <div class="split" style="padding:12px 16px 0">
+            <h2>XRPL Testnet</h2>
+            <span class="actor you"><span class="i sm i-wallet" aria-hidden="true"></span>rN7n7…Qn3 · Xaman · Connected</span>
+          </div>
+          <table class="tbl" style="margin-top:8px">
+            <thead><tr><th>Asset</th><th class="num">Balance</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>XRP</td>
+                <td class="num data">842.310000 XRP</td>
+                <td><span class="chip"><span class="i sm i-plug" aria-hidden="true"></span>direct read · current</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <div class="split" style="padding:12px 16px 0">
+            <h2>Coston2</h2>
+            <span class="actor you"><span class="i sm i-wallet" aria-hidden="true"></span>0x71C7…0f3A · Connected</span>
+          </div>
+          <table class="tbl" style="margin-top:8px">
+            <thead><tr><th>Position</th><th class="num">Balance</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>FXRP <span class="cap">FAsset · minted from XRP</span></td>
+                <td class="num data">247.500000 FXRP</td>
+                <td><span class="chip" style="color:var(--att); border-color:var(--att-line); background:var(--att-tint)"><span class="i sm i-warn" aria-hidden="true"></span>FAsset indexer · 42 blocks behind</span></td>
+              </tr>
+              <tr>
+                <td>sFXRP <span class="cap">Firelight · sFXRP vault · epoch 482</span></td>
+                <td class="num data">98.734500 sFXRP</td>
+                <td><span class="chip"><span class="i sm i-plug" aria-hidden="true"></span>direct read · current</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card pad" style="margin-top:16px">
+        <div class="split">
+          <h2>Pending operations <span class="cap">3 · durable · resume any time</span></h2>
+          <button class="btn btn-sec" data-toast="Specimen only. USER-02 activity is a later batch.">Open activity</button>
+        </div>
+        <div class="pend" style="margin-top:10px" id="pend-main"></div>
+      </div>
+    </div>
+
+    <!-- loading -->
+    <div data-pstate="loading" hidden>
+      <div class="grid2">
+        <div class="card pad" aria-label="Loading portfolio">
+          <h2 class="skel" style="width:140px">XRPL Testnet</h2>
+          <div style="margin-top:12px; display:grid; gap:8px">
+            <span class="skel" style="width:80%">.</span><span class="skel" style="width:65%">.</span>
+          </div>
+        </div>
+        <div class="card pad">
+          <h2 class="skel" style="width:120px">Coston2</h2>
+          <div style="margin-top:12px; display:grid; gap:8px">
+            <span class="skel" style="width:85%">.</span><span class="skel" style="width:70%">.</span><span class="skel" style="width:60%">.</span>
+          </div>
+        </div>
+      </div>
+      <p class="cap" style="margin-top:10px">Loading balances · usually under 5 s · direct reads and FAsset indexer.</p>
+    </div>
+
+    <!-- read-only, legitimate empty -->
+    <div data-pstate="readonly" hidden>
+      <div class="card pad">
+        <div class="split">
+          <h2>Read-only portfolio</h2>
+          <span class="badge b-neu"><span class="g" aria-hidden="true"></span>Read-only identity · cannot sign</span>
+        </div>
+        <p class="sub" style="margin:8px 0 0; font-size:13px">No balances or positions were found for the supplied identity on Coston2 or XRPL Testnet. This view can observe but can never sign, approve or recover operations.</p>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap">
+          <button class="btn btn-sec" data-toast="Specimen only.">Check another identity</button>
+          <button class="btn btn-pri" data-toast="Specimen only. Connecting still authorizes nothing by itself.">Connect a wallet instead</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- degraded -->
+    <div data-pstate="degraded" hidden>
+      <div class="panel p-att" style="margin-bottom:16px">
+        <div class="ttl"><span class="i i-warn" aria-hidden="true"></span>FAsset indexer 42 blocks behind</div>
+        <div class="body">FXRP values may lag the chain · direct reads current · last sync 18:41 WAT. Stale values stay renderable and stay labeled; nothing here is hidden or guessed.</div>
+      </div>
+      <div class="card">
+        <table class="tbl">
+          <thead><tr><th>Position</th><th class="num">Balance</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>FXRP</td>
+              <td class="num data">247.500000 FXRP <span class="cap">as of block 42,118,860</span></td>
+              <td><span class="chip" style="color:var(--att); border-color:var(--att-line); background:var(--att-tint)"><span class="i sm i-warn" aria-hidden="true"></span>lagging · backfilling</span></td>
+            </tr>
+            <tr>
+              <td>XRP</td>
+              <td class="num data">842.310000 XRP</td>
+              <td><span class="chip"><span class="i sm i-plug" aria-hidden="true"></span>direct read · current</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MOMENT B · OPERATION (SH-05/06/07) ===================== -->
+  <section class="view" id="view-op" aria-labelledby="h-op">
+    <div class="view-head">
+      <div class="vh-text">
+        <h1 id="h-op">Operation · Acquire FXRP</h1>
+        <p class="cap">Durable timeline · survives reload and navigation · every step names its owner.</p>
+      </div>
+      <div class="specimen" role="group" aria-label="Specimen states for the operation">
+        <div class="cap"><span class="i sm i-eye" aria-hidden="true"></span> Specimen states · design preview control, not product UI</div>
+        <div class="row" id="ctl-op">
+          <button aria-pressed="true" data-os="delayed">Delayed (awaiting_external)</button>
+          <button aria-pressed="false" data-os="actionable">Retry available (action_required)</button>
+          <button aria-pressed="false" data-os="succeeded">Succeeded + receipt</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- operation header -->
+    <div class="card pad">
+      <div class="split">
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap">
+          <span class="display">Acquire FXRP</span>
+          <span id="op-badge" class="badge b-wait"><span class="g" aria-hidden="true"></span>awaiting_external</span>
+          <span class="live-tick">LIVE</span>
+        </div>
+        <span class="illustrative">Illustrative</span>
+      </div>
+      <div class="ev-row" style="margin-top:10px">
+        <span class="ev"><span class="t">operation</span><span class="ev-val">op_01J4FX9K3R7N</span><button class="iconbtn" data-copy="op_01J4FX9K3R7N" aria-label="Copy operation ID"><span class="i sm i-copy" aria-hidden="true"></span></button></span>
+        <span class="ev"><span class="t">capability</span><span class="ev-val">fassets.fxrp.direct-mint</span></span>
+        <span class="ev"><span class="t">idempotency</span><span class="ev-val">host_checkout_4821 · XRPL rN7n7…Qn3</span></span>
+        <span class="ev"><span class="t">intent/quote/plan</span><span class="ev-val">1/2/2</span></span>
+        <span class="ev"><span class="t">route</span><span class="ev-val">XRPL Testnet→Coston2</span></span>
+        <span class="ev"><span class="t">created/updated</span><span class="ev-val">18:31/18:42 WAT</span></span>
+        <span class="ev"><span class="t">record</span><span class="ev-val">record 1.0</span></span>
+      </div>
+    </div>
+
+    <!-- delayed status panel -->
+    <div class="panel p-att" id="op-panel-delayed" style="margin-top:16px">
+      <div class="ttl"><span class="i i-warn" aria-hidden="true"></span>FASSET_MINT_DELAYED · Mint is delayed, not failed</div>
+      <div class="body">
+        Cause: large-mint execution window · <strong>your 250 XRP payment is final</strong> and stays usable.<br>
+        <strong>Do not send XRP again.</strong> Retry becomes available after <span class="data">03 Aug 2026, 18:51 WAT · about 9 min remaining</span> and reuses the existing payment and proof.
+      </div>
+    </div>
+
+    <!-- long-wait panel for the executing state -->
+    <div class="panel p-live" id="op-panel-wait" style="margin-top:16px" hidden>
+      <div class="ttl"><span class="i i-clock" aria-hidden="true"></span>Waiting for FDC finality · usually 5–8 min · Flare Relay must finalize the round · Safe to close this window.</div>
+    </div>
+
+    <!-- success summary -->
+    <div id="op-panel-done" style="margin-top:16px" hidden>
+      <div class="card pad">
+        <div class="split">
+          <div>
+            <span class="seal seal-ok"><span class="i i-seal" aria-hidden="true"></span>Succeeded · Flare final</span>
+            <p class="cap" style="margin-top:8px">Requested and actual outcome, with finality named. Submission was never shown as success.</p>
+          </div>
+          <div style="text-align:right">
+            <div class="amount-hero">247.500000 FXRP</div>
+            <div class="cap">credited to <span class="data">0x71C7…0f3A</span></div>
+          </div>
+        </div>
+        <hr class="rule">
+        <dl class="kv">
+          <dt>Requested / actual</dt><dd class="data">250.000000 XRP requested · 247.500000 FXRP credited</dd>
+          <dt>Fees</dt><dd class="data">2.000000 XRP protocol + 0.500000 XRP executor</dd>
+          <dt>Window</dt><dd class="data">18:31–18:54 WAT · XRPL Testnet → Coston2</dd>
+          <dt>Schema</dt><dd class="data">receipt 1.0 · kit 0.1.0-demo</dd>
+        </dl>
+        <hr class="rule">
+        <div class="split">
+          <span class="cap">One correlated receipt across XRPL payment, FDC proof and Flare credit.</span>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <button class="btn btn-sec" data-toast="Specimen only. Exports op_01J4FX9K3R7N-receipt.json."><span class="i i-receipt" aria-hidden="true"></span> Export receipt JSON</button>
+            <button class="btn btn-sec" data-toast="Specimen only. Support bundle is redacted: op_01J4FX9K3R7N-support.zip.">Redacted support bundle</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- the spine -->
+    <div class="card pad" style="margin-top:16px">
+      <h2 style="margin-bottom:14px">Timeline</h2>
+      <ol class="spine">
+        <li>
+          <span class="node n-done" aria-hidden="true"></span>
+          <div>
+            <div class="step-head"><h3>XRPL payment</h3><span class="actor you"><span class="i sm i-wallet" aria-hidden="true"></span>You · Xaman</span><span class="badge b-ok"><span class="g" aria-hidden="true"></span>Final</span></div>
+            <p class="cap step-meta">250.000000 XRP → rCore…4vM · signed 18:31 WAT · one payment only, and it was made once.</p>
+            <div class="step-body"><div class="ev-row">
+              <span class="ev"><span class="t">XRPL tx</span><span class="ev-val">A7D2F930…91C4D2</span><button class="iconbtn" data-copy="A7D2F930…91C4D2" aria-label="Copy XRPL transaction ID"><span class="i sm i-copy" aria-hidden="true"></span></button></span>
+              <a class="chip" href="#" data-toast="Specimen only. Opens XRPL Testnet explorer."><span class="i sm i-out" aria-hidden="true"></span>Open XRPL explorer</a>
+            </div></div>
+          </div>
+        </li>
+        <li>
+          <span class="node n-done" aria-hidden="true"></span>
+          <div>
+            <div class="step-head"><h3>XRPL finality</h3><span class="actor"><span class="i sm i-globe" aria-hidden="true"></span>XRPL network</span><span class="badge b-ok"><span class="g" aria-hidden="true"></span>Final</span></div>
+            <p class="cap step-meta">Ledger closed and validated · 18:33 WAT.</p>
+          </div>
+        </li>
+        <li>
+          <span class="node n-done" aria-hidden="true"></span>
+          <div>
+            <div class="step-head"><h3>FDC proof</h3><span class="actor"><span class="i sm i-shield" aria-hidden="true"></span>Protocol · DA provider</span><span class="badge b-ok"><span class="g" aria-hidden="true"></span>Proof ready</span></div>
+            <p class="cap step-meta">mint.fdc-proof · attempt 1 · updated 18:40 · proof retrieved and valid, not yet consumed.</p>
+            <div class="step-body"><div class="ev-row">
+              <span class="ev"><span class="t">request</span><span class="ev-val">0x5ab8…91de22</span><button class="iconbtn" data-copy="0x5ab8…91de22" aria-label="Copy FDC request hash"><span class="i sm i-copy" aria-hidden="true"></span></button></span>
+              <span class="ev"><span class="t">FDC round</span><span class="ev-val">2,345,678</span></span>
+            </div></div>
+          </div>
+        </li>
+        <li>
+          <span id="node-exec" class="node n-wait" aria-hidden="true"></span>
+          <div>
+            <div class="step-head"><h3>Executor finalizes mint</h3><span class="actor"><span class="i sm i-plug" aria-hidden="true"></span>Executor North</span>
+              <span id="step-exec-badge" class="badge b-wait"><span class="g" aria-hidden="true"></span>awaiting_external</span></div>
+            <p class="cap step-meta" id="step-exec-meta">Delayed by the large-mint execution window · retry allowed after 18:51 WAT · awaited actor: Executor North · Safe to close this window.</p>
+            <div class="step-body" id="step-exec-actions">
+              <div><button class="btn btn-pri" id="btn-recover" disabled aria-describedby="retry-when"><span class="i i-retry" aria-hidden="true"></span> Retry direct-mint execution</button>
+              <p class="cap" id="retry-when" style="margin-top:6px">Available after 18:51 WAT when the existing proof is valid · reuses payment and proof · no new XRP.</p></div>
+            </div>
+          </div>
+        </li>
+        <li>
+          <span id="node-credit" class="node n-idle" aria-hidden="true"></span>
+          <div>
+            <div class="step-head"><h3>FXRP credited</h3><span class="actor"><span class="i sm i-globe" aria-hidden="true"></span>Flare protocol</span>
+              <span id="step-credit-badge" class="badge b-neu"><span class="g" aria-hidden="true"></span>Not started</span></div>
+            <p class="cap step-meta" id="step-credit-meta">Credits 247.500000 FXRP to 0x71C7…0f3A once execution lands.</p>
+            <div class="step-body" id="step-credit-ev" hidden><div class="ev-row">
+              <span class="ev"><span class="t">Flare tx</span><span class="ev-val">0x8be1f2a4…a9d03c</span><button class="iconbtn" data-copy="0x8be1f2a4…a9d03c" aria-label="Copy Flare transaction hash"><span class="i sm i-copy" aria-hidden="true"></span></button></span>
+              <a class="chip" href="#" data-toast="Specimen only. Opens Coston2 explorer."><span class="i sm i-out" aria-hidden="true"></span>Open Coston2 explorer</a>
+            </div></div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ===================== MOMENT C · AUTOMATE ===================== -->
+  <section class="view" id="view-automate" aria-labelledby="h-auto">
+    <div class="view-head">
+      <div class="vh-text">
+        <h1 id="h-auto">Automate · Agent plan and policy</h1>
+        <p class="cap">Natural language is context, never authority. Policy is deterministic and sits beside the conversation, not inside it.</p>
+      </div>
+      <div class="specimen" role="group" aria-label="Specimen states for the policy result">
+        <div class="cap"><span class="i sm i-eye" aria-hidden="true"></span> Specimen states · design preview control, not product UI</div>
+        <div class="row" id="ctl-agent">
+          <button aria-pressed="true" data-as="approval">Approval required</button>
+          <button aria-pressed="false" data-as="denied">Denied</button>
+          <button aria-pressed="false" data-as="grant">Covered by grant</button>
+          <button aria-pressed="false" data-as="receipts">Receipt comparison</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-a" id="agent-flow">
+      <div>
+        <!-- originating request: context, not authority -->
+        <div class="card pad">
+          <div class="split">
+            <h3><span class="i i-robot" aria-hidden="true"></span> Originating request</h3>
+            <span class="badge b-neu"><span class="g" aria-hidden="true"></span>Context, not authority</span>
+          </div>
+          <div class="well" style="margin-top:10px; padding:10px 14px">
+            <p style="font-size:13px">"Move up to 100 FXRP to Arbitrum"</p>
+          </div>
+          <div class="ev-row" style="margin-top:10px">
+            <span class="ev"><span class="t">tool</span><span class="ev-val">bridge.plan 1.0 · run agent_0192</span></span>
+          </div>
+          <p class="cap" style="margin-top:8px">The agent can discover and plan. It cannot sign, and nothing it writes changes what the policy decides.</p>
+        </div>
+
+        <!-- policy result variants -->
+        <div class="card pad policy att" id="pol-approval">
+          <div class="split">
+            <h3>Policy result</h3>
+            <span class="badge b-att"><span class="g" aria-hidden="true"></span>Approval required</span>
+          </div>
+          <dl class="kv" style="margin-top:8px">
+            <dt>Rule</dt><dd class="data">RULE-ROUTE-02: provider changed</dd>
+            <dt>Covers</dt><dd class="data">0x71C7…0f3A · bridge FXRP</dd>
+            <dt>Limit use</dt><dd class="data">100 of 500 FXRP daily limit</dd>
+            <dt>Needs</dt><dd>human approval · exact review of the unsigned plan</dd>
+            <dt>Enforcement</dt><dd class="data">Wallet-session enforced</dd>
+            <dt>Evaluated</dt><dd class="data">18:42:11 · policy 1.2</dd>
+          </dl>
+          <div style="margin-top:12px"><button class="btn btn-pri" id="btn-approve">Review and approve exactly</button></div>
+        </div>
+
+        <div class="card pad policy bad" id="pol-denied" hidden>
+          <div class="split">
+            <h3>Policy result</h3>
+            <span class="badge b-bad"><span class="g" aria-hidden="true"></span>Denied</span>
+          </div>
+          <dl class="kv" style="margin-top:8px">
+            <dt>Rule</dt><dd class="data">RULE-ROUTE-02: provider changed</dd>
+            <dt>Reason</dt><dd>The active policy allows no approval path for a changed provider on this route.</dd>
+            <dt>Enforcement</dt><dd class="data">Wallet-session enforced</dd>
+            <dt>Evaluated</dt><dd class="data">18:42:11 · policy 1.2</dd>
+          </dl>
+          <p class="cap" style="margin-top:8px">The plan is discarded unsigned. Nothing was submitted and no value moved. Adjust the policy in the grant builder or create a new plan.</p>
+        </div>
+
+        <div class="card pad policy ok" id="pol-grant" hidden>
+          <div class="split">
+            <h3>Policy result</h3>
+            <span class="badge b-ok"><span class="g" aria-hidden="true"></span>Allowed · covered by grant</span>
+          </div>
+          <dl class="kv" style="margin-top:8px">
+            <dt>Grant</dt><dd class="data">grant_agent_0192_20260803.json</dd>
+            <dt>Enforcement</dt><dd class="data">Wallet-session enforced · revoke in wallet session</dd>
+            <dt>Limit use</dt><dd class="data">100 of 500 FXRP daily limit</dd>
+            <dt>Evaluated</dt><dd class="data">18:42:11 · policy 1.2</dd>
+          </dl>
+          <p class="cap" style="margin-top:8px">Execution proceeds without a new signature because an inspectable, revocable grant already bounds it. The run still produces the same operation timeline and receipt.</p>
+        </div>
+      </div>
+
+      <div>
+        <!-- unsigned plan -->
+        <div class="card pad">
+          <div class="split">
+            <h2>Bridge plan</h2>
+            <span class="badge b-neu" style="border-style:dashed"><span class="g" aria-hidden="true"></span>Unsigned</span>
+          </div>
+          <p class="cap" style="margin:2px 0 10px">Immutable plan revision · nothing executes until exact approval or a covering grant.</p>
+          <dl class="kv">
+            <dt>Action</dt><dd>Bridge FXRP to Arbitrum Sepolia</dd>
+            <dt>Amount bound</dt><dd class="data">up to 100.000000 FXRP</dd>
+            <dt>Route</dt><dd class="data">Flare→Arbitrum Sepolia · FXRP→FXRP OFT</dd>
+            <dt>Provider</dt><dd class="data">LayerZero OFT</dd>
+            <dt>Native fee</dt><dd class="data">0.031 FLR</dd>
+            <dt>Operation</dt><dd class="data">op_01J4FX9K3R7N</dd>
+            <dt>Expiry</dt><dd class="data">expires 18:52 WAT · about 10 min remaining</dd>
+          </dl>
+          <hr class="rule">
+          <p class="cap"><span class="i sm i-shield" aria-hidden="true"></span> Source and destination settle independently. Source-final with destination-pending is a partial state, not a success.</p>
+        </div>
+
+        <!-- run timeline (appears after approval / grant) -->
+        <div class="card pad" id="agent-run" hidden>
+          <div class="split">
+            <h2>Agent run</h2>
+            <span class="badge b-live"><span class="g" aria-hidden="true"></span>executing</span>
+          </div>
+          <ol class="spine" style="margin-top:12px">
+            <li>
+              <span class="node n-done" aria-hidden="true"></span>
+              <div>
+                <div class="step-head"><h3>Policy evaluated</h3><span class="actor"><span class="i sm i-shield" aria-hidden="true"></span>Policy engine</span><span class="badge b-ok"><span class="g" aria-hidden="true"></span>Recorded</span></div>
+                <p class="cap step-meta" id="run-policy-meta">Approval required · RULE-ROUTE-02 · approved exactly by 0x71C7…0f3A at 18:44 WAT.</p>
+              </div>
+            </li>
+            <li>
+              <span class="node n-live pulse" aria-hidden="true"></span>
+              <div>
+                <div class="step-head"><h3>Source transaction</h3><span class="actor"><span class="i sm i-globe" aria-hidden="true"></span>Flare protocol</span><span class="badge b-live"><span class="g" aria-hidden="true"></span>confirming</span><span class="live-tick">LIVE</span></div>
+                <p class="cap step-meta">Submitted, not succeeded · confirming on Coston2 · usually under 1 min.</p>
+              </div>
+            </li>
+            <li>
+              <span class="node n-idle" aria-hidden="true"></span>
+              <div>
+                <div class="step-head"><h3>LayerZero message delivers</h3><span class="actor"><span class="i sm i-plug" aria-hidden="true"></span>LayerZero</span><span class="badge b-neu"><span class="g" aria-hidden="true"></span>Not started</span></div>
+                <p class="cap step-meta">Destination delivery and compose settle independently of the source transaction.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="cap" style="margin-top:10px">Same spine, same state words, same receipt schema as the human-initiated mint in Use.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- receipt comparison (AG-06) -->
+    <div id="agent-receipts" hidden>
+      <div class="card pad">
+        <div class="split">
+          <h2>Receipt comparison</h2>
+          <span class="badge b-ok"><span class="g" aria-hidden="true"></span>Schema compatible · equivalent</span>
+        </div>
+        <p class="cap" style="margin:4px 0 12px">An agent-created operation and a human-created operation with equivalent intent produce receipts another system can treat identically.</p>
+        <div class="grid2">
+          <div class="well" style="padding:12px 16px">
+            <div class="split"><h3>Agent receipt</h3><span class="actor"><span class="i sm i-robot" aria-hidden="true"></span>run agent_0192</span></div>
+            <dl class="kv" style="margin-top:6px">
+              <dt>Operation</dt><dd class="data">op_01J4FX9K3R7N</dd>
+              <dt>Intent</dt><dd>Bridge up to 100 FXRP</dd>
+              <dt>Policy</dt><dd class="data">Approval required · RULE-ROUTE-02</dd>
+              <dt>Approval</dt><dd class="data">exact · 0x71C7…0f3A · 18:44 WAT</dd>
+              <dt>Schema</dt><dd class="data">receipt 1.0 · kit 0.1.0-demo</dd>
+            </dl>
+          </div>
+          <div class="well" style="padding:12px 16px">
+            <div class="split"><h3>Human receipt</h3><span class="actor you"><span class="i sm i-wallet" aria-hidden="true"></span>You</span></div>
+            <dl class="kv" style="margin-top:6px">
+              <dt>Operation</dt><dd class="data">op_01J4FXA2M9QT</dd>
+              <dt>Intent</dt><dd>Bridge up to 100 FXRP</dd>
+              <dt>Policy</dt><dd class="data">not evaluated · human path</dd>
+              <dt>Approval</dt><dd class="data">exact · 0x71C7…0f3A · wallet confirmation</dd>
+              <dt>Schema</dt><dd class="data">receipt 1.0 · kit 0.1.0-demo</dd>
+            </dl>
+          </div>
+        </div>
+        <p class="cap" style="margin-top:10px">Field-for-field the same shape: agent/human receipt schema compatible.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== OPERATE (honest specimen) ===================== -->
+  <section class="view" id="view-operate" aria-labelledby="h-ops">
+    <div class="view-head"><div class="vh-text">
+      <h1 id="h-ops">Operate</h1>
+      <p class="cap">OPS-01 through OPS-13 and SUP-01 through SUP-03 are mapped surfaces. This return resolves only the shared grammar they inherit; their full design lands in later batches.</p>
+    </div></div>
+    <div class="grid2">
+      <div class="card pad">
+        <div class="split">
+          <h3>Service health specimen</h3>
+          <span class="illustrative">Illustrative</span>
+        </div>
+        <dl class="kv" style="margin-top:8px">
+          <dt>Service</dt><dd class="data">FAsset executor · exec-c2-01</dd>
+          <dt>Environment</dt><dd class="data">Coston2 · 0.4.0</dd>
+          <dt>Health</dt><dd><span class="badge b-att"><span class="g" aria-hidden="true"></span>Degraded</span></dd>
+          <dt>Queue</dt><dd class="data">12 queued · oldest 9 min</dd>
+          <dt>Cause</dt><dd class="data">DA provider rate-limited · 24.8 FLR balance</dd>
+          <dt>Authority</dt><dd class="data">funded signer · bounded target</dd>
+        </dl>
+        <p class="cap" style="margin-top:8px">The same state badges, evidence chips and actor grammar as the consumer timeline, at operator density.</p>
+      </div>
+      <div class="card pad">
+        <h3>Support boundary</h3>
+        <p class="sub" style="margin-top:6px; font-size:13px">Support correlates identifiers and diagnoses. Recovery is handed back to the correct signer: <strong>user wallet required; support cannot sign</strong>.</p>
+        <div class="ev-row" style="margin-top:10px">
+          <span class="ev"><span class="t">correlates</span><span class="ev-val">op_01J4FX9K3R7N · XRPL A7D2…91C4</span></span>
+        </div>
+        <p class="cap" style="margin-top:10px">Operator and consumer authority never merge into one account role.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== VERIFY (honest specimen) ===================== -->
+  <section class="view" id="view-verify" aria-labelledby="h-ver">
+    <div class="view-head"><div class="vh-text">
+      <h1 id="h-ver">Verify</h1>
+      <p class="cap">Receipts, evidence and release qualification. REL-01 through REL-03 are mapped; this return shows the evidence grammar only.</p>
+    </div></div>
+    <div class="card pad">
+      <h3>Generated evidence specimens</h3>
+      <p class="cap" style="margin:4px 0 10px">Every artifact is versioned, redacted where required, and never claims more than its environment proves.</p>
+      <div class="ev-row">
+        <span class="ev"><span class="t">receipt</span><span class="ev-val">op_01J4FX9K3R7N-receipt.json</span></span>
+        <span class="ev"><span class="t">conformance</span><span class="ev-val">conformance-0.1.0-demo.html</span></span>
+        <span class="ev"><span class="t">claim</span><span class="ev-val">claim-coston2-attested-test.json</span></span>
+        <span class="ev"><span class="t">compatibility</span><span class="ev-val">compatibility-2026-08-03.json</span></span>
+      </div>
+      <p class="cap" style="margin-top:10px">A claim file is never titled production without qualification. Illustrative fixtures never become deployment, support or price claims.</p>
+    </div>
+  </section>
+  </main>
+</div>
+
+<!-- ===================== PENDING TRAY (SH-10) ===================== -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="tray" role="dialog" aria-modal="true" aria-labelledby="tray-title" aria-hidden="true">
+  <div class="split">
+    <h2 id="tray-title">Pending operations</h2>
+    <button class="iconbtn" data-close aria-label="Close pending tray"><span class="i i-x" aria-hidden="true"></span></button>
+  </div>
+  <p class="cap" style="margin:4px 0 12px">Durable across navigation and reload. Deep links land here, not on a recreated form.</p>
+  <div class="pend" id="pend-tray"></div>
+  <p class="cap" style="margin-top:12px"><span class="i sm i-warn" aria-hidden="true"></span> FAsset indexer 42 blocks behind · pending states may update late.</p>
+</aside>
+
+<!-- ===================== RECOVERY + EXACT REVIEW SHEET (SH-06 → SH-04) ===================== -->
+<div class="sheet" id="sheet-recover" role="dialog" aria-modal="true" aria-labelledby="rec-title" aria-hidden="true">
+  <div data-recstep="decision">
+    <div class="sheet-head">
+      <h2 id="rec-title">Recovery · Retry direct-mint execution</h2>
+      <button class="iconbtn" data-close aria-label="Close recovery sheet"><span class="i i-x" aria-hidden="true"></span></button>
+    </div>
+    <div class="panel p-att" style="margin-bottom:12px">
+      <div class="ttl"><span class="i i-warn" aria-hidden="true"></span>What moved, what remains</div>
+      <div class="body"><strong>250 XRP was paid and is final.</strong> FXRP has not been credited yet. This recovery credits the prior payment. <strong>Do not send XRP again.</strong></div>
+    </div>
+    <dl class="kv">
+      <dt>Preconditions</dt><dd class="data">existing proof valid; allowed-at reached</dd>
+      <dt>Effect</dt><dd class="data">credits prior payment</dd>
+      <dt>Signs</dt><dd class="data">Flare wallet transaction</dd>
+      <dt>Value reuse</dt><dd class="data">reuses payment and proof · no new XRP</dd>
+      <dt>Idempotency</dt><dd class="data">idempotent by XRPL tx ID</dd>
+      <dt>Next state</dt><dd class="data">next: confirming</dd>
+    </dl>
+    <hr class="rule">
+    <div class="split">
+      <span class="cap">Reusing prior evidence, not creating a new payment.</span>
+      <div style="display:flex; gap:8px">
+        <button class="btn btn-sec" data-close>Not now</button>
+        <button class="btn btn-pri" id="rec-continue">Continue to exact review</button>
+      </div>
+    </div>
+  </div>
+
+  <div data-recstep="review" hidden>
+    <div class="sheet-head">
+      <h2>Exact action review</h2>
+      <button class="iconbtn" data-close aria-label="Close review sheet"><span class="i i-x" aria-hidden="true"></span></button>
+    </div>
+    <dl class="kv">
+      <dt>Account</dt><dd class="data">0x71C7…0f3A</dd>
+      <dt>Chain</dt><dd class="data">Coston2 · 114</dd>
+      <dt>Action</dt><dd class="data">AssetManager.executeDirectMinting</dd>
+      <dt>Uses</dt><dd class="data">uses existing 250 XRP payment</dd>
+      <dt>Executor</dt><dd class="data">Executor North</dd>
+      <dt>Fee</dt><dd class="data">0.014 FLR</dd>
+      <dt>Deadline</dt><dd class="data">18:55 WAT</dd>
+      <dt>Changed terms</dt><dd class="data">no changed terms</dd>
+      <dt>Enforcement</dt><dd class="data">wallet confirmation</dd>
+    </dl>
+    <div style="margin:10px 0"><a href="#" data-toast="Specimen only. Opens unsigned transaction inspection (SH-11)."><span class="i sm i-search" aria-hidden="true"></span> Inspect unsigned transaction</a></div>
+    <div class="boundary"><span class="d" aria-hidden="true"></span><span class="lbl">FINALIZATION WRITE IS IRREVERSIBLE PAST THIS LINE</span><span class="d" aria-hidden="true"></span></div>
+    <div class="split">
+      <span class="cap">Approval binds exactly what is listed above, nothing more.</span>
+      <div style="display:flex; gap:8px">
+        <button class="btn btn-sec" data-close>Cancel · nothing moves</button>
+        <button class="btn btn-pri" id="rec-confirm">Approve in wallet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== AGENT EXACT REVIEW SHEET (SH-04, shared anatomy) ===================== -->
+<div class="sheet" id="sheet-approve" role="dialog" aria-modal="true" aria-labelledby="ap-title" aria-hidden="true">
+  <div class="sheet-head">
+    <h2 id="ap-title">Exact action review</h2>
+    <button class="iconbtn" data-close aria-label="Close review sheet"><span class="i i-x" aria-hidden="true"></span></button>
+  </div>
+  <p class="cap" style="margin-bottom:10px">Same review anatomy as every human-initiated action. The agent prepared the plan; only you can bind it.</p>
+  <dl class="kv">
+    <dt>Account</dt><dd class="data">0x71C7…0f3A</dd>
+    <dt>Chain</dt><dd class="data">Coston2 · 114 → Arbitrum Sepolia</dd>
+    <dt>Action</dt><dd>Bridge FXRP over LayerZero OFT</dd>
+    <dt>Amount bound</dt><dd class="data">up to 100.000000 FXRP</dd>
+    <dt>Native fee</dt><dd class="data">0.031 FLR</dd>
+    <dt>Policy</dt><dd class="data">Approval required · RULE-ROUTE-02: provider changed</dd>
+    <dt>Enforcement</dt><dd class="data">Wallet-session enforced</dd>
+    <dt>Expiry</dt><dd class="data">expires 18:52 WAT</dd>
+  </dl>
+  <div class="boundary"><span class="d" aria-hidden="true"></span><span class="lbl">VALUE MOVES PAST THIS LINE · DESTINATION SETTLES SEPARATELY</span><span class="d" aria-hidden="true"></span></div>
+  <div class="split">
+    <span class="cap">Approving covers this plan revision only.</span>
+    <div style="display:flex; gap:8px">
+      <button class="btn btn-sec" data-close>Reject plan</button>
+      <button class="btn btn-pri" id="ap-confirm">Approve exactly</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* LEDGERLINE specimen behavior. Design evidence only: state transitions here
+   are simulated for interaction inspection and are not live protocol evidence. */
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  var announce = function (msg) { $('#announce').textContent = msg; };
+  var toastT;
+  var toast = function (msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('show'); }, 2600);
+  };
+
+  /* ---------- pending operations (fixtures) ---------- */
+  var pendings = [
+    { label: 'Acquire FXRP', op: 'op_01J4FX9K3R7N', badge: 'b-wait', state: 'awaiting_external',
+      meta: 'FDC finality · usually 5–8 min', risk: '', links: true },
+    { label: 'Bridge FXRP to Arbitrum Sepolia', op: 'op_01J4FXB7T2KD', badge: 'b-att', state: 'action_required',
+      meta: 'delivered · compose action_required', risk: 'Partial · destination compose outstanding', links: false },
+    { label: 'Withdraw from Firelight sFXRP vault', op: 'op_01J4FXC1P8ZR', badge: 'b-wait', state: 'awaiting_external',
+      meta: 'epoch 482 · claimable 10 Aug 2026, 12:00 WAT', risk: '', links: false }
+  ];
+  function pendRow(p) {
+    var b = document.createElement('button');
+    b.className = 'pend-row';
+    b.setAttribute('data-op', p.links ? 'open' : 'specimen');
+    b.innerHTML =
+      '<span class="l1">' + p.label +
+      ' <span class="badge ' + p.badge + '"><span class="g" aria-hidden="true"></span>' + p.state + '</span></span>' +
+      '<span class="l2"><span class="ev"><span class="t">operation</span><span class="ev-val">' + p.op + '</span></span>' +
+      '<span class="cap">' + p.meta + '</span></span>' +
+      (p.risk ? '<span class="cap" style="color:var(--att)">' + p.risk + '</span>' : '');
+    b.addEventListener('click', function () {
+      if (p.links) { closeOverlays(); go('op'); }
+      else { toast('Specimen only. This pending operation is illustrated in the tray; its full surface is a later batch.'); }
+    });
+    return b;
+  }
+  ['pend-main', 'pend-tray'].forEach(function (id) {
+    var host = document.getElementById(id);
+    if (host) pendings.forEach(function (p) { host.appendChild(pendRow(p)); });
+  });
+
+  /* ---------- navigation ---------- */
+  var views = { build: 'view-build', use: 'view-use', op: 'view-op', automate: 'view-automate', operate: 'view-operate', verify: 'view-verify' };
+  function go(name) {
+    Object.keys(views).forEach(function (k) { $('#' + views[k]).classList.toggle('active', k === name); });
+    $$('.nav [data-nav]').forEach(function (b) {
+      var current = b.getAttribute('data-nav') === (name === 'op' ? 'use' : name);
+      if (current) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+    window.scrollTo(0, 0);
+    var h = $('#' + views[name] + ' h1');
+    if (h) announce(h.textContent + ' view');
+  }
+  $$('.nav [data-nav]').forEach(function (b) {
+    b.addEventListener('click', function () { go(b.getAttribute('data-nav')); });
+  });
+  $('#open-in-app').addEventListener('click', function () { go('op'); });
+
+  /* ---------- specimen state switchers ---------- */
+  function wireSwitch(ctlId, attr, apply) {
+    var ctl = document.getElementById(ctlId);
+    if (!ctl) return;
+    $$('button', ctl).forEach(function (b) {
+      b.addEventListener('click', function () {
+        $$('button', ctl).forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)); });
+        apply(b.getAttribute(attr));
+      });
+    });
+  }
+
+  /* widget states (Moment A) */
+  wireSwitch('ctl-widget', 'data-ws', function (s) {
+    $$('[data-wstate]').forEach(function (el) { el.hidden = el.getAttribute('data-wstate') !== s; });
+    announce('Widget preview state: ' + s);
+  });
+
+  /* portfolio states */
+  wireSwitch('ctl-port', 'data-ps', function (s) {
+    $$('[data-pstate]').forEach(function (el) { el.hidden = el.getAttribute('data-pstate') !== s; });
+    announce('Portfolio state: ' + s);
+  });
+
+  /* localization stress in widget */
+  $('#w-locale').addEventListener('change', function () {
+    var long = this.value === 'long';
+    $$('[data-l10n]').forEach(function (el) {
+      el.textContent = long ? el.getAttribute('data-long') : el.getAttribute('data-l10n');
+    });
+    announce(long ? 'Long-string stress locale applied' : 'Default locale applied');
+  });
+  $('#w-theme').addEventListener('change', function () {
+    if (this.selectedIndex === 1) { toast('Host theme slots bind in HOST-01. The specimen ships the reference light theme only.'); this.selectedIndex = 0; }
+  });
+
+  /* ---------- Moment B operation states ---------- */
+  function setNode(el, cls) { el.className = 'node ' + cls; }
+  function setBadge(el, cls, text) {
+    el.className = 'badge ' + cls;
+    el.innerHTML = '<span class="g" aria-hidden="true"></span>' + text;
+  }
+  var opStates = {
+    delayed: function () {
+      $('#op-panel-delayed').hidden = false; $('#op-panel-wait').hidden = true; $('#op-panel-done').hidden = true;
+      setBadge($('#op-badge'), 'b-wait', 'awaiting_external');
+      setNode($('#node-exec'), 'n-wait'); setBadge($('#step-exec-badge'), 'b-wait', 'awaiting_external');
+      $('#step-exec-meta').textContent = 'Delayed by the large-mint execution window · retry allowed after 18:51 WAT · awaited actor: Executor North · Safe to close this window.';
+      $('#btn-recover').disabled = true; $('#step-exec-actions').hidden = false;
+      $('#retry-when').textContent = 'Available after 18:51 WAT when the existing proof is valid · reuses payment and proof · no new XRP.';
+      setNode($('#node-credit'), 'n-idle'); setBadge($('#step-credit-badge'), 'b-neu', 'Not started');
+      $('#step-credit-ev').hidden = true;
+      announce('Operation state: awaiting external executor, delayed, not failed');
+    },
+    actionable: function () {
+      $('#op-panel-delayed').hidden = false; $('#op-panel-wait').hidden = true; $('#op-panel-done').hidden = true;
+      setBadge($('#op-badge'), 'b-att', 'action_required');
+      setNode($('#node-exec'), 'n-act'); setBadge($('#step-exec-badge'), 'b-att', 'action_required');
+      $('#step-exec-meta').textContent = 'Allowed-at has passed and the existing proof is valid · your action: retry execution · it reuses the payment and proof.';
+      $('#btn-recover').disabled = false; $('#step-exec-actions').hidden = false;
+      $('#retry-when').textContent = 'Reuses payment and proof · no new XRP · idempotent by XRPL tx ID.';
+      setNode($('#node-credit'), 'n-idle'); setBadge($('#step-credit-badge'), 'b-neu', 'Not started');
+      $('#step-credit-ev').hidden = true;
+      announce('Operation state: action required, retry available, no new payment');
+    },
+    succeeded: function () {
+      $('#op-panel-delayed').hidden = true; $('#op-panel-wait').hidden = true; $('#op-panel-done').hidden = false;
+      setBadge($('#op-badge'), 'b-ok', 'succeeded');
+      setNode($('#node-exec'), 'n-done'); setBadge($('#step-exec-badge'), 'b-ok', 'Executed');
+      $('#step-exec-meta').textContent = 'Executed by Executor North reusing the original payment and proof · 18:53 WAT.';
+      $('#step-exec-actions').hidden = true;
+      setNode($('#node-credit'), 'n-done'); setBadge($('#step-credit-badge'), 'b-ok', 'Final');
+      $('#step-credit-meta').textContent = 'Credited 247.500000 FXRP to 0x71C7…0f3A · 18:54 WAT · Flare final.';
+      $('#step-credit-ev').hidden = false;
+      announce('Operation state: succeeded, Flare final, receipt available');
+    }
+  };
+  wireSwitch('ctl-op', 'data-os', function (s) { opStates[s](); });
+
+  /* ---------- Moment C policy variants ---------- */
+  var agentStates = {
+    approval: function () {
+      $('#pol-approval').hidden = false; $('#pol-denied').hidden = true; $('#pol-grant').hidden = true;
+      $('#agent-run').hidden = true; $('#agent-receipts').hidden = true; $('#agent-flow').hidden = false;
+      $('#run-policy-meta').textContent = 'Approval required · RULE-ROUTE-02 · approved exactly by 0x71C7…0f3A at 18:44 WAT.';
+      announce('Policy result: approval required');
+    },
+    denied: function () {
+      $('#pol-approval').hidden = true; $('#pol-denied').hidden = false; $('#pol-grant').hidden = true;
+      $('#agent-run').hidden = true; $('#agent-receipts').hidden = true; $('#agent-flow').hidden = false;
+      announce('Policy result: denied, plan discarded unsigned');
+    },
+    grant: function () {
+      $('#pol-approval').hidden = true; $('#pol-denied').hidden = true; $('#pol-grant').hidden = false;
+      $('#agent-run').hidden = false; $('#agent-receipts').hidden = true; $('#agent-flow').hidden = false;
+      $('#run-policy-meta').textContent = 'Allowed · covered by grant_agent_0192_20260803.json · wallet-session enforced.';
+      announce('Policy result: allowed, covered by an existing grant; run timeline visible');
+    },
+    receipts: function () {
+      $('#agent-flow').hidden = true; $('#agent-receipts').hidden = false;
+      announce('Receipt comparison: agent and human receipts are schema compatible');
+    }
+  };
+  wireSwitch('ctl-agent', 'data-as', function (s) { agentStates[s](); });
+
+  /* ---------- overlays: tray + sheets ---------- */
+  var openEl = null, lastFocus = null;
+  function openOverlay(el) {
+    lastFocus = document.activeElement;
+    openEl = el; el.classList.add('open'); el.setAttribute('aria-hidden', 'false');
+    $('#scrim').classList.add('open');
+    var f = el.querySelector('button, a, select, input');
+    if (f) f.focus();
+    document.addEventListener('keydown', onKey);
+  }
+  function closeOverlays() {
+    if (!openEl) return;
+    openEl.classList.remove('open'); openEl.setAttribute('aria-hidden', 'true');
+    $('#scrim').classList.remove('open');
+    document.removeEventListener('keydown', onKey);
+    if (lastFocus) lastFocus.focus();
+    openEl = null;
+  }
+  function onKey(e) {
+    if (e.key === 'Escape') closeOverlays();
+    if (e.key === 'Tab' && openEl) {
+      var f = $$('button, a[href], select, input', openEl).filter(function (x) { return !x.hidden && x.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { last.focus(); e.preventDefault(); }
+      else if (!e.shiftKey && document.activeElement === last) { first.focus(); e.preventDefault(); }
+    }
+  }
+  $('#tray-open').addEventListener('click', function () { openOverlay($('#tray')); });
+  $('#scrim').addEventListener('click', closeOverlays);
+  $$('[data-close]').forEach(function (b) { b.addEventListener('click', closeOverlays); });
+
+  /* recovery sheet: decision step then exact review step */
+  $('#btn-recover').addEventListener('click', function () {
+    $$('#sheet-recover [data-recstep]').forEach(function (s) { s.hidden = s.getAttribute('data-recstep') !== 'decision'; });
+    openOverlay($('#sheet-recover'));
+    announce('Recovery decision sheet open');
+  });
+  $('#rec-continue').addEventListener('click', function () {
+    $$('#sheet-recover [data-recstep]').forEach(function (s) { s.hidden = s.getAttribute('data-recstep') !== 'review'; });
+    var f = $('#sheet-recover [data-recstep="review"] button'); if (f) f.focus();
+    announce('Exact action review open');
+  });
+  $('#rec-confirm').addEventListener('click', function () {
+    closeOverlays();
+    $$('#ctl-op button').forEach(function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-os') === 'succeeded')); });
+    opStates.succeeded();
+    toast('Specimen transition. In the product the wallet confirms first; submission is then shown as confirming, never as success.');
+  });
+
+  /* agent approval sheet */
+  $('#btn-approve').addEventListener('click', function () { openOverlay($('#sheet-approve')); announce('Exact action review open'); });
+  $('#ap-confirm').addEventListener('click', function () {
+    closeOverlays();
+    $('#agent-run').hidden = false;
+    toast('Specimen transition. Approval binds this plan revision exactly; the run continues on the shared timeline.');
+    announce('Plan approved exactly; agent run timeline visible');
+  });
+
+  /* copy + toasts */
+  $$('[data-copy]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var v = b.getAttribute('data-copy');
+      try { navigator.clipboard.writeText(v); } catch (e) {}
+      toast('Copied the truncated fixture. The product copies the full value; this specimen does not fabricate full identifiers.');
+    });
+  });
+  $$('[data-toast]').forEach(function (b) {
+    b.addEventListener('click', function (e) { e.preventDefault(); toast(b.getAttribute('data-toast')); });
+  });
+})();
+</script>
+</body>
+</html>

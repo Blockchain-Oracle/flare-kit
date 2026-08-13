@@ -1,0 +1,175 @@
+/* ============================================================
+   @flare-kit/react-ui — the payments surfaces (M9).
+
+   GaslessCard and X402Card reuse SwapLeg, the OperationTimeline
+   spine and the shared Panel/Note/DetailRow/StateChip/card-chrome,
+   so this file adds only what the two payment rails need beyond
+   the shared chrome: the gasless composer's asset row / recipient /
+   relayer line and its relay timeline, and the x402 outcome timeline.
+   Every value derives from a token in styles.css — nothing is a raw
+   literal. Theme is runtime, under data-theme.
+   ============================================================ */
+
+/* ---------- GaslessCard (M9-R10) ---------- */
+.fk.fk-gasless-card {
+  max-width: 420px;
+}
+.fk-gasless-card .fk-gasless-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-gasless-card .fk-gasless-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+/* The asset row — FXRP selected; USD₮0 declared unavailable-on-testnet (M9-R10/AC5). */
+.fk-gasless-card .fk-gasless-assets {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  font-size: 0.82rem;
+}
+.fk-gasless-card .fk-gasless-asset {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 8px;
+  border-radius: var(--fk-r-sm);
+  font-family: var(--fk-font-mono);
+}
+.fk-gasless-card .fk-gasless-asset[data-selected='true'] {
+  color: var(--fk-text);
+  background: var(--fk-tint);
+}
+/* The declared-unavailable idiom: faint, reasoned (title), never a live option. */
+.fk-gasless-card .fk-gasless-asset[data-selected='false'] {
+  color: var(--fk-text-faint);
+  border: 1px dashed var(--fk-border);
+}
+
+/* The recipient field. */
+.fk-gasless-card .fk-gasless-recipient {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 12px;
+}
+.fk-gasless-card .fk-gasless-recipient-label {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-gasless-card .fk-gasless-recipient-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  color: var(--fk-text);
+  font-size: 0.9rem;
+}
+.fk-gasless-card .fk-gasless-recipient-input:disabled {
+  color: var(--fk-text-muted);
+  background: var(--fk-surface);
+}
+
+/* The relayer identity + reachability line. */
+.fk-gasless-card .fk-gasless-relayer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 11px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-surface);
+  font-size: 0.82rem;
+}
+.fk-gasless-card .fk-gasless-relayer-label {
+  color: var(--fk-text-muted);
+}
+.fk-gasless-card .fk-gasless-relayer-url {
+  color: var(--fk-text);
+  margin-right: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fk-gasless-card .fk-gasless-relayer-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--fk-success);
+}
+.fk-gasless-card .fk-gasless-relayer[data-reachable='false'] .fk-gasless-relayer-dot {
+  background: var(--fk-danger);
+}
+.fk-gasless-card .fk-gasless-relayer-state {
+  color: var(--fk-text-muted);
+}
+
+.fk-gasless-card .fk-gasless-spine {
+  margin-top: 12px;
+}
+
+/* ---------- X402Card (M9-R11) ---------- */
+.fk.fk-x402-card {
+  max-width: 460px;
+}
+.fk-x402-card .fk-x402-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk-x402-card .fk-x402-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+.fk-x402-card .fk-x402-txlink {
+  color: var(--fk-primary);
+  text-decoration: none;
+}
+.fk-x402-card .fk-x402-txlink:hover {
+  text-decoration: underline;
+}
+.fk-x402-card .fk-x402-spine {
+  margin-top: 12px;
+}
+
+/* ---------- LegTimeline (shared, M9-R13) ----------
+   The read-only leg progression both payment cards render (the gasless relay timeline
+   and the x402 settlement/resource timeline). One block, distinct from the operation
+   spine, which carries the wallet-signed steps. A leg can be `failed` (the x402 resource
+   leg when the payment settled but the resource did not). */
+.fk .fk-legtl {
+  margin-top: 12px;
+  padding: 6px 12px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+.fk .fk-legtl-leg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+}
+.fk .fk-legtl-leg + .fk-legtl-leg {
+  border-top: 1px dashed var(--fk-border);
+}
+.fk .fk-legtl-leg-label {
+  color: var(--fk-text-muted);
+  font-size: 0.85rem;
+  margin-right: auto;
+}
+.fk .fk-legtl-leg[data-state='active'] .fk-legtl-leg-label {
+  color: var(--fk-text);
+  font-weight: 600;
+}
+.fk .fk-legtl-leg[data-state='done'] .fk-legtl-leg-label {
+  color: var(--fk-text);
+}
+.fk .fk-legtl-leg[data-state='failed'] .fk-legtl-leg-label {
+  color: var(--fk-danger);
+}

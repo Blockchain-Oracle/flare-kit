@@ -1,0 +1,136 @@
+{
+  "startedAt": "2026-08-11T17:05:12.493Z",
+  "network": "Flare Testnet Coston2",
+  "chainId": 114,
+  "signer": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "phaseA": {
+    "firelight-deposit": {
+      "assetsIn": "3000",
+      "predictedShares": "3000",
+      "mintedShares": "3000",
+      "match": true,
+      "share": "stFXRP",
+      "txs": {
+        "deposit": {
+          "hash": "0xa92755b499ca2e5e730d9016c02d2399b71d5dea2e3a86ce07d30cd304545282",
+          "link": "https://coston2-explorer.flare.network/tx/0xa92755b499ca2e5e730d9016c02d2399b71d5dea2e3a86ce07d30cd304545282",
+          "block": 33930853
+        }
+      }
+    },
+    "firelight-request": {
+      "shares": "3000",
+      "route": "delayed",
+      "expectedAssets": "3000",
+      "ref": {
+        "protocol": "firelight",
+        "period": "334",
+        "claimableAt": 1786579551
+      },
+      "txs": {
+        "request": {
+          "hash": "0x77e862f4ca5d4f011caa69f721d525eacc573e1f214e9f3ac36c58cae009c8e2",
+          "link": "https://coston2-explorer.flare.network/tx/0x77e862f4ca5d4f011caa69f721d525eacc573e1f214e9f3ac36c58cae009c8e2",
+          "block": 33930924
+        }
+      }
+    },
+    "upshift-deposit": {
+      "assetsIn": "1000000",
+      "predictedShares": "991577",
+      "mintedShares": "991577",
+      "match": true,
+      "share": "vFXRP",
+      "txs": {
+        "approve": {
+          "hash": "0xaecdee67a62332cadbf22922bf5e618a1ce8a1e74aa0501d2e1ee7baed2ad7e4",
+          "link": "https://coston2-explorer.flare.network/tx/0xaecdee67a62332cadbf22922bf5e618a1ce8a1e74aa0501d2e1ee7baed2ad7e4",
+          "block": 33930930
+        },
+        "deposit": {
+          "hash": "0xbae6a2e15c46fd850a00e90e553e319594d966b44b71db79be324d52c2b87845",
+          "link": "https://coston2-explorer.flare.network/tx/0xbae6a2e15c46fd850a00e90e553e319594d966b44b71db79be324d52c2b87845",
+          "block": 33930935
+        }
+      }
+    },
+    "upshift-instant": {
+      "shares": "495788",
+      "expectedAssets": "497500",
+      "receivedAssets": "497500",
+      "txs": {
+        "approveShare": {
+          "hash": "0xe41b996cb843d7a0d7a3dd63e6a4382195abe5004a0fb882486bd2deda858cc3",
+          "link": "https://coston2-explorer.flare.network/tx/0xe41b996cb843d7a0d7a3dd63e6a4382195abe5004a0fb882486bd2deda858cc3",
+          "block": 33930937
+        },
+        "instant": {
+          "hash": "0x884e9a8caf7b385fde77d51157e1b90cd45b3448b6e42e8820fddf627d7f8a00",
+          "link": "https://coston2-explorer.flare.network/tx/0x884e9a8caf7b385fde77d51157e1b90cd45b3448b6e42e8820fddf627d7f8a00",
+          "block": 33930938
+        }
+      }
+    },
+    "upshift-request": {
+      "shares": "495789",
+      "route": "delayed",
+      "expectedAssets": "498759",
+      "ref": {
+        "protocol": "upshift",
+        "year": 2026,
+        "month": 8,
+        "day": 12,
+        "claimableAt": 1786492800
+      },
+      "txs": {
+        "approveShare": {
+          "hash": "0x3de1678bc83d7e65f5f235f5eb2b74cfa74b615e83b6823484d0e85eaa6ac591",
+          "link": "https://coston2-explorer.flare.network/tx/0x3de1678bc83d7e65f5f235f5eb2b74cfa74b615e83b6823484d0e85eaa6ac591",
+          "block": 33930941
+        },
+        "request": {
+          "hash": "0x70d9e3361031a89a607d3588995be918ac1001bcd7859b02e05ed84dba84ce70",
+          "link": "https://coston2-explorer.flare.network/tx/0x70d9e3361031a89a607d3588995be918ac1001bcd7859b02e05ed84dba84ce70",
+          "block": 33930946
+        }
+      }
+    }
+  },
+  "phaseB": {
+    "upshift": {
+      "claimedAssets": "498759",
+      "tx": {
+        "hash": "0x4a65247726e5a96328206ba3edffe38d4da1a9bc602e497a7d43248e395f6f89",
+        "link": "https://coston2-explorer.flare.network/tx/0x4a65247726e5a96328206ba3edffe38d4da1a9bc602e497a7d43248e395f6f89",
+        "block": 33954013
+      }
+    },
+    "firelight": {
+      "claimedAssets": "3000",
+      "tx": {
+        "hash": "0xbba94b139057e33ba955fde908f41c30d1fc6a6f1302a6c74edfc6a1ecf3c71d",
+        "link": "https://coston2-explorer.flare.network/tx/0xbba94b139057e33ba955fde908f41c30d1fc6a6f1302a6c74edfc6a1ecf3c71d",
+        "block": 33998606
+      }
+    }
+  },
+  "refs": {
+    "firelight": {
+      "protocol": "firelight",
+      "period": "334",
+      "claimableAt": 1786579551,
+      "_correction": "Was period 333 (the REQUEST period) — off-by-one. Firelight files the withdrawal under request-period+1 (334); withdrawalsOf(333)=0 and claimWithdraw(333) reverted. Corrected to the UNLOCK period 334, claimable at period 334 end 1786579551 (2026-08-13 00:05 UTC)."
+    },
+    "upshift": {
+      "protocol": "upshift",
+      "year": 2026,
+      "month": 8,
+      "day": 12,
+      "claimableAt": 1786492800
+    }
+  },
+  "error": {
+    "at": "2026-08-12T05:13:39.588Z",
+    "message": "The contract function \"claimWithdraw\" reverted with the following signature:\n0x95dece8d\n\nUnable to decode signature \"0x95dece8d\" as it was not found on the provided ABI.\nMake sure you are using the correct ABI and that the error exists on it.\nYou can look up the decoded signature here: https://4byte.sourcify.dev/?q=0x95dece8d.\n \nContract Call:\n  address:   0x91Bfe6A68aB035DFebb6A770FFfB748C03C0E40B\n  function:  claimWithdraw(uint256 period)\n  args:                   (333)\n  sender:    0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9\n\nDocs: https://viem.sh/docs/contract/decodeErrorResult\nDetails: execution reverted\nVersion: viem@2.55.10"
+  }
+}

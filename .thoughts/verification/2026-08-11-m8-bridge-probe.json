@@ -1,0 +1,64 @@
+{
+  "probe": "M8 cross-chain (LayerZero V2 OFT) Coston2 -> Sepolia",
+  "ranAt": "2026-08-11T20:23:35.918Z",
+  "signer": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "coston2": {
+    "chainId": 114,
+    "eid": 40294,
+    "rpcUrl": "https://coston2-api.flare.network/ext/C/rpc",
+    "block": "33938056"
+  },
+  "sepolia": {
+    "chainId": 11155111,
+    "eid": 40161,
+    "rpcUrl": "https://ethereum-sepolia-rpc.publicnode.com",
+    "block": "11468485"
+  },
+  "addresses": {
+    "oftAdapter": "0xCd3d2127935Ae82Af54Fc31cCD9D3440dbF46639",
+    "ftestxrp": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+    "sepoliaFxrpOft": "0x81672c5d42f3573ad95a0bdfbe824faac547d4e6",
+    "composer": "0xa10569DFb38FE7Be211aCe4E4A566Cea387023b0"
+  },
+  "reads": {
+    "coston2Adapter": {
+      "token": "0x0b6A3645c240605887a5532109323A3E12273dc7",
+      "tokenMatchesFTestXRP": true,
+      "peer": "0x00000000000000000000000081672c5d42f3573ad95a0bdfbe824faac547d4e6",
+      "peerSet": true,
+      "sharedDecimals": 6,
+      "decimalConversionRate": "1"
+    },
+    "quote": {
+      "extraOptions": "0x00030100110100000000000000000000000000030d40",
+      "amountSentLD": "1000000",
+      "nativeFee": "22950824887834713257",
+      "nativeFeeC2FLR": "22.950824887834713",
+      "amountReceivedLD": "1000000",
+      "dustRemoved": "0",
+      "oftLimit": {
+        "minAmountLD": "0",
+        "maxAmountLD": "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+      },
+      "lzTokenFee": "0"
+    },
+    "sepoliaOft": {
+      "token": "0x81672c5d42F3573aD95A0bdfBE824FaaC547d4E6",
+      "decimals": 6,
+      "symbol": "FTestXRP"
+    }
+  },
+  "funding": {
+    "coston2Fxrp": "23294499",
+    "coston2FxrpHuman": "23.294499",
+    "coston2Native": "96712963362499987001",
+    "coston2NativeHuman": "96.71296336249999",
+    "sepoliaEth": "50000000000000000",
+    "sepoliaEthHuman": "0.05",
+    "xrplAddress": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+    "xrplAccountPresentInSecrets": true,
+    "sepoliaEthNote": "Initial probe read 0 was a STALE response from ethereum-sepolia-rpc.publicnode.com. Re-read on two independent RPCs (publicnode + 1rpc.io) at Sepolia block ~11468542 both returned 0.05 ETH. The 0 was RPC lag, not an empty account (cf. the FTSO never-conclude-from-single-absence rule)."
+  },
+  "blockers": [],
+  "blockersNote": "All green after reconciliation: Coston2 FXRP 23.29 + C2FLR 96.71, Sepolia ETH 0.05 (re-confirmed), XRPL account present. Phase A and Phase B both funded."
+}

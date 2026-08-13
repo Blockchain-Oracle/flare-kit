@@ -1,0 +1,24 @@
+{
+  "name": "@flare-kit/x402-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "flare-kit reference x402 server — a single-endpoint fixture (not a marketplace). On GET /api/demo it returns 402, then verifies + settles the EIP-3009 authorization via the X402Facilitator and serves an obviously-synthetic payload. Imports @flare-kit/core for the auth crypto (no re-declaration).",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@flare-kit/contracts": "workspace:^",
+    "@flare-kit/core": "workspace:^",
+    "express": "^4.21.2",
+    "viem": "^2.40.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.2"
+  }
+}

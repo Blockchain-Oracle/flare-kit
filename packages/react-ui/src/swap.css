@@ -1,0 +1,279 @@
+/* ============================================================
+   @flare-kit/react-ui — the swap surfaces (M5).
+
+   SegmentedTabs (the one new primitive), SwapCard and TokenSelector.
+   Values come from the DESIGN.md tokens; the amount-entry legs reuse
+   compose.css verbatim, so this file adds only what swap needs: the
+   order-type control, the flip and token buttons, and the token modal
+   (mirroring the connect modal's chrome). Everything is flat — 1px
+   borders, small radii, mono for every exact value.
+   ============================================================ */
+
+/* ---------- SegmentedTabs (M5-R10) ---------- */
+
+.fk .fk-segtabs-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.fk .fk-segtabs {
+  display: inline-flex;
+  gap: 2px;
+  align-self: flex-start;
+  padding: 3px;
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+.fk .fk-segtab {
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--fk-text-muted);
+  border-radius: 6px;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    box-shadow 0.15s;
+}
+.fk .fk-segtab[aria-selected='true'] {
+  background: var(--fk-card);
+  color: var(--fk-text);
+  box-shadow: var(--fk-sh-1);
+}
+/* A declared-unbuilt tab reads as unavailable by shape, not colour alone. */
+.fk .fk-segtab[data-unbuilt='true'] {
+  color: var(--fk-text-faint);
+  cursor: not-allowed;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  opacity: 0.85;
+}
+.fk .fk-segtabs-reason {
+  font-size: 0.74rem;
+  line-height: 1.45;
+  color: var(--fk-text-faint);
+}
+
+/* ---------- SwapCard (M5-R6) ---------- */
+
+.fk.fk-swap {
+  max-width: 420px;
+}
+.fk .fk-swap-head {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.fk .fk-swap-net {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.72rem;
+  color: var(--fk-text-muted);
+  border: 1px solid var(--fk-border);
+  border-radius: 999px;
+}
+.fk .fk-swap-net::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fk-brand);
+}
+.fk .fk-swap-tabs {
+  margin-bottom: 10px;
+}
+
+/* The token-select trigger: a pill, because it names a thing; the action is the
+   button below. AssetLogo, symbol, chevron. */
+.fk .fk-swap-token {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  padding: 5px 12px 5px 5px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--fk-text);
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border-control);
+  border-radius: 999px;
+  box-shadow: var(--fk-sh-1);
+}
+.fk .fk-swap-token:hover {
+  border-color: var(--fk-text-faint);
+}
+.fk .fk-swap-token-sym {
+  white-space: nowrap;
+}
+.fk .fk-swap-token-cr {
+  margin-left: 1px;
+  font-size: 0.72rem;
+  color: var(--fk-text-faint);
+}
+
+.fk .fk-swap-flip {
+  display: flex;
+  justify-content: center;
+}
+.fk .fk-swap-flip-btn {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+  color: var(--fk-text-muted);
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  box-shadow: var(--fk-sh-1);
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+.fk .fk-swap-flip-btn:hover {
+  color: var(--fk-text);
+  border-color: var(--fk-text-faint);
+}
+
+.fk .fk-swap-max {
+  font-family: var(--fk-font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--fk-primary);
+  padding: 1px 6px;
+  background: var(--fk-primary-soft);
+  border: 1px solid var(--fk-primary-line);
+  border-radius: var(--fk-r-sm);
+}
+.fk .fk-swap-max:hover {
+  border-color: var(--fk-primary);
+}
+
+.fk .fk-swap-spine {
+  margin-top: 12px;
+}
+.fk .fk-swap-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* ---------- TokenSelector (M5-R7) — chrome comes from the shared Modal ---------- */
+
+.fk .fk-tsel-search {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 14px 16px 6px;
+  padding: 10px 12px;
+  color: var(--fk-text-faint);
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+}
+.fk .fk-tsel-search-i {
+  flex: none;
+}
+.fk .fk-tsel-search input {
+  flex: 1;
+  min-width: 0;
+  color: var(--fk-text);
+  font-size: 0.9rem;
+  background: none;
+  border: none;
+  outline: none;
+}
+.fk .fk-tsel-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 16px 12px;
+  border-bottom: 1px solid var(--fk-border);
+}
+.fk .fk-tsel-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px 4px 4px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--fk-text);
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border);
+  border-radius: 999px;
+}
+.fk .fk-tsel-pill:hover {
+  border-color: var(--fk-border-control);
+}
+.fk .fk-tsel-pill:disabled {
+  color: var(--fk-text-faint);
+  cursor: not-allowed;
+}
+.fk .fk-tsel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0 12px;
+}
+.fk .fk-tsel-sec {
+  padding: 12px 16px 4px;
+  font-family: var(--fk-font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+}
+.fk .fk-tsel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 16px;
+  text-align: left;
+}
+.fk .fk-tsel-row:hover {
+  background: var(--fk-surface);
+}
+.fk .fk-tsel-row:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.fk .fk-tsel-row[data-selected='true'] {
+  background: var(--fk-primary-soft);
+}
+.fk .fk-tsel-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.fk .fk-tsel-sym {
+  font-weight: 600;
+  font-size: 0.94rem;
+}
+.fk .fk-tsel-name {
+  font-size: 0.78rem;
+  color: var(--fk-text-faint);
+}
+.fk .fk-tsel-bal {
+  margin-left: auto;
+  font-family: var(--fk-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  text-align: right;
+}
+.fk .fk-tsel-nopool {
+  margin-left: auto;
+  font-family: var(--fk-font-mono);
+  font-size: 0.74rem;
+  color: var(--fk-attention);
+}
+.fk .fk-tsel-empty {
+  padding: 20px 16px;
+  font-size: 0.85rem;
+  color: var(--fk-text-muted);
+  text-align: center;
+}

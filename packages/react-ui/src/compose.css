@@ -1,0 +1,105 @@
+/* ============================================================
+   @flare-kit/react-ui — the amount-entry anatomy.
+
+   Ported from the accepted specimen's swap and bridge layout,
+   which deliberately follows the convention users already have
+   muscle memory for: label, amount, balance and max, detail
+   block, and one primary button whose label carries the state
+   machine. We differentiate on lifecycle, not on layout.
+   ============================================================ */
+
+.fk-leg {
+  background: var(--fk-surface);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  padding: 12px 14px;
+}
+
+.fk-leg-label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--fk-text-faint);
+  margin-bottom: 6px;
+}
+
+.fk-leg-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The amount is the largest exact value on the surface, and it is mono with
+   tabular numerals like every other exact value. */
+.fk-leg-amount {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  font-family: var(--fk-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.7rem;
+  line-height: 1.15;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--fk-text);
+  background: none;
+  border: none;
+  padding: 0;
+}
+.fk-leg-amount::placeholder {
+  color: var(--fk-text-faint);
+}
+.fk-leg-amount:disabled {
+  color: var(--fk-text-faint);
+}
+/* The field has no border of its own, so the focus ring is the only affordance
+   marking it — it must never be suppressed. */
+.fk-leg-amount:focus-visible {
+  outline: 2px solid var(--fk-primary);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+.fk-leg-amount[aria-invalid='true'] {
+  color: var(--fk-danger);
+}
+
+.fk-leg-asset {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fk-text-muted);
+}
+
+.fk-leg-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 7px;
+}
+.fk-leg-bal {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  color: var(--fk-text-faint);
+}
+
+.fk-panel-action {
+  margin-top: 12px;
+}
+
+/* ConnectButton's connection-state rules lived here. AccountSheet replaced that
+   component in M2 and owns them now, in accounts.css. They were left behind on
+   the first pass and silently fought the new ones. */
+
+@media (max-width: 560px) {
+  .fk-leg-amount {
+    font-size: 1.45rem;
+  }
+  .fk-panel {
+    padding: 12px;
+  }
+}

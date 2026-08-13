@@ -1,0 +1,554 @@
+/* ============================================================
+   @flare-kit/react-ui — controls and containers.
+
+   One component per pattern. CLAUDE.md forbids building a card,
+   badge, pill, chip or spine inline inside a screen, so every
+   screen in this kit composes from exactly these rules.
+   Ported from the accepted specimen assets/components.css.
+   ============================================================ */
+
+/* ---------- icons ----------
+   Phosphor (MIT), vendored alongside this file and recoloured through a mask
+   so a single SVG serves every tone and both themes. No emoji: an emoji is a
+   different typeface at a different weight on every platform. */
+.fk-i {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: currentColor;
+  vertical-align: -2px;
+  -webkit-mask: var(--fk-icon) center / contain no-repeat;
+  mask: var(--fk-icon) center / contain no-repeat;
+}
+.fk-i-copy {
+  --fk-icon: url('./icons/copy.svg');
+}
+.fk-i-check {
+  --fk-icon: url('./icons/check.svg');
+}
+.fk-i-warning {
+  --fk-icon: url('./icons/warning.svg');
+}
+.fk-i-warning-circle {
+  --fk-icon: url('./icons/warning-circle.svg');
+}
+.fk-i-info {
+  --fk-icon: url('./icons/info.svg');
+}
+.fk-i-clock {
+  --fk-icon: url('./icons/clock.svg');
+}
+.fk-i-external {
+  --fk-icon: url('./icons/arrow-up-right.svg');
+}
+.fk-i-wallet {
+  --fk-icon: url('./icons/wallet.svg');
+}
+.fk-i-plugs {
+  --fk-icon: url('./icons/plugs-connected.svg');
+}
+.fk-i-retry {
+  --fk-icon: url('./icons/arrow-counter-clockwise.svg');
+}
+.fk-i-eye {
+  --fk-icon: url('./icons/eye.svg');
+}
+.fk-i-globe {
+  --fk-icon: url('./icons/globe-simple.svg');
+}
+.fk-i-seal {
+  --fk-icon: url('./icons/seal-check.svg');
+}
+
+/* ---------- buttons ----------
+   The governing rule, inherited verbatim from the reference:
+   no flat fills; every interactive surface earns its weight. */
+.fk-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-family: var(--fk-font-sans);
+  font-weight: 600;
+  font-size: 0.94rem;
+  padding: 11px 18px;
+  /* Buttons are rounded-md. A pill on screen always means "tag", never "action". */
+  border-radius: var(--fk-r-md);
+  border: 1px solid transparent;
+  line-height: 1;
+  white-space: nowrap;
+  /* WCAG 2.2 target size. */
+  min-height: 40px;
+  transition:
+    background-color 0.16s,
+    border-color 0.16s,
+    box-shadow 0.18s,
+    transform 0.12s,
+    color 0.16s;
+}
+.fk-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* The one authorised gradient — DESIGN.md > Components > Buttons. */
+.fk-btn-primary {
+  color: #fdfcf9;
+  background: linear-gradient(180deg, #4b69e4 0%, var(--fk-primary) 60%, var(--fk-primary-hi) 100%);
+  border-color: #2740b4;
+  box-shadow:
+    0 1px 0 oklch(0.985 0.004 95 / 0.22) inset,
+    0 -1px 0 oklch(0.2 0.02 265 / 0.18) inset,
+    0 1px 2px oklch(0.3 0.02 70 / 0.1),
+    0 6px 18px -6px oklch(0.52 0.2 268 / 0.45);
+}
+.fk-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 oklch(0.985 0.004 95 / 0.28) inset,
+    0 -1px 0 oklch(0.2 0.02 265 / 0.2) inset,
+    0 2px 3px oklch(0.3 0.02 70 / 0.12),
+    0 10px 24px -8px oklch(0.52 0.2 268 / 0.6);
+}
+
+.fk-btn-ghost {
+  background: transparent;
+  color: var(--fk-text);
+  border-color: var(--fk-border-control);
+  box-shadow: 0 1px 0 oklch(0.985 0.004 95 / 0.04) inset;
+}
+.fk-btn-ghost:hover:not(:disabled) {
+  background: var(--fk-surface);
+}
+
+.fk-btn-sm {
+  padding: 8px 13px;
+  font-size: 0.86rem;
+  min-height: 32px;
+}
+.fk-btn-block {
+  width: 100%;
+  padding: 13px 18px;
+  font-size: 1rem;
+}
+.fk-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--fk-surface);
+  color: var(--fk-text-faint);
+  border-color: var(--fk-border);
+}
+
+/* ---------- card and panel ---------- */
+.fk-panel {
+  width: 100%;
+  max-width: 420px;
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  box-shadow: var(--fk-sh-2);
+  padding: 14px;
+}
+.fk-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 4px 12px;
+}
+.fk-panel-title {
+  font-family: var(--fk-font-display);
+  font-weight: 700;
+  font-size: 1.06rem;
+  letter-spacing: -0.02em;
+}
+.fk-panel-sub {
+  font-size: 0.78rem;
+  color: var(--fk-text-faint);
+  margin-top: 1px;
+}
+
+/* ---------- detail rows ----------
+   Operational density: 8/12 padding, hairline separation, no
+   card chrome per row. */
+.fk-details {
+  margin-top: 12px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  overflow: hidden;
+}
+.fk-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+.fk-row + .fk-row {
+  border-top: 1px solid var(--fk-border);
+}
+.fk-row-k {
+  color: var(--fk-text-faint);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fk-row-v {
+  font-family: var(--fk-font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--fk-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.fk-row-v-sub {
+  color: var(--fk-text-faint);
+  /* The value above is mono because it is a value. This line is prose — a
+     sentence explaining it — and DESIGN.md puts prose in Hanken. Inheriting the
+     mono face set whole sentences in JetBrains Mono.
+     `block` matters as much as the face: inline, a caption of more than a few
+     words wraps around the value and the two read as one ragged paragraph. */
+  display: block;
+  margin-top: 3px;
+  font-family: var(--fk-font-sans);
+  font-variant-numeric: normal;
+  line-height: 1.45;
+}
+
+/* ---------- notes ---------- */
+.fk-note {
+  display: flex;
+  gap: 9px;
+  margin-top: 10px;
+  padding: 9px 12px;
+  border-radius: var(--fk-r-md);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+.fk-note-att {
+  border: 1px solid var(--fk-attention-line);
+  background: var(--fk-attention-soft);
+}
+.fk-note-att .fk-note-title {
+  color: var(--fk-attention);
+}
+.fk-note-bad {
+  border: 1px solid var(--fk-danger-line);
+  background: var(--fk-danger-soft);
+}
+.fk-note-bad .fk-note-title {
+  color: var(--fk-danger);
+}
+/* Re-cut 2026-08-09: an info note is not an alert. It carries explanatory copy,
+   never an outcome, so it recedes to a muted card — a hairline and the neutral
+   --fk-tint — with a text-tier title and a faint glyph, rather than the cobalt
+   of the att/bad/ok tones. The three outcome tones keep their colour; only the
+   non-status tone gives up its blue. (--fk-tint is translucent, so the card
+   reads on any surface in both themes where a solid fill would vanish in dark.) */
+.fk-note-info {
+  border: 1px solid var(--fk-border);
+  background: var(--fk-tint);
+}
+.fk-note-info .fk-note-title {
+  color: var(--fk-text);
+}
+.fk-note-info .fk-i {
+  color: var(--fk-text-faint);
+}
+.fk-note-ok {
+  border: 1px solid var(--fk-success-line);
+  background: var(--fk-success-soft);
+}
+.fk-note-ok .fk-note-title {
+  color: var(--fk-success);
+}
+.fk-note-title {
+  font-weight: 600;
+}
+.fk-note-body {
+  color: var(--fk-text-muted);
+  margin-top: 2px;
+}
+.fk-note-body b {
+  color: var(--fk-text);
+  font-weight: 600;
+}
+
+/* ---------- skeletons, never spinners ----------
+   Loading mirrors the final layout's shape. */
+.fk-skel {
+  background: var(--fk-surface);
+  border-radius: var(--fk-r-sm);
+  animation: fk-pulse 1.4s ease-in-out infinite;
+}
+@keyframes fk-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- code window ----------
+   DESIGN.md > Components > Code window. Dark is a peer, so the frame is built
+   from surface steps and hairlines rather than a hardcoded panel colour. */
+
+.fk .fk-code {
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  background: var(--fk-surface);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.fk .fk-code-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--fk-border);
+}
+
+.fk .fk-code-name {
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  color: var(--fk-text-muted);
+}
+
+.fk .fk-code-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* WCAG 2.2 target size, as every control in this package carries. */
+  min-height: 24px;
+  padding-inline: 6px;
+  font-size: 11px;
+  color: var(--fk-primary);
+}
+
+.fk .fk-code-copy[data-copied='true'] {
+  color: var(--fk-success);
+}
+
+.fk .fk-code-caption {
+  margin: 0;
+  padding: 8px 12px 0;
+  font-size: 12px;
+  color: var(--fk-text-faint);
+  line-height: 1.45;
+}
+
+/* Scrolls inside its own container. The page never scrolls horizontally. */
+.fk .fk-code-body {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-family: var(--fk-font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--fk-text);
+  tab-size: 2;
+}
+
+/* ---------- exact values inside prose ----------
+   A refusal reason arrives from core as one string — "A payment below 1.500000
+   XRP mints nothing and cannot be recovered" — so the surface cannot wrap the
+   number without the type changing. DESIGN.md says a number in the body face is
+   a bug, and this is the sentence AC7 turns on.
+
+   `font-variant-numeric: tabular-nums` plus the mono face applied to digits
+   only is not expressible in CSS, so the whole sentence takes the mono face at
+   body size. It reads as a quoted protocol statement, which is what it is.
+   The proper fix is structural — the reason field should carry its amount
+   separately — and is recorded in M4-R13's findings. */
+.fk .fk-mono-inline {
+  font-family: var(--fk-font-mono);
+  font-size: 0.94em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- asset marks ----------
+   AssetLogo (re-cut 2026-08-09). A symbol resolves to its official Flare mark
+   (MIT, vendored under ./assets), or a seeded monogram when none is bundled.
+   background-image, not mask, because the marks are two-tone and a mask would
+   strip the colour. The plate is the card colour and the mark ships light+dark
+   variants, so the mark reads on both grounds without a white plate on paper. */
+.fk-am {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--fk-border);
+  background-color: var(--fk-card);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 84%;
+  overflow: hidden;
+}
+.fk-am-fxrp {
+  background-image: url('./assets/fxrp.light.svg');
+}
+.fk-am-xrp {
+  background-image: url('./assets/xrp-icon.light.svg');
+}
+.fk-am-flr {
+  background-image: url('./assets/flare-icon.light.svg');
+}
+.fk-am-fassets {
+  background-image: url('./assets/fassets.light.svg');
+}
+[data-theme='dark'] .fk-am-fxrp {
+  background-image: url('./assets/fxrp.dark.svg');
+}
+[data-theme='dark'] .fk-am-xrp {
+  background-image: url('./assets/xrp-icon.dark.svg');
+}
+[data-theme='dark'] .fk-am-flr {
+  background-image: url('./assets/flare-icon.dark.svg');
+}
+[data-theme='dark'] .fk-am-fassets {
+  background-image: url('./assets/fassets.dark.svg');
+}
+/* FTSO feed base assets — full-colour PNG marks (Trust Wallet, MIT), one
+   variant for both themes; the plate + border give them a ground on paper. */
+.fk-am-btc { background-image: url('./assets/btc.png'); }
+.fk-am-eth { background-image: url('./assets/eth.png'); }
+.fk-am-ltc { background-image: url('./assets/ltc.png'); }
+.fk-am-doge { background-image: url('./assets/doge.png'); }
+.fk-am-ada { background-image: url('./assets/ada.png'); }
+.fk-am-xlm { background-image: url('./assets/xlm.png'); }
+.fk-am-bch { background-image: url('./assets/bch.png'); }
+.fk-am-algo { background-image: url('./assets/algo.png'); }
+.fk-am-avax { background-image: url('./assets/avax.png'); }
+.fk-am-bnb { background-image: url('./assets/bnb.png'); }
+.fk-am-sol { background-image: url('./assets/sol.png'); }
+.fk-am-pol { background-image: url('./assets/pol.png'); }
+.fk-am-dot { background-image: url('./assets/dot.png'); }
+.fk-am-trx { background-image: url('./assets/trx.png'); }
+.fk-am-usdc { background-image: url('./assets/usdc.png'); }
+.fk-am-usdt { background-image: url('./assets/usdt.png'); }
+.fk-am-dai { background-image: url('./assets/dai.png'); }
+/* Seeded monogram: colour set inline from the symbol (deterministic), so an
+   unknown asset is honestly unbranded rather than wearing the wrong logo. */
+.fk-am-mono {
+  border: none;
+  background-image: none;
+  font-family: var(--fk-font-mono);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+/* Pairing a mark with its label — the shared row anatomy for tables and lists. */
+.fk-am-asset {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+.fk-am-asset-text {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- network marks ----------
+   NetworkLogo: the chain's real mark (Flare for EVM, the XRP Ledger for XRPL),
+   reusing the vendored asset marks. A recognition aid only — the network is
+   always named in words beside it, and a testnet is the proper noun, not a hue. */
+.fk-nm {
+  display: inline-block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--fk-border);
+  background-color: var(--fk-card);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+.fk-nm-evm {
+  background-image: url('./assets/flare-icon.light.svg');
+}
+.fk-nm-xrpl {
+  background-image: url('./assets/xrp-icon.light.svg');
+}
+[data-theme='dark'] .fk-nm-evm {
+  background-image: url('./assets/flare-icon.dark.svg');
+}
+[data-theme='dark'] .fk-nm-xrpl {
+  background-image: url('./assets/xrp-icon.dark.svg');
+}
+.fk-nm-testnet {
+  border-color: var(--fk-attention-line);
+  box-shadow: 0 0 0 2px var(--fk-attention-soft);
+}
+
+/* ---------- Modal — the one dialog shell (ConnectModal + TokenSelector) ---------- */
+.fk.fk-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 16, 20, 0.45);
+}
+.fk .fk-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: min(660px, 92vh);
+  display: flex;
+  flex-direction: column;
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  box-shadow: var(--fk-sh-3);
+  overflow: hidden;
+}
+/* The container takes programmatic focus on open (for a screen reader) but shows
+   no ring — it is not an interactive control; the controls inside get their own. */
+.fk .fk-modal:focus {
+  outline: none;
+}
+.fk .fk-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 15px 16px;
+  border-bottom: 1px solid var(--fk-border);
+}
+.fk .fk-modal-title {
+  font-family: var(--fk-font-display);
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: -0.02em;
+}
+.fk .fk-modal-x {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  color: var(--fk-text-faint);
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+}
+.fk .fk-modal-x:hover {
+  background: var(--fk-surface);
+  color: var(--fk-text);
+}
+.fk .fk-modal-foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--fk-border);
+  font-size: 0.76rem;
+  color: var(--fk-text-faint);
+}
