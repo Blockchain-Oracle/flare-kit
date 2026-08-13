@@ -42,7 +42,7 @@ export function Gallery() {
           governance, M11 staking, M10 delegation and claims, M9 gasless and x402, M8 bridge, M7
           vault, M6 liquidity, M5 swap, the re-cut shell, M4 FTSO, M3 FDC, the M2 surfaces and
           M1's four composed screens. Every value is driven from props or a labelled mock —
-          nothing here is live, and no state is shown that a live run has not observed.
+          nothing here is live.
         </p>
         <button type="button" onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}>
           {theme === 'light' ? 'Dark' : 'Light'} theme
