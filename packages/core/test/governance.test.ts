@@ -85,6 +85,28 @@ describe('planGovernance — single-target invariants (only with governanceVerif
     expect(result.plan.calls[0]!.address).toBe(deployment.governanceVotePower)
   })
 
+  // I1: the symmetric guard to `no_delegate`. Re-delegating to the CURRENT delegate is not
+  // merely wasted gas — `intentReflected` is already true from the pre-existing state the
+  // moment the op is submitted, so `useGovernance`'s very next poll reconciles straight to
+  // `succeeded` whether or not the transaction landed, or even if it reverted. That is
+  // `submitted` rendered as `succeeded`. Close it at the plan, where the pre-state is known.
+  it('a delegate to the CURRENT delegate is already_delegated — never a plan that reconciles off pre-existing state', () => {
+    const result = planGovernance({ intent: DELEGATE, deployment: verified(), reads: reads({ delegate: TARGET }), account: ACCOUNT })
+    expect(result).toEqual({ ok: false, error: { code: 'already_delegated' } })
+  })
+
+  it('already_delegated matches case-insensitively (getDelegateOfAtNow returns checksummed)', () => {
+    const lower: GovernanceIntent = { kind: 'delegate', to: TARGET.toLowerCase() as Address }
+    const result = planGovernance({ intent: lower, deployment: verified(), reads: reads({ delegate: TARGET }), account: ACCOUNT })
+    expect(result).toEqual({ ok: false, error: { code: 'already_delegated' } })
+  })
+
+  it('delegating to a DIFFERENT address while already delegated is still a legal plan (a re-target)', () => {
+    const other: Address = '0x00000000000000000000000000000000000000c4'
+    const result = planGovernance({ intent: { kind: 'delegate', to: other }, deployment: verified(), reads: reads({ delegate: TARGET }), account: ACCOUNT })
+    expect(result.ok).toBe(true)
+  })
+
   it('an undelegate with no current delegate (reads.delegate is the zero address) is no_delegate', () => {
     const result = planGovernance({ intent: UNDELEGATE, deployment: verified(), reads: reads({ delegate: ZERO }), account: ACCOUNT })
     expect(result).toEqual({ ok: false, error: { code: 'no_delegate' } })

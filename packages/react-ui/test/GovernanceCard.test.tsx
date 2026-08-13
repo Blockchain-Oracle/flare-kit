@@ -45,6 +45,9 @@ const UNDELEGATE_INTENT: GovernanceIntent = { kind: 'undelegate' }
 const planDelegate = planGovernance({ intent: DELEGATE_INTENT, deployment: coston2, reads: { delegate: ZERO }, account: ACCOUNT })
 const planUnverified = planGovernance({ intent: DELEGATE_INTENT, deployment: flare, reads: { delegate: ZERO }, account: ACCOUNT })
 const planSelf = planGovernance({ intent: { kind: 'delegate', to: ACCOUNT }, deployment: coston2, reads: { delegate: ZERO }, account: ACCOUNT })
+// Re-delegating to the address already delegated to — refused at the PLAN, because the
+// reconciler's read-back would otherwise be satisfied by pre-existing state.
+const planAlready = planGovernance({ intent: DELEGATE_INTENT, deployment: coston2, reads: { delegate: DELEGATE }, account: ACCOUNT })
 
 /** Walk the FULL legal path (draft→quoting→ready→executing→submitted) — a jump drops the patch. */
 function submittedOp(intent: GovernanceIntent, currentDelegate: `0x${string}`): GovernanceOperation {
@@ -193,6 +196,19 @@ describe('GovernanceCard — the verified gate (false = declared-unbuilt, true =
     expect(cta(container)?.hasAttribute('disabled')).toBe(true)
   })
 
+  it('a re-delegation to the CURRENT delegate is refused honestly, and the CTA never offers to sign it', () => {
+    expect(planAlready.ok).toBe(false)
+    const { container } = render(
+      <GovernanceCard position={observedDelegated} targetText={DELEGATE} planResult={planAlready} />,
+    )
+    expect(govState(container)).toBe('already-delegated')
+    expect(cta(container)?.hasAttribute('disabled')).toBe(true)
+    // The refusal is explained, not just disabled.
+    expect(container.textContent?.toLowerCase()).toContain('already delegates')
+    // And it is NEVER dressed as a completed delegation.
+    expect(cta(container)?.textContent?.toLowerCase()).not.toContain('done')
+  })
+
   it('a valid delegate plan on the verified network drives an actionable sign', () => {
     expect(planDelegate.ok).toBe(true)
     const { container } = render(
@@ -233,5 +249,17 @@ describe('GovernanceCard — the delegate/undelegate spine (succeeded ONLY from 
     const op = reconcileGovernance(submittedOp(UNDELEGATE_INTENT, DELEGATE), { delegate: ZERO }, 2000)
     const { container } = render(<GovernanceCard operation={op} position={observedBlank} />)
     expect(opState(container)).toBe('succeeded')
+  })
+
+  // `reconcileGovernance` never emits `partially_succeeded`, but this is a PUBLISHED component
+  // taking an arbitrary GovernanceOperation from any host. Folding it into `succeeded` made the
+  // CTA read "Done" — a full-success claim the operation state does not make.
+  it('partially_succeeded is NOT rendered as "Done" — a partial success is not a success claim', () => {
+    const op = applyTransition(submittedOp(DELEGATE_INTENT, ZERO), { to: 'partially_succeeded', at: 3000 }).record
+    expect(op.state).toBe('partially_succeeded')
+    const { container } = render(<GovernanceCard operation={op} position={observedBlank} />)
+    expect(govState(container)).toBe('partially-succeeded')
+    expect(cta(container)?.textContent?.toLowerCase()).not.toContain('done')
+    expect(cta(container)?.hasAttribute('disabled')).toBe(true)
   })
 })

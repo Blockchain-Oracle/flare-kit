@@ -1,5 +1,4 @@
 import type { ProposalSource, ProposalSummary } from '@flare-kit/core'
-import type { UseProposalsResult } from '@flare-kit/react'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { ToneChip } from './primitives/StateChip.js'
@@ -32,13 +31,13 @@ const COLUMNS = [
   { key: 'network', label: 'Network' },
 ] as const
 
-type Availability = 'loading' | 'unavailable' | 'empty' | 'listed'
+type Availability = 'loading' | 'unavailable' | 'empty' | 'listed' | 'not-read'
 
 export interface ProposalCatalogueProps {
   /** The `useProposals` result: `undefined` = failed/pending, `[]` = confirmed-empty, else rows. */
-  readonly proposals: UseProposalsResult['proposals']
-  readonly loading?: UseProposalsResult['loading']
-  readonly error?: UseProposalsResult['error']
+  readonly proposals: ProposalSummary[] | undefined
+  readonly loading?: boolean
+  readonly error?: string | undefined
   /** The cross-network label stamped on every row — proposals are read from mainnet. */
   readonly networkLabel?: string
   readonly onSelect?: (id: bigint, source: ProposalSource) => void
@@ -97,13 +96,20 @@ export function ProposalCatalogue({
   const unavailable = proposals === undefined && error !== undefined
   const confirmedEmpty = proposals !== undefined && rows.length === 0
   const stillLoading = loading && proposals === undefined && error === undefined
+  // `undefined` with neither an error nor a load in flight: nothing has been read at all.
+  // `useProposals` cannot produce it, but this is a PUBLISHED component and a host driving it
+  // from its own read can — and falling through to 'listed' rendered a completely blank table
+  // with no note, which reads as "none". Not-read is its own claim.
+  const notRead = proposals === undefined && !stillLoading && !unavailable
   const availability: Availability = stillLoading
     ? 'loading'
     : unavailable
       ? 'unavailable'
-      : confirmedEmpty
-        ? 'empty'
-        : 'listed'
+      : notRead
+        ? 'not-read'
+        : confirmedEmpty
+          ? 'empty'
+          : 'listed'
 
   return (
     <div
@@ -122,6 +128,15 @@ export function ProposalCatalogue({
         {confirmedEmpty ? (
           <EmptyRow columns={COLUMNS.length}>
             No active proposals on this network. The discovery read succeeded and came back empty — nothing failed.
+          </EmptyRow>
+        ) : null}
+
+        {/* `undefined`, nothing in flight, nothing failed — no read has happened. Stated,
+            not left blank: an empty table with no sentence reads as "none". */}
+        {availability === 'not-read' ? (
+          <EmptyRow columns={COLUMNS.length}>
+            No discovery read has run yet for {networkLabel}. This is not an empty catalogue — nothing has been asked of the
+            chain.
           </EmptyRow>
         ) : null}
 
@@ -161,7 +176,7 @@ export function ProposalCatalogue({
       ) : null}
 
       {availability === 'listed' ? (
-        <Note tone="info" title="Read from Flare mainnet">
+        <Note tone="info" title={`Read from ${networkLabel}`}>
           These proposals are read from {networkLabel}. Delegation and voting elsewhere in this kit target Coston2 — this
           catalogue is a cross-network read lens, which is why every row is labelled.
         </Note>

@@ -105,7 +105,7 @@ describe('useProposals — confirmed-empty vs unavailable (M12, load-bearing)', 
     await waitFor(() => expect(result.current.loading).toBe(false))
     expect(result.current.proposals).toEqual([])
     expect(result.current.error).toBeUndefined()
-    expect(result.current.detailOf(1n)).toBeUndefined()
+    expect(result.current.detailOf(1n, 'ftso')).toBeUndefined()
   })
 
   it('a failed discovery read leaves proposals undefined (unavailable) — NEVER collapsed to a fabricated []', async () => {
@@ -145,8 +145,8 @@ describe('useProposals — the mainnet catalogue + detail (M12)', () => {
     expect(proposals?.[0]?.id).toBe(1n)
     expect(proposals?.[0]?.state).toBe('defeated')
 
-    await waitFor(() => expect(result.current.detailOf(1n)).toBeDefined())
-    const detail = result.current.detailOf(1n)
+    await waitFor(() => expect(result.current.detailOf(1n, 'ftso')).toBeDefined())
+    const detail = result.current.detailOf(1n, 'ftso')
     expect(detail?.state).toBe('defeated')
     if (detail && 'for' in detail) {
       expect(detail.for).toBe(2_354_308_387_975_507_843_417n)
@@ -161,6 +161,70 @@ describe('useProposals — the mainnet catalogue + detail (M12)', () => {
     const { result } = renderHook(() => useProposals({ readDeployment, publicClient, account: ACCOUNT }))
 
     await waitFor(() => expect(result.current.proposals).toHaveLength(1))
-    expect(result.current.detailOf(999n)).toBeUndefined()
+    expect(result.current.detailOf(999n, 'ftso')).toBeUndefined()
+  })
+
+  // M-c1: ids are only unique WITHIN a source (the two governance contracts number their
+  // proposals independently), and `ProposalCatalogue`'s `onSelect(id, source)` already hands
+  // both to the caller. Matching on the id alone resolved to whichever was discovered first.
+  it('detailOf discriminates on SOURCE — the same id under the other source is not a match', async () => {
+    const publicClient = makeOneProposalClient()
+    const { result } = renderHook(() => useProposals({ readDeployment, publicClient, account: ACCOUNT }))
+
+    await waitFor(() => expect(result.current.detailOf(1n, 'ftso')).toBeDefined())
+    expect(result.current.detailOf(1n, 'foundation')).toBeUndefined()
+  })
+})
+
+describe('useProposals — a dep change returns to loading; stale rows are never a fresh result (M12)', () => {
+  it('switching readDeployment goes back to loading, so the previous network\'s rows are not presented as current', async () => {
+    const publicClient = makeOneProposalClient()
+    const { result, rerender } = renderHook(({ deployment }) => useProposals({ readDeployment: deployment, publicClient, account: ACCOUNT }), {
+      initialProps: { deployment: governanceFor('flare') },
+    })
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    expect(result.current.proposals).toHaveLength(1)
+
+    // The host switches networks. Until the new read lands the catalogue must NOT read
+    // `loading: false` + `error: undefined` + mainnet rows — that combination makes the
+    // component stamp mainnet proposal 1 with the NEW network's label and call it fresh.
+    rerender({ deployment: governanceFor('coston2') })
+    expect(result.current.loading).toBe(true)
+  })
+
+  it('a superseded run never writes its result over the newer one', async () => {
+    // The slow client answers the FIRST deployment; the fast one answers the second. If the
+    // slow run were allowed to land, it would overwrite the newer network's result.
+    let releaseSlow: () => void = () => {}
+    const slowGate = new Promise<void>((resolve) => {
+      releaseSlow = resolve
+    })
+    const slow = {
+      async getBlockNumber() {
+        await slowGate
+        return 1000n
+      },
+      async getContractEvents() {
+        return []
+      },
+      async readContract({ functionName }: { functionName: string }) {
+        if (functionName === 'getLastProposal') return [0n, '']
+        throw new Error(`unexpected read ${functionName}`)
+      },
+    } as unknown as ProposalsEvmClient
+
+    const { result, rerender } = renderHook(({ client }) => useProposals({ readDeployment, publicClient: client, account: ACCOUNT }), {
+      initialProps: { client: slow },
+    })
+
+    rerender({ client: makeOneProposalClient() })
+    await waitFor(() => expect(result.current.proposals).toHaveLength(1))
+
+    // Now let the superseded run finish. It resolves `[]` — which must NOT land.
+    releaseSlow()
+    await new Promise((resolve) => setTimeout(resolve, 30))
+    expect(result.current.proposals).toHaveLength(1)
+    expect(result.current.proposals).not.toEqual([])
   })
 })

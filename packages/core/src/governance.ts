@@ -22,8 +22,11 @@ import { buildDelegateCall, buildUndelegateCall, type GovernanceVoteReads } from
  *
  *  2. Every single-target invariant the protocol would silently no-op or that spends power
  *     to nowhere is caught BEFORE a call is built: a missing / zero / malformed delegate
- *     target, a self-delegation, and an undelegate against no current delegate. We refuse
- *     rather than sign a call that burns gas to do nothing.
+ *     target, a self-delegation, a re-delegation to the CURRENT delegate, and an undelegate
+ *     against no current delegate. We refuse rather than sign a call that burns gas to do
+ *     nothing — and, for the two no-ops the chain state already satisfies
+ *     (`already_delegated` / `no_delegate`), rather than emit a plan whose reconciler would
+ *     read `succeeded` off pre-existing state the submission never caused.
  *
  * `reads` is a snapshot passed in (Task 3's `readGovernanceVotes`), so the builder is pure
  * and synchronous; the call builders are the adapter's pure unsigned `build*Call`s.
@@ -41,6 +44,7 @@ export type GovernanceInvariantError =
   | { readonly code: 'unverified' }
   | { readonly code: 'invalid_target' } // missing / zero / malformed `to` for a delegate
   | { readonly code: 'self_delegation' } // to === account
+  | { readonly code: 'already_delegated' } // to === the CURRENT delegate
   | { readonly code: 'no_delegate' } // undelegate with no current delegate
 
 /** The unsigned calls a governance plan carries — the single delegate/undelegate call. */
@@ -117,6 +121,13 @@ export function planGovernance(args: {
     }
     // Delegating to yourself is a no-op the protocol would silently accept; refuse it.
     if (to.toLowerCase() === account.toLowerCase()) return asError({ code: 'self_delegation' })
+    // Re-delegating to the CURRENT delegate is the symmetric no-op of `no_delegate` below, and
+    // worse than wasted gas: `reconcileGovernance`'s terminal check is `getDelegateOfAtNow ===
+    // intent.to`, which is ALREADY true from the pre-existing state — so the very next poll
+    // would reconcile to `succeeded` regardless of whether the transaction landed, or even if
+    // it reverted. Closing it here, where the pre-state is known, is the only place the two
+    // otherwise-identical reads can be told apart.
+    if (to.toLowerCase() === reads.delegate.toLowerCase()) return asError({ code: 'already_delegated' })
     return asPlan(intent, [buildDelegateCall(deployment, to)])
   }
 

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import type { Address } from 'viem'
-import { applyTransition, createOperation } from '../src/operation.js'
 import { OPERATION_STATES } from '../src/states.js'
 import { reconcileGovernance } from '../src/governance-states.js'
 import type { GovernanceIntent } from '../src/governance.js'
+import { submittedGovernanceRecord } from './governance-fixtures.js'
 
 // M12: the durable governance-delegation reconciler. A broadcast delegate/undelegate is
 // only `submitted`; the OUTCOME is chain state (`getDelegateOfAtNow`), not the receipt — so
@@ -21,25 +21,19 @@ const NOW = 1_700_000_000
 const DELEGATE: GovernanceIntent = { kind: 'delegate', to: TARGET }
 const UNDELEGATE: GovernanceIntent = { kind: 'undelegate' }
 
-/**
- * A governance op that has signed + broadcast the delegate/undelegate call (state
- * `submitted`, the call/record spine present), ready to reconcile against
- * `getDelegateOfAtNow`. Built manually exactly as delegation-states.test.ts's
- * submittedDelegateRecord() is. The intent is carried on the record.
- */
-function submittedRecord(intent: GovernanceIntent, now = NOW) {
-  const base = createOperation({ capability: 'governance', network: 114, intent, now, id: 'gov1' })
-  const stepType = intent.kind === 'delegate' ? 'delegate' : 'undelegate'
-  const recordType = intent.kind === 'delegate' ? 'await_governance_delegation' : 'await_governance_undelegate'
-  const steps = [
-    { id: 'call-0', type: stepType, actor: 'your_wallet', state: 'pending', attempts: 0 },
-    { id: 'record', type: recordType, actor: 'flare', state: 'pending', attempts: 0 },
-  ] as const
-  const executing = applyTransition(base, { to: 'executing', at: now, patch: { steps: [...steps] } }).record
-  return applyTransition(executing, { to: 'submitted', at: now }).record
-}
+/** The shared fixture (`governance-fixtures.ts`) — it walks the FULL legal path, so the
+ *  `steps.every(...)` assertions below are about a real two-step spine rather than `[]`. */
+const submittedRecord = (intent: GovernanceIntent, now = NOW) => submittedGovernanceRecord(intent, { now })
 
 describe('reconcileGovernance — succeeded ONLY from the getDelegateOfAtNow read (M12)', () => {
+  it('the fixture really is submitted and really carries the spine — the assertions below are not vacuous', () => {
+    const op = submittedRecord(DELEGATE)
+    expect(op.state).toBe('submitted')
+    expect(op.steps).toHaveLength(2)
+    expect(op.steps.every((s) => s.state === 'done')).toBe(false)
+  })
+
+
   it('a submitted delegate whose read-back is still the zero address stays awaiting_external (actor flare), NEVER succeeded', () => {
     const r = reconcileGovernance(submittedRecord(DELEGATE), { delegate: ZERO }, NOW + 5000)
     expect(r.state).toBe('awaiting_external')

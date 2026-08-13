@@ -1,6 +1,7 @@
 import {
   type Eligibility,
   type GovernanceCall,
+  type GovernanceDeployment,
   type GovernanceIntent,
   type GovernanceOperation,
   type GovernancePlan,
@@ -10,6 +11,7 @@ import {
   type SerializedError,
   applyTransition,
   createOperation,
+  evidence,
   governancePosition,
   isTerminal,
   planGovernance,
@@ -49,9 +51,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  *  `StakeEvmClient` — react stays viem-free; no new dependency this milestone). */
 export type GovernanceEvmClient = Parameters<typeof readGovernanceVotes>[0]
 
-/** The governance deployment type, obtained the same transitive way (mirrors
- *  `StakingDeployment` in `use-staking.ts`) — no direct `@flare-kit/contracts` dependency. */
-export type GovernanceDeployment = Parameters<typeof readGovernanceVotes>[1]
 
 /** The one write capability `delegate`/`undelegate` need from a `viem` `WalletClient`: submit
  *  one already-built governance call, returning its transaction hash. Kept structural — not
@@ -86,7 +85,19 @@ export interface UseGovernanceResult {
    *  are a no-op until both hold, so this reports the write path's actual availability, not
    *  just the presence of a wallet. */
   readonly canWrite: boolean
-  /** A failed READ or a refused/failed WRITE; never moves the operation to failed itself. */
+  /**
+   * A refused/failed WRITE, or a failed poll tick; never moves the operation to failed itself.
+   *
+   * The two are held in SEPARATE slots internally and a write refusal wins while it stands.
+   * They used to share one slot, so every successful poll's `setError(undefined)` silently
+   * wiped a refusal ("governance plan refused: self_delegation") within one poll interval —
+   * 15s by default — with nothing having changed to justify clearing it.
+   *
+   * The read slot is narrower than it looks: `readGovernanceVotes` absorbs its own throw and
+   * `readEligibility` uses `allSettled`, so a failed READ is reported through
+   * `position: 'unavailable'` / `eligibility: undefined`, NOT here. This slot carries only an
+   * unexpected failure of the tick itself.
+   */
   readonly error: SerializedError | undefined
   /** Pure and synchronous once a read has landed; `undefined` before — never plans off a read
    *  the hook has not actually observed. Keyless: needs no `walletClient`. */
@@ -101,13 +112,21 @@ export interface UseGovernanceResult {
 
 /** Walk the plan to a SUBMITTED governance op — the legal state path (`applyTransition`
  *  drops a patch on an illegal jump), exactly as `useStaking`'s `toSubmittedStakeOp` does.
- *  `succeeded` comes later, only from the poll's read-back. */
-function toSubmittedGovernanceOp(plan: GovernancePlan, network: number, now: number): GovernanceOperation {
+ *  The broadcast hash rides in as `flare_tx` evidence on the `→ submitted` hop: that is the
+ *  slot `governance-card-state.ts` declares for `call-0`, it is what puts a tx chip on the
+ *  timeline, and it is the only chain identifier the persisted record carries — without it a
+ *  reload cannot correlate the operation to its transaction. `succeeded` comes later, only
+ *  from the poll's read-back. */
+function toSubmittedGovernanceOp(plan: GovernancePlan, network: number, hash: `0x${string}`, now: number): GovernanceOperation {
   const base = createOperation<GovernanceIntent, unknown, GovernancePlan>({ capability: 'governance', network, intent: plan.intent, now })
   const quoting = applyTransition(base, { to: 'quoting', at: now, patch: { steps: [...plan.steps], plan } }).record
   const ready = applyTransition(quoting, { to: 'ready', at: now }).record
   const executing = applyTransition(ready, { to: 'executing', at: now }).record
-  return applyTransition(executing, { to: 'submitted', at: now }).record
+  return applyTransition(executing, {
+    to: 'submitted',
+    at: now,
+    evidence: [evidence({ kind: 'flare_tx', label: 'Flare tx', value: hash, observedAt: now })],
+  }).record
 }
 
 export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
@@ -115,7 +134,9 @@ export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
   const [operation, setOperation] = useState<GovernanceOperation | undefined>(incoming)
   const [reads, setReads] = useState<GovernanceVoteReads | undefined>(undefined)
   const [eligibility, setEligibility] = useState<Eligibility | undefined>(undefined)
-  const [error, setError] = useState<SerializedError | undefined>(undefined)
+  // Two slots, not one: a poll tick must never clear a write refusal (see `error` above).
+  const [readError, setReadError] = useState<SerializedError | undefined>(undefined)
+  const [writeError, setWriteError] = useState<SerializedError | undefined>(undefined)
 
   // Adopt only a genuinely NEW operation (a different id), exactly as useDelegation/useStaking do.
   const opRef = useRef<GovernanceOperation | undefined>(operation)
@@ -146,13 +167,14 @@ export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
           opRef.current = advanced
           setOperation(advanced)
         }
-        // A transient read failure clears once a later poll succeeds — a lagged RPC must
-        // not leave a permanent "reading failed" on a live op.
-        setError(undefined)
+        // A transient tick failure clears once a later poll succeeds — a lagged RPC must
+        // not leave a permanent "reading failed" on a live op. It clears only the READ slot:
+        // a write refusal is not news the poll has any standing to retract.
+        setReadError(undefined)
       } catch (cause) {
         // A failed reading is not a failed governance op. Record it; leave the position and
         // operation exactly where the last good read put them.
-        if (live) setError(toSerializedError(cause))
+        if (live) setReadError(toSerializedError(cause))
       }
     }
     void tick()
@@ -178,19 +200,19 @@ export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
       if (!walletClient || !reads) return
       const result = planGovernance({ intent, deployment, reads, account })
       if (!result.ok) {
-        setError(toSerializedError(new Error(`governance plan refused: ${result.error.code}`)))
+        setWriteError(toSerializedError(new Error(`governance plan refused: ${result.error.code}`)))
         return
       }
       const call = result.plan.calls[0]
       if (!call) return
       try {
-        await walletClient.writeContract({ ...call, account })
-        const op = toSubmittedGovernanceOp(result.plan, deployment.chainId, Date.now())
+        const hash = await walletClient.writeContract({ ...call, account })
+        const op = toSubmittedGovernanceOp(result.plan, deployment.chainId, hash, Date.now())
         opRef.current = op
         setOperation(op)
-        setError(undefined)
+        setWriteError(undefined)
       } catch (cause) {
-        setError(toSerializedError(cause))
+        setWriteError(toSerializedError(cause))
       }
     },
     [walletClient, reads, deployment, account],
@@ -206,7 +228,9 @@ export function useGovernance(input: UseGovernanceInput): UseGovernanceResult {
     operation,
     isSettled: operation ? isTerminal(operation.state) : false,
     canWrite: Boolean(walletClient) && reads !== undefined,
-    error,
+    // A standing write refusal outranks a tick failure — it is the one the person caused and
+    // must act on, and it survives every poll until a later write supersedes it.
+    error: writeError ?? readError,
     plan,
     delegate,
     undelegate,

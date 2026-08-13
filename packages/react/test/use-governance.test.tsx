@@ -42,8 +42,10 @@ function makePublicClient(state: FakeState): GovernanceEvmClient {
   } as unknown as GovernanceEvmClient
 }
 
+const TX_HASH = `0x${'7b'.repeat(32)}` as Hex0x
+
 function makeWalletClient(): GovernanceWalletClient & { writeContract: ReturnType<typeof vi.fn> } {
-  return { writeContract: vi.fn().mockResolvedValue('0xhash' as Hex0x) }
+  return { writeContract: vi.fn().mockResolvedValue(TX_HASH) }
 }
 
 /**
@@ -131,6 +133,86 @@ describe('useGovernance — the write path requires the injected walletClient (M
     expect(call.functionName).toBe('delegate')
     expect(call.args).toEqual([TARGET])
     expect(call.account).toBe(ACCOUNT)
+  })
+
+  // I3: `governance-card-state.ts` declares `'call-0': ['flare_tx']`, so the spine has a slot
+  // for the broadcast hash. The hook fetched it and threw it away — a user delegating through
+  // the shipped hook got a timeline with no tx chip, and the persisted record carried no chain
+  // identifier at all, so a reload could not correlate the operation to its transaction.
+  it('the submitted record carries the broadcast tx hash as flare_tx evidence — not fetched and discarded', async () => {
+    const state: FakeState = { delegate: ZERO, votes: 0n, isProposer: false, canPropose: false }
+    const publicClient = makePublicClient(state)
+    const walletClient = makeWalletClient()
+    const { result } = renderHook(() =>
+      useGovernance({ deployment, account: ACCOUNT, publicClient, walletClient, pollMs: 5 }),
+    )
+    await waitFor(() => expect(result.current.position.status).toBe('observed'))
+
+    result.current.delegate(TARGET)
+    await waitFor(() => expect(result.current.operation).toBeDefined())
+
+    const ev = result.current.operation?.evidence ?? []
+    const tx = ev.find((e) => e.kind === 'flare_tx')
+    expect(tx).toBeDefined()
+    // The REAL hash the wallet returned — never a placeholder and never fabricated.
+    expect(tx?.value).toBe(TX_HASH)
+    expect(tx?.label).toBe('Flare tx')
+  })
+
+  it('an undelegate submission carries its own tx hash too', async () => {
+    const state: FakeState = { delegate: TARGET, votes: 5n, isProposer: false, canPropose: false }
+    const publicClient = makePublicClient(state)
+    const walletClient = makeWalletClient()
+    const { result } = renderHook(() =>
+      useGovernance({ deployment, account: ACCOUNT, publicClient, walletClient, pollMs: 5 }),
+    )
+    await waitFor(() => expect(result.current.position.status).toBe('observed'))
+
+    result.current.undelegate()
+    await waitFor(() => expect(result.current.operation).toBeDefined())
+    expect(result.current.operation?.evidence?.some((e) => e.kind === 'flare_tx' && e.value === TX_HASH)).toBe(true)
+  })
+})
+
+describe('useGovernance — the write refusal and the poll hold SEPARATE error slots (M12)', () => {
+  // M-c2: one shared slot meant every successful poll's `setError(undefined)` wiped a write
+  // refusal within one poll interval (15s by default), with nothing having changed to justify
+  // retracting it. The person is left with a disabled action and no stated reason.
+  it('a refused write survives repeated successful polls — the poll does not retract it', async () => {
+    const state: FakeState = { delegate: ZERO, votes: 0n, isProposer: false, canPropose: false }
+    const publicClient = makePublicClient(state)
+    const walletClient = makeWalletClient()
+    const { result } = renderHook(() =>
+      useGovernance({ deployment, account: ACCOUNT, publicClient, walletClient, pollMs: 5 }),
+    )
+    await waitFor(() => expect(result.current.position.status).toBe('observed'))
+
+    // Self-delegation is refused at the plan, so nothing is ever broadcast.
+    result.current.delegate(ACCOUNT)
+    await waitFor(() => expect(result.current.error).toBeDefined())
+    expect(result.current.error?.message).toContain('self_delegation')
+    expect(walletClient.writeContract).not.toHaveBeenCalled()
+
+    // Several more poll ticks land successfully; the refusal must still stand.
+    await new Promise((resolve) => setTimeout(resolve, 40))
+    expect(result.current.error?.message).toContain('self_delegation')
+  })
+
+  it('a later successful write clears the refusal', async () => {
+    const state: FakeState = { delegate: ZERO, votes: 0n, isProposer: false, canPropose: false }
+    const publicClient = makePublicClient(state)
+    const walletClient = makeWalletClient()
+    const { result } = renderHook(() =>
+      useGovernance({ deployment, account: ACCOUNT, publicClient, walletClient, pollMs: 5 }),
+    )
+    await waitFor(() => expect(result.current.position.status).toBe('observed'))
+
+    result.current.delegate(ACCOUNT)
+    await waitFor(() => expect(result.current.error).toBeDefined())
+
+    result.current.delegate(TARGET)
+    await waitFor(() => expect(result.current.error).toBeUndefined())
+    expect(result.current.operation?.state).toBeDefined()
   })
 })
 

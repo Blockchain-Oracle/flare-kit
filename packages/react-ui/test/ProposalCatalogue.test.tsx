@@ -41,6 +41,7 @@ const foundationActive: ProposalSummary = {
 const row = (c: HTMLElement, id: string) => c.querySelector(`tr[data-proposal="${id}"]`)
 const dataRows = (c: HTMLElement) => c.querySelectorAll('tr[data-proposal]')
 const availability = (c: HTMLElement) => c.querySelector('[data-availability]')?.getAttribute('data-availability')
+const noteTitles = (c: HTMLElement) => [...c.querySelectorAll('.fk-note-title')].map((e) => e.textContent ?? '')
 
 describe('ProposalCatalogue — a discovered proposal: id + state + the cross-network label', () => {
   it('renders each proposal with its id (mono), its state, and a "Flare mainnet" label on every row', () => {
@@ -72,15 +73,22 @@ describe('ProposalCatalogue — a discovered proposal: id + state + the cross-ne
     expect(availability(container)).toBe('listed')
   })
 
-  it('names the table after the network actually read, so a screen reader is never told the wrong chain', () => {
-    // The caption is `fk-sr` (the table's accessible name), so a hardcoded "Flare
-    // mainnet" would make to a screen reader exactly the whole-surface network claim
-    // the per-row labels exist to avoid — invisibly, on a Coston2 catalogue.
-    const mainnet = render(<ProposalCatalogue proposals={[]} loading={false} />)
+  // The caption is `fk-sr` (the table's accessible name) and the note title is VISIBLE. Both
+  // state which chain was read, so both must track `networkLabel` — a hardcoded "Flare
+  // mainnet" makes exactly the whole-surface network claim the per-row labels exist to avoid.
+  // Asserted TOGETHER, in the same case, so the pair cannot drift apart again: the note title
+  // renders only when `availability === 'listed'`, which is why the earlier `proposals={[]}`
+  // case never exposed it.
+  it('names the table AND titles the note after the network actually read — never a hardcoded mainnet', () => {
+    const mainnet = render(<ProposalCatalogue proposals={[ftsoDefeated]} loading={false} />)
     expect(mainnet.container.querySelector('caption')?.textContent).toBe('Proposals on Flare mainnet')
+    expect(noteTitles(mainnet.container)).toContain('Read from Flare mainnet')
 
-    const coston2 = render(<ProposalCatalogue proposals={[]} loading={false} networkLabel="Coston2" />)
+    const coston2 = render(<ProposalCatalogue proposals={[ftsoDefeated]} loading={false} networkLabel="Coston2" />)
     expect(coston2.container.querySelector('caption')?.textContent).toBe('Proposals on Coston2')
+    expect(noteTitles(coston2.container)).toContain('Read from Coston2')
+    // The whole point: nothing anywhere in the Coston2 render says "Flare mainnet".
+    expect(coston2.container.textContent).not.toContain('Flare mainnet')
   })
 })
 
@@ -111,6 +119,19 @@ describe('ProposalCatalogue — the three outcomes stay three (undefined ≠ [] 
 
     // Never a fabricated row in either non-rows state.
     expect(dataRows(unavail.container).length).toBe(0)
+  })
+
+  // M-h1: unreachable from `useProposals`, but this is a PUBLISHED component and a host
+  // driving it from its own read can land here. It used to fall through to 'listed' with zero
+  // rows and no note — a completely blank table, which reads as "none".
+  it('`undefined` with no error and nothing loading is NOT-READ, never a silent blank table', () => {
+    const { container } = render(<ProposalCatalogue proposals={undefined} loading={false} />)
+    expect(availability(container)).toBe('not-read')
+    expect(dataRows(container).length).toBe(0)
+    // It says so, rather than presenting nothing.
+    expect(container.textContent?.toLowerCase()).toContain('no discovery read has run yet')
+    // And it never borrows the confirmed-empty sentence.
+    expect(container.textContent?.toLowerCase()).not.toContain('no active proposals on this network')
   })
 
   it('while loading (undefined, no error) shows skeletons, never a fabricated row', () => {

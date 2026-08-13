@@ -33,7 +33,9 @@ export type GovernanceStateKey =
   | 'unverified'
   | 'invalid-target'
   | 'self-delegation'
+  | 'already-delegated'
   | 'no-delegate'
+  | 'partially-succeeded'
 
 export interface GovernanceView {
   readonly operation?: GovernanceOperation | undefined
@@ -60,8 +62,12 @@ export function governanceCardState(view: GovernanceView): GovernanceStateKey {
       case 'action_required':
         return 'awaiting'
       case 'succeeded':
-      case 'partially_succeeded':
         return 'succeeded'
+      // `reconcileGovernance` never emits this, but GovernanceCard is PUBLISHED and takes an
+      // arbitrary `GovernanceOperation` — so it gets its own key rather than folding into
+      // `succeeded`, whose CTA reads "Done". A partial success is not a success claim.
+      case 'partially_succeeded':
+        return 'partially-succeeded'
       default:
         break
     }
@@ -75,6 +81,8 @@ export function governanceCardState(view: GovernanceView): GovernanceStateKey {
         return 'invalid-target'
       case 'self_delegation':
         return 'self-delegation'
+      case 'already_delegated':
+        return 'already-delegated'
       case 'no_delegate':
         return 'no-delegate'
     }
@@ -97,6 +105,10 @@ const ERROR_NOTE: Record<GovernanceInvariantError['code'], { title: string; body
   self_delegation: {
     title: 'Choose another delegate',
     body: 'Delegating your governance vote power to your own account is a no-op the protocol would silently accept. Pick a different representative.',
+  },
+  already_delegated: {
+    title: 'Already delegated there',
+    body: 'This account already delegates all of its governance vote power to that address, so the call would change nothing on-chain. Enter a different representative, or undelegate first.',
   },
   no_delegate: {
     title: 'Nothing to undelegate',
@@ -131,12 +143,17 @@ export function ctaForGovernance({ state, planResult, hasTarget }: GovernanceCta
       return { label: 'Flare recording…', disabled: true }
     case 'succeeded':
       return { label: 'Done', disabled: true }
+    // Never "Done": the operation itself does not claim a full success.
+    case 'partially-succeeded':
+      return { label: 'Partly recorded', disabled: true }
     case 'unverified':
       return { label: 'Not available', disabled: true }
     case 'invalid-target':
       return { label: 'Enter a valid address', disabled: true }
     case 'self-delegation':
       return { label: 'Choose another delegate', disabled: true }
+    case 'already-delegated':
+      return { label: 'Already delegated there', disabled: true }
     case 'no-delegate':
       return { label: 'No delegate to clear', disabled: true }
     case 'unavailable':

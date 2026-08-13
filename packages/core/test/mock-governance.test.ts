@@ -4,8 +4,8 @@ import { readEligibility, readGovernanceVotes } from '../src/governance-adapter.
 import { planGovernance, type GovernanceIntent } from '../src/governance.js'
 import { reconcileGovernance } from '../src/governance-states.js'
 import { discoverProposals, planCastVote, readProposalDetail } from '../src/proposals.js'
-import { applyTransition, createOperation } from '../src/operation.js'
 import { createMockGovernanceAdapter, MOCK_GOVERNANCE_OBSERVED } from '../src/index.js'
+import { submittedGovernanceRecord } from './governance-fixtures.js'
 
 // M12-T7: the governance mock, written AFTER the real Coston2 round trip + mainnet
 // proposal read, reproducing ONLY what Task 6 observed
@@ -64,18 +64,9 @@ describe('mock-governance drives the REAL reconcileGovernance — succeeded ONLY
   const DELEGATE: GovernanceIntent = { kind: 'delegate', to: TARGET }
   const UNDELEGATE: GovernanceIntent = { kind: 'undelegate' }
 
-  /** Mirrors governance-states.test.ts's submittedRecord() — a broadcast delegate/undelegate, state `submitted`. */
-  function submittedRecord(intent: GovernanceIntent) {
-    const base = createOperation({ capability: 'governance', network: 114, intent, now: NOW, id: 'mockgov1' })
-    const stepType = intent.kind === 'delegate' ? 'delegate' : 'undelegate'
-    const recordType = intent.kind === 'delegate' ? 'await_governance_delegation' : 'await_governance_undelegate'
-    const steps = [
-      { id: 'call-0', type: stepType, actor: 'your_wallet', state: 'pending', attempts: 0 },
-      { id: 'record', type: recordType, actor: 'flare', state: 'pending', attempts: 0 },
-    ] as const
-    const executing = applyTransition(base, { to: 'executing', at: NOW, patch: { steps: [...steps] } }).record
-    return applyTransition(executing, { to: 'submitted', at: NOW }).record
-  }
+  /** The SAME shared fixture governance-states.test.ts uses (`governance-fixtures.ts`) — one
+   *  copy, walking the full legal path, so `steps.every(...)` below is never vacuous. */
+  const submittedRecord = (intent: GovernanceIntent) => submittedGovernanceRecord(intent, { now: NOW, id: 'mockgov1' })
 
   it('a submitted delegate against the pre-broadcast (blank-slate) mock read-back stays awaiting_external, NEVER succeeded', async () => {
     const { client, deployment } = createMockGovernanceAdapter() // default: delegate zero, as before the live tx landed
