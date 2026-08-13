@@ -19,7 +19,7 @@ import {
   SUBMITTED,
   opAt,
   rowFor,
-} from './m3-sections.js'
+} from './m3-sections'
 
 /**
  * FDC-03 and FDC-04, in every state the M3 spec requires.

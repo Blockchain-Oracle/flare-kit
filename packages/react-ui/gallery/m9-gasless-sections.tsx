@@ -7,7 +7,7 @@ import {
   amount,
 } from '@flare-kit/core'
 import { GaslessCard } from '@flare-kit/react-ui'
-import type { Section } from './sections.js'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every required state of the M9 GaslessCard, in both themes (the one gallery

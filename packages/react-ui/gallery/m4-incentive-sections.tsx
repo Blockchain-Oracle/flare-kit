@@ -9,8 +9,8 @@ import {
 } from '@flare-kit/core'
 import { CustomFeedReview, IncentiveComposer } from '@flare-kit/react-ui'
 import type { ExcludedCustomFeed } from '@flare-kit/react-ui'
-import type { GallerySection } from './m3-sections.js'
-import { COSTON2, M4_NOW, PAYER, SOURCE } from './m4-fixtures.js'
+import type { GallerySection } from './m3-sections'
+import { COSTON2, M4_NOW, PAYER, SOURCE } from './m4-fixtures'
 
 /**
  * FTSO-05 and FTSO-06, in every state the M4 spec requires.

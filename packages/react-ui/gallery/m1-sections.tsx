@@ -7,7 +7,7 @@ import {
   RecoveryPanel,
   RedeemFXRP,
 } from '@flare-kit/react-ui'
-import type { Section } from './sections.js'
+import type { Section } from './sections'
 
 /**
  * M1's four composed surfaces, added to the gallery in the M2 close-out.

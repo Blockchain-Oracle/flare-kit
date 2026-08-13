@@ -1,6 +1,6 @@
 import { observe } from '@flare-kit/core'
 import { FeedCatalogue, FeedDetail, FeedHistoryTable } from '@flare-kit/react-ui'
-import type { GallerySection } from './m3-sections.js'
+import type { GallerySection } from './m3-sections'
 import {
   ANCHOR_DIVERGENT,
   ANCHOR_FLR,
@@ -20,7 +20,7 @@ import {
   READINGS_UNAVAILABLE,
   SOURCE,
   entryFor,
-} from './m4-fixtures.js'
+} from './m4-fixtures'
 
 /**
  * FTSO-01 and FTSO-02, in every state the M4 spec's Surfaces table requires.

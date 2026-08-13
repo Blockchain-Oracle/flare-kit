@@ -18,7 +18,7 @@ import {
   stakePosition,
 } from '@flare-kit/core'
 import { ClaimCard, StakeCard } from '@flare-kit/react-ui'
-import type { Section } from './sections.js'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every state of the M11 StakeCard + the ClaimCard staking (4th) kind that the

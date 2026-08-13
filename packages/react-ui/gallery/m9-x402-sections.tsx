@@ -5,7 +5,7 @@ import {
   mockX402Challenge,
 } from '@flare-kit/core'
 import { X402Card } from '@flare-kit/react-ui'
-import type { Section } from './sections.js'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every required state of the M9 X402Card, in both themes. Prop-driven — each
