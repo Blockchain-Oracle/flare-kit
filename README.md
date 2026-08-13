@@ -1,7 +1,4 @@
-# flare-kit
-
-**The developer toolkit for Flare: one operation lifecycle across headless
-TypeScript, React hooks, embeddable widgets and agent tools.**
+<img src="brand/flare-kit-banner.svg" alt="flare-kit — the developer toolkit for Flare" width="100%">
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -25,18 +22,11 @@ describe the same operation the same way.
 | [`@flare-kit/react`](packages/react) | Provider and one hook per capability. |
 | [`@flare-kit/react-ui`](packages/react-ui) | Styled, embeddable widgets with every state built. Themed by runtime CSS custom properties. |
 
-```mermaid
-graph LR
-  C["@flare-kit/contracts"] --> K["@flare-kit/core"]
-  K --> R["@flare-kit/react"]
-  K --> U["@flare-kit/react-ui"]
-  R -.->|peer| U
-  K --> S1["services/relayer"]
-  K --> S2["services/x402-server"]
-```
+<img src="brand/packages.svg" alt="contracts feeds core, which feeds the React hooks, the widgets, and the two services" width="100%">
 
-Arrows point from a package to the packages that depend on it. React, wagmi and
-viem are peer dependencies and are never bundled.
+## Architecture
+
+<img src="brand/architecture.svg" alt="Four consumption surfaces over one operation lifecycle over the Flare protocols" width="100%">
 
 ## The lifecycle
 

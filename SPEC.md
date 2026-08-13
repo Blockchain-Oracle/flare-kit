@@ -109,6 +109,16 @@ every later capability reuses the lifecycle engine it forces us to build.
 - `LICENSE`, `packages/*/LICENSE` — every package declares MIT, so every
   published tarball must carry the text. npm packs only from within a package
   directory, so the root copy alone would ship none of them
+- `brand/flare-kit-mark.svg`, `brand/flare-kit-logo.svg`,
+  `brand/flare-kit-banner.svg` — the identity. One crimson, theme-neutral:
+  `<picture>` dark-mode switching is structurally broken on npm, so a single
+  file must survive both grounds. Wordmarks are outlined paths, never `<text>`,
+  because camo's CSP forbids a font load
+- `brand/packages.svg`, `brand/architecture.svg` — hand-authored diagrams that
+  keep live `<text>` on a system stack, because a diagram must stay editable
+- `brand/build.mjs` — regenerates the three identity files from the vendored
+  Bricolage and Hanken faces. Run by hand; its two tools are deliberately not
+  workspace dependencies
 - `packages/contracts/src/chains.ts` — network + underlying-chain constants (ids,
   RPCs, explorers); split from the address registry because it is what makes
   "mainnet-capable with no source rewrite" true

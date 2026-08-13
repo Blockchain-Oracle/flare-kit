@@ -55,8 +55,10 @@ export default tseslint.config(
   },
   {
     // Evidence-gathering scripts run in Node directly and read a signing key
-    // from disk. They are dev tooling, never shipped in a package.
-    files: ['packages/*/scripts/**/*.mjs'],
+    // from disk. brand/build.mjs regenerates the identity files from the
+    // vendored faces. Both are dev tooling, run by hand, never shipped in a
+    // package.
+    files: ['packages/*/scripts/**/*.mjs', 'brand/*.mjs'],
     languageOptions: {
       globals: { process: 'readonly', console: 'readonly', setTimeout: 'readonly', fetch: 'readonly' },
     },

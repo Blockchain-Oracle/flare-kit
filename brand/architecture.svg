@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 620" width="1080" height="620" role="img" aria-label="flare-kit architecture: four consumption surfaces over one operation lifecycle over the Flare protocols">
+  <style>
+    .t  { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 15px; font-weight: 700; fill: #221d18; }
+    .d  { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 12.5px; fill: #68625c; }
+    .m  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+          font-size: 13px; font-weight: 600; fill: #221d18; }
+    .h  { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 11px; font-weight: 700; fill: #8b857e; letter-spacing: .12em; }
+    .card    { fill: #ffffff; stroke: #e1dfdb; stroke-width: 1.5; }
+    .planned { fill: #ffffff; stroke: #c9c5c0; stroke-width: 1.5; stroke-dasharray: 6 5; }
+    .band    { fill: #f7f6f1; stroke: #e1dfdb; stroke-width: 1.5; }
+    .chip    { fill: #fdfcf9; stroke: #e1dfdb; stroke-width: 1.2; }
+    .arr     { stroke: #c9c5c0; stroke-width: 2; fill: none; }
+  </style>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#c9c5c0"/>
+    </marker>
+  </defs>
+  <rect width="1080" height="620" fill="#fdfcf9"/>
+
+  <!-- ── surfaces ── -->
+  <text class="h" x="44" y="42">HOW IT IS CONSUMED</text>
+  <rect class="card" x="44"  y="60" width="230" height="76" rx="12"/>
+  <text class="t" x="64" y="90">Headless TypeScript</text>
+  <text class="d" x="64" y="113">Scripts, servers, tests</text>
+
+  <rect class="card" x="292" y="60" width="230" height="76" rx="12"/>
+  <text class="t" x="312" y="90">React hooks</text>
+  <text class="d" x="312" y="113">One hook per capability</text>
+
+  <rect class="card" x="540" y="60" width="230" height="76" rx="12"/>
+  <text class="t" x="560" y="90">Embeddable widgets</text>
+  <text class="d" x="560" y="113">Every state, both themes</text>
+
+  <rect class="planned" x="788" y="60" width="248" height="76" rx="12"/>
+  <text class="t" x="808" y="90" fill="#68625c">Agent tools · MCP · CLI</text>
+  <text class="d" x="808" y="113">Planned — not yet built</text>
+
+  <path class="arr" marker-end="url(#ah)" d="M159 136 V174"/>
+  <path class="arr" marker-end="url(#ah)" d="M407 136 V174"/>
+  <path class="arr" marker-end="url(#ah)" d="M655 136 V174"/>
+  <path class="arr" marker-end="url(#ah)" stroke-dasharray="6 5" d="M912 136 V174"/>
+
+  <!-- ── the lifecycle ── -->
+  <rect class="band" x="44" y="178" width="992" height="186" rx="14"/>
+  <text class="h" x="68" y="208">ONE OPERATION LIFECYCLE  ·  @flare-kit/core</text>
+
+  <g>
+    <rect class="chip" x="68"  y="226" width="126" height="42" rx="9"/><text class="m" x="88"  y="252">intent</text>
+    <rect class="chip" x="212" y="226" width="126" height="42" rx="9"/><text class="m" x="232" y="252">quote</text>
+    <rect class="chip" x="356" y="226" width="126" height="42" rx="9"/><text class="m" x="376" y="252">plan</text>
+    <rect class="chip" x="500" y="226" width="126" height="42" rx="9"/><text class="m" x="520" y="252">execute</text>
+    <rect class="chip" x="644" y="226" width="126" height="42" rx="9"/><text class="m" x="664" y="252">evidence</text>
+    <rect class="chip" x="788" y="226" width="126" height="42" rx="9"/><text class="m" x="808" y="252">recover</text>
+  </g>
+  <path class="arr" marker-end="url(#ah)" d="M194 247 H206"/>
+  <path class="arr" marker-end="url(#ah)" d="M338 247 H350"/>
+  <path class="arr" marker-end="url(#ah)" d="M482 247 H494"/>
+  <path class="arr" marker-end="url(#ah)" d="M626 247 H638"/>
+  <path class="arr" marker-end="url(#ah)" d="M770 247 H782"/>
+
+  <text class="d" x="68" y="300">Sixteen states, reported identically by every surface. Persisted, and reconciled against the chain on open —</text>
+  <text class="d" x="68" y="320">so there is no resume step. An unknown outcome is never rendered as a failure.</text>
+  <text class="d" x="68" y="346" fill="#8b857e">Mock mode reproduces the same machine with no wallet, no key and no network. It is labelled, and never a fallback.</text>
+
+  <path class="arr" marker-end="url(#ah)" d="M540 364 V404"/>
+  <text class="d" x="556" y="390">reads and writes</text>
+
+  <!-- ── protocols ── -->
+  <text class="h" x="44" y="438">FLARE PROTOCOLS  ·  resolved from @flare-kit/contracts</text>
+  <rect class="band" x="44" y="454" width="992" height="76" rx="12"/>
+  <g class="m" font-size="12.5">
+    <text x="72"  y="483">FAssets</text><text x="72"  y="507" class="d">mint · redeem</text>
+    <text x="212" y="483">FDC</text><text x="212" y="507" class="d">attestations</text>
+    <text x="352" y="483">FTSO</text><text x="352" y="507" class="d">feeds · random</text>
+    <text x="492" y="483">DEX</text><text x="492" y="507" class="d">swap · liquidity</text>
+    <text x="632" y="483">LayerZero</text><text x="632" y="507" class="d">OFT bridge</text>
+    <text x="772" y="483">WNat</text><text x="772" y="507" class="d">delegate · stake</text>
+    <text x="912" y="483">Payments</text><text x="912" y="507" class="d">gasless · x402</text>
+  </g>
+
+  <!-- ── chains ── -->
+  <text class="d" x="44" y="574">Settles on the Flare C-chain and the XRP Ledger. Testnet first, mainnet-capable, with no source rewrite to switch —</text>
+  <text class="d" x="44" y="594">every address and RPC is an exported constant, never an environment variable.</text>
+</svg>

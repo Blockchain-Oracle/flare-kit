@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 430" width="1080" height="430" role="img" aria-label="flare-kit package graph: contracts feeds core, which feeds the React hooks, the widgets, and the two services">
+  <style>
+    .t  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+          font-size: 16px; font-weight: 600; fill: #221d18; }
+    .d  { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 13px; fill: #68625c; }
+    .h  { font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 11px; font-weight: 700; fill: #8b857e; letter-spacing: .12em; }
+    .card { fill: #ffffff; stroke: #e1dfdb; stroke-width: 1.5; }
+    .svc  { fill: #f7f6f1; stroke: #e1dfdb; stroke-width: 1.5; }
+    .arr  { stroke: #c9c5c0; stroke-width: 2; fill: none; }
+  </style>
+  <rect width="1080" height="430" fill="#fdfcf9"/>
+
+  <text class="h" x="44" y="46">PUBLISHED TO NPM</text>
+
+  <!-- the four published packages, in dependency order -->
+  <g>
+    <rect class="card" x="44"  y="66" width="228" height="104" rx="12"/>
+    <text class="t" x="64" y="100">@flare-kit/contracts</text>
+    <text class="d" x="64" y="124">Addresses, typed ABIs and</text>
+    <text class="d" x="64" y="143">per-capability verified flags.</text>
+
+    <rect class="card" x="316" y="66" width="228" height="104" rx="12"/>
+    <text class="t" x="336" y="100">@flare-kit/core</text>
+    <text class="d" x="336" y="124">The operation lifecycle,</text>
+    <text class="d" x="336" y="143">adapters, mock mode.</text>
+
+    <rect class="card" x="588" y="66" width="228" height="104" rx="12"/>
+    <text class="t" x="608" y="100">@flare-kit/react</text>
+    <text class="d" x="608" y="124">Provider and one hook</text>
+    <text class="d" x="608" y="143">per capability.</text>
+
+    <rect class="card" x="860" y="66" width="176" height="104" rx="12"/>
+    <text class="t" x="880" y="100">…/react-ui</text>
+    <text class="d" x="880" y="124">Styled, embeddable</text>
+    <text class="d" x="880" y="143">widgets. Ships CSS.</text>
+  </g>
+
+  <!-- dependency arrows -->
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#c9c5c0"/>
+    </marker>
+  </defs>
+  <path class="arr" marker-end="url(#a)" d="M272 118 H310"/>
+  <path class="arr" marker-end="url(#a)" d="M544 118 H582"/>
+  <path class="arr" marker-end="url(#a)" d="M816 118 H854"/>
+
+  <!-- react-ui also takes react as a peer -->
+  <path class="arr" marker-end="url(#a)" stroke-dasharray="5 5" d="M702 170 V202 H948 V176"/>
+  <text class="d" x="712" y="196">peer</text>
+
+  <!-- services -->
+  <text class="h" x="44" y="286">PRIVATE · DEPLOYED, NOT PUBLISHED</text>
+  <g>
+    <rect class="svc" x="316" y="306" width="228" height="80" rx="12"/>
+    <text class="t" x="336" y="340">services/relayer</text>
+    <text class="d" x="336" y="363">Pays gas for a signed payment.</text>
+
+    <rect class="svc" x="588" y="306" width="228" height="80" rx="12"/>
+    <text class="t" x="608" y="340">services/x402-server</text>
+    <text class="d" x="608" y="363">Settles an HTTP 402 request.</text>
+  </g>
+  <path class="arr" marker-end="url(#a)" d="M430 170 V300"/>
+  <path class="arr" marker-end="url(#a)" d="M460 176 V240 H702 V300"/>
+
+  <text class="d" x="44" y="412">An arrow points from a package to the package that depends on it. React, wagmi and viem are peer dependencies and are never bundled.</text>
+</svg>
