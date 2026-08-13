@@ -26,6 +26,30 @@
   margin-top: 6px;
 }
 
+/* ---------- Live operation ---------- */
+.live-operation {
+  display: grid;
+  gap: 14px;
+  max-width: 54rem;
+}
+.live-operation-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.live-operation-tag {
+  padding: 3px 8px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-surface);
+  color: var(--fk-text-muted);
+}
+.live-operation-lede {
+  max-width: 46rem;
+  margin-bottom: 8px;
+}
+
 /* ---------- Copy field ---------- */
 .copyline {
   display: inline-flex;
