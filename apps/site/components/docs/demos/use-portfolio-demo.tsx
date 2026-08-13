@@ -1,8 +1,8 @@
 'use client'
 
-import { createMockKit, mockPortfolio } from '@flare-kit/core'
-import { FlareProvider, usePortfolio } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { mockPortfolio } from '@flare-kit/core'
+import { usePortfolio } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -35,12 +35,11 @@ function Probe() {
 }
 
 export function UsePortfolioDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import { createMockKit, mockCatalogue } from '@flare-kit/core'
-import { FlareProvider, useAttestationFamilies } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { mockCatalogue } from '@flare-kit/core'
+import { useAttestationFamilies } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -72,12 +72,11 @@ function Probe() {
 }
 
 export function UseAttestationFamiliesDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

@@ -30,7 +30,7 @@ export function GalleryDemo({
 }) {
   const [index, setIndex] = useState(0)
   const selectId = useId()
-  const current = cases[Math.min(index, cases.length - 1)]!
+  const current = cases[index]!
 
   return (
     <Preview code={code} label={label}>
@@ -40,7 +40,7 @@ export function GalleryDemo({
             <span className="eyebrow">State</span>
             <select
               id={selectId}
-              value={Math.min(index, cases.length - 1)}
+              value={index}
               onChange={(event) => setIndex(Number(event.target.value))}
             >
               {cases.map((entry, position) => (

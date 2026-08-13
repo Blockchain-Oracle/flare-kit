@@ -1,8 +1,8 @@
 'use client'
 
-import { type DirectMintIntent, createMockKit } from '@flare-kit/core'
-import { FlareProvider, useDirectMint } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { type DirectMintIntent } from '@flare-kit/core'
+import { useDirectMint } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -65,12 +65,11 @@ function Probe() {
 }
 
 export function UseDirectMintDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

@@ -1,13 +1,11 @@
 'use client'
 
-import { createMockKit } from '@flare-kit/core'
-import { FlareProvider, useAccounts, useFlareContext } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { useAccounts, useFlareContext } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
 const CODE = `import { createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
 import '@flare-kit/react-ui/styles.css'
 
 // One kit is one session. Create it once, outside render.
@@ -17,7 +15,7 @@ export function App({ children }) {
   return (
     <FlareProvider kit={kit} pollMs={2_000}>
       {children}
-    </FlareProvider>
+    </MockKitProvider>
   )
 }`
 
@@ -45,12 +43,11 @@ function Probe() {
 }
 
 export function FlareProviderDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

@@ -108,7 +108,7 @@ function Probe({
 export function UseBridgeDemo() {
   return (
     <Preview code={CODE} label="mock bridge adapter">
-      <div style={{ display: 'grid', gap: 18 }}>
+      <div className="demo-stack">
         <Probe name="useBridge (destination read: nothing yet)" reconcile={reconcileInFlight} />
         <Probe name="useBridge (destination read: OFTReceived)" reconcile={reconcileLanded} />
       </div>

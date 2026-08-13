@@ -4,7 +4,6 @@ import { Pre } from '../components/docs/code-block'
 import * as Demos from '../components/docs/demos/registry'
 import { InstallTabs } from '../components/docs/install-tabs'
 import { PropsTable } from '../components/docs/parts'
-import { Preview } from '../components/docs/preview'
 
 /**
  * Headings get their ids from fumadocs' rehype pass, so this only adds the
@@ -36,7 +35,6 @@ export function getMDXComponents(extra?: MDXComponents): MDXComponents {
     pre: Pre,
     InstallTabs,
     PropsTable,
-    Preview,
     // Live demos are registered here rather than imported per page, so an MDX
     // author writes <OperationTimelineDemo /> and cannot wire it to the wrong
     // component or a stale fixture. The registry has one line per demo.

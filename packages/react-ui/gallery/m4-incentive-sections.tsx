@@ -7,8 +7,7 @@ import {
   readCustomFeeds,
   readFeeds,
 } from '@flare-kit/core'
-import { CustomFeedReview, IncentiveComposer } from '@flare-kit/react-ui'
-import type { ExcludedCustomFeed } from '@flare-kit/react-ui'
+import { CustomFeedReview, type ExcludedCustomFeed, IncentiveComposer } from '@flare-kit/react-ui'
 import type { GallerySection } from './m3-sections'
 import { COSTON2, M4_NOW, PAYER, SOURCE } from './m4-fixtures'
 

@@ -105,7 +105,7 @@ function Probe({
 export function UseX402Demo() {
   return (
     <Preview code={CODE} label="mock x402 outcomes">
-      <div style={{ display: 'grid', gap: 18 }}>
+      <div className="demo-stack">
         <Probe name="useX402 (settled, resource delivered)" reconcile={reconcileDelivered} />
         <Probe name="useX402 (settled, resource failed)" reconcile={reconcileResourceFailed} />
       </div>

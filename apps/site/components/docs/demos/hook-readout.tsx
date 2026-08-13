@@ -8,7 +8,7 @@ import { CodeWindow } from '@flare-kit/react-ui'
  * not a fixture — if the hook's shape changes, this pane changes with it,
  * which is the point.
  */
-export function serializeHookValue(value: unknown): string {
+function serializeHookValue(value: unknown): string {
   return JSON.stringify(
     value,
     (_key, entry) => {

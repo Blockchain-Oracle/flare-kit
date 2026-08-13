@@ -105,7 +105,7 @@ function Probe({
 export function UseGaslessDemo() {
   return (
     <Preview code={CODE} label="mock gasless adapter">
-      <div style={{ display: 'grid', gap: 18 }}>
+      <div className="demo-stack">
         <Probe name="useGasless (chain read: no PaymentExecuted)" reconcile={reconcileSilent} />
         <Probe name="useGasless (chain read: PaymentExecuted)" reconcile={reconcileExecuted} />
       </div>

@@ -1,8 +1,8 @@
 'use client'
 
-import { type RedeemIntent, createMockKit } from '@flare-kit/core'
-import { FlareProvider, useRedeem } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { type RedeemIntent } from '@flare-kit/core'
+import { useRedeem } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -60,12 +60,11 @@ function Probe() {
 }
 
 export function UseRedeemDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

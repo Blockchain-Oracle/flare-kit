@@ -20,22 +20,17 @@ export function CodeBlock({
   code,
   language = 'tsx',
   title,
-  copy = true,
 }: {
   code: string
   language?: Lang
   title?: string
-  copy?: boolean
 }) {
-  const showBar = Boolean(title) || copy
   return (
     <div className="win doc-code">
-      {showBar && (
-        <div className="win-bar">
-          {title && <span className="win-title mono">{title}</span>}
-          {copy && <CopyButton value={code} label="the code" className="win-copy" />}
-        </div>
-      )}
+      <div className="win-bar">
+        {title && <span className="win-title mono">{title}</span>}
+        <CopyButton value={code} label="the code" className="win-copy" />
+      </div>
       {/* Focusable because it scrolls horizontally: a keyboard user must be
           able to reach it to scroll it (axe: scrollable-region-focusable).
           No landmark role — pages hold many code windows, and same-named

@@ -1,8 +1,9 @@
 'use client'
 
-import { createMockKit, mockOperationRecords } from '@flare-kit/core'
-import { FlareProvider, useFlareContext } from '@flare-kit/react'
-import { type ReactNode, useEffect, useMemo } from 'react'
+import { mockOperationRecords } from '@flare-kit/core'
+import { useFlareContext } from '@flare-kit/react'
+import { type ReactNode, useEffect } from 'react'
+import { MockKitProvider } from './mock-kit-provider'
 
 /**
  * A provider whose operation registry has records in it.
@@ -13,7 +14,7 @@ import { type ReactNode, useEffect, useMemo } from 'react'
  * through `upsert`, which is the same door a reconciler uses. Nothing here
  * bypasses the registry or hands a component a feed it did not build.
  */
-export const SEEDED_RECORDS = mockOperationRecords()
+const SEEDED_RECORDS = mockOperationRecords()
 
 function Seed({ children }: { children: ReactNode }) {
   const { registry } = useFlareContext()
@@ -26,10 +27,9 @@ function Seed({ children }: { children: ReactNode }) {
 }
 
 export function SeededRegistry({ children }: { children: ReactNode }) {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
-    <FlareProvider kit={kit}>
+    <MockKitProvider>
       <Seed>{children}</Seed>
-    </FlareProvider>
+    </MockKitProvider>
   )
 }

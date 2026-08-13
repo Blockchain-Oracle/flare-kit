@@ -1,14 +1,11 @@
 'use client'
 
 import { familyFor } from '@flare-kit/contracts'
-import {
-  type AttestationChainState,
-  type AttestationIntent,
-  createMockKit,
-} from '@flare-kit/core'
-import { FlareProvider, useAttestation } from '@flare-kit/react'
+import { type AttestationChainState, type AttestationIntent } from '@flare-kit/core'
+import { useAttestation } from '@flare-kit/react'
 import { OWNER, SUBMITTED } from '@gallery/m3-sections'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -137,12 +134,11 @@ function Probe() {
 }
 
 export function UseAttestationDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit}>
+      <MockKitProvider>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }

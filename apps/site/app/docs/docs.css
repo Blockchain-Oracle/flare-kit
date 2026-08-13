@@ -441,3 +441,9 @@ h4:hover .hash,
     border-bottom: 1px solid var(--fk-border);
   }
 }
+
+/* Stacks two hook probes in one Live pane. */
+.demo-stack {
+  display: grid;
+  gap: 18px;
+}

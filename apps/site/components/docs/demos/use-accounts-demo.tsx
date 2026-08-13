@@ -1,9 +1,9 @@
 'use client'
 
 import { FLARE_NETWORKS } from '@flare-kit/contracts'
-import { MOCK_EPOCH, createMockKit, parseReadOnlyIdentity, restoredSession } from '@flare-kit/core'
-import { FlareProvider, useAccounts } from '@flare-kit/react'
-import { useMemo } from 'react'
+import { MOCK_EPOCH, parseReadOnlyIdentity, restoredSession } from '@flare-kit/core'
+import { useAccounts } from '@flare-kit/react'
+import { MockKitProvider } from './mock-kit-provider'
 import { Preview } from '../preview'
 import { HookReadout } from './hook-readout'
 
@@ -67,12 +67,11 @@ function Probe() {
 }
 
 export function UseAccountsDemo() {
-  const kit = useMemo(() => createMockKit({ seed: 'docs-hooks' }), [])
   return (
     <Preview code={CODE}>
-      <FlareProvider kit={kit} initialAccounts={INITIAL_ACCOUNTS}>
+      <MockKitProvider initialAccounts={INITIAL_ACCOUNTS}>
         <Probe />
-      </FlareProvider>
+      </MockKitProvider>
     </Preview>
   )
 }
