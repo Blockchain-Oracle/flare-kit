@@ -62,7 +62,13 @@ contracts ──▶ core ──┬──▶ react ──▶ react-ui
 - **R-DIST-006:** Styling is restyleable through CSS custom properties under a
   single documented prefix. A host may rebrand without forking components.
 - **R-DIST-007:** Each package ships its own README with a consistent skeleton:
-  install, what it is, the peer dependencies, and links.
+  what it is, install, one complete runnable example, and links. The required
+  peers are documented *by appearing in the install command*, not in a section
+  of their own. Optional peers are omitted from the install line. Mermaid,
+  GitHub alerts, task lists and in-README anchors appear only in the repository
+  README — npm renders none of them. Logos are theme-neutral: `<picture>`
+  dark-mode switching is structurally broken on npm. Amended 2026-08-13; see
+  [README and the npm-rendered surface](../decisions/2026-08-13-readme-and-npm-surface.md).
 
 ## C. Repository and build
 

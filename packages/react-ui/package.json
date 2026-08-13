@@ -2,7 +2,29 @@
   "name": "@flare-kit/react-ui",
   "version": "0.1.0",
   "description": "Styled, embeddable Flare widgets: MintFXRP, OperationTimeline, ConnectButton. Hand-written CSS on the DESIGN.md tokens.",
+  "keywords": [
+    "flare",
+    "react",
+    "components",
+    "widgets",
+    "fassets",
+    "fxrp",
+    "swap",
+    "bridge",
+    "ui",
+    "web3"
+  ],
+  "homepage": "https://flare-kit.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/flare-kit.git",
+    "directory": "packages/react-ui"
+  },
+  "bugs": {
+    "url": "https://github.com/Blockchain-Oracle/flare-kit/issues"
+  },
   "license": "MIT",
+  "author": "Abubakr Jimoh",
   "engines": {
     "node": ">=21"
   },
@@ -44,7 +66,8 @@
   },
   "peerDependencies": {
     "@flare-kit/react": "workspace:^",
-    "react": "^18.3.0 || ^19.0.0"
+    "react": "^18.3.0 || ^19.0.0",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "@flare-kit/react": "workspace:^",

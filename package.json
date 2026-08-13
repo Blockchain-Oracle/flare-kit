@@ -1,14 +1,21 @@
 {
   "name": "flare-kit",
   "version": "0.0.0",
-  "private": true,
   "description": "The developer toolkit for Flare: one operation lifecycle across headless TypeScript, React hooks, embeddable widgets and agent tools.",
+  "homepage": "https://flare-kit.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/flare-kit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Blockchain-Oracle/flare-kit/issues"
+  },
   "license": "MIT",
-  "type": "module",
-  "packageManager": "pnpm@10.33.0",
+  "author": "Abubakr Jimoh",
   "engines": {
     "node": ">=20.11"
   },
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
@@ -35,5 +42,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.66.0",
     "vitest": "^4.1.10"
-  }
+  },
+  "private": true,
+  "packageManager": "pnpm@10.33.0"
 }

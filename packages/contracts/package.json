@@ -2,7 +2,29 @@
   "name": "@flare-kit/contracts",
   "version": "0.1.0",
   "description": "Typed ABIs and the single address registry for Flare networks. Every address in flare-kit comes from here.",
+  "keywords": [
+    "flare",
+    "coston2",
+    "fassets",
+    "fxrp",
+    "ftso",
+    "fdc",
+    "abi",
+    "address-registry",
+    "viem",
+    "web3"
+  ],
+  "homepage": "https://flare-kit.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/flare-kit.git",
+    "directory": "packages/contracts"
+  },
+  "bugs": {
+    "url": "https://github.com/Blockchain-Oracle/flare-kit/issues"
+  },
   "license": "MIT",
+  "author": "Abubakr Jimoh",
   "engines": {
     "node": ">=20.11"
   },

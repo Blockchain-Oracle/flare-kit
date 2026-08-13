@@ -101,6 +101,14 @@ every later capability reuses the lifecycle engine it forces us to build.
 - `packages/*/package.json`, `packages/*/tsconfig.json`, `packages/*/tsup.config.ts`,
   `packages/*/vitest.config.ts` — per-package manifests and build config; R1's
   dual ESM/CJS and publint requirement lives here, not in the root
+- `README.md` — the repository README. Contributor-facing, and the only surface
+  that may carry mermaid: npm renders none of it
+- `packages/*/README.md` — the npm-facing README per package, on the R-DIST-007
+  skeleton; `contracts` diverges long because a registry package has no
+  docs-site page to link to
+- `LICENSE`, `packages/*/LICENSE` — every package declares MIT, so every
+  published tarball must carry the text. npm packs only from within a package
+  directory, so the root copy alone would ship none of them
 - `packages/contracts/src/chains.ts` — network + underlying-chain constants (ids,
   RPCs, explorers); split from the address registry because it is what makes
   "mainnet-capable with no source rewrite" true

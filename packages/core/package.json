@@ -2,7 +2,29 @@
   "name": "@flare-kit/core",
   "version": "0.1.0",
   "description": "The durable operation lifecycle for Flare: intent, quote, unsigned plan, execution, evidence and recovery. Headless, no React.",
+  "keywords": [
+    "flare",
+    "coston2",
+    "fassets",
+    "fxrp",
+    "ftso",
+    "fdc",
+    "operation-lifecycle",
+    "viem",
+    "typescript",
+    "web3"
+  ],
+  "homepage": "https://flare-kit.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/flare-kit.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/Blockchain-Oracle/flare-kit/issues"
+  },
   "license": "MIT",
+  "author": "Abubakr Jimoh",
   "engines": {
     "node": ">=21"
   },
