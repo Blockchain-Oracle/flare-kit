@@ -28,6 +28,9 @@ import { PROPOSAL_SOURCE_LABEL, PROPOSAL_STATE_VISUAL } from './proposal-visuals
  */
 
 const DASH = '—'
+/** Governance weight is 18-decimal WNat labelled `VP` by definition — a constant, not an option. */
+const VP_DECIMALS = 18
+const VP_ASSET = 'VP'
 
 export interface ProposalDetailProps {
   /** The proposal's full detail, the honest `unknown` shape, or `undefined` while a read is pending. */
@@ -37,11 +40,10 @@ export interface ProposalDetailProps {
   readonly source?: ProposalSource
   /** The cross-network label — this proposal is read from mainnet. */
   readonly networkLabel?: string
-  /** Vote-power scale/unit — governance weight is 18-decimal WNat, labelled `VP`. */
-  readonly votesDecimals?: number
-  readonly votesAsset?: string
-  /** The carried-vote reason from core's `planCastVote`, when the host has one. */
-  readonly carriedVoteReason?: string
+  /** The carried-vote reason, from core's `planCastVote`. REQUIRED: `planCastVote` is the one
+   *  authority on why the vote path is carried, and a second copy of that claim in this file's
+   *  own prose would eventually diverge from it. */
+  readonly carriedVoteReason: string
   readonly theme?: 'light' | 'dark'
   readonly className?: string
 }
@@ -60,8 +62,6 @@ export function ProposalDetail({
   proposalId,
   source,
   networkLabel = 'Flare mainnet',
-  votesDecimals = 18,
-  votesAsset = 'VP',
   carriedVoteReason,
   theme,
   className,
@@ -94,8 +94,8 @@ export function ProposalDetail({
         {/* Tallies + thresholds. On a `ProposalUnknown` (a failed detail read)
             every value is "—" — never a fabricated tally. */}
         <Details aria-label="Tallies and thresholds">
-          <DetailRow label="For" value={view ? amount(view.for, votesDecimals, votesAsset) : DASH} />
-          <DetailRow label="Against" value={view ? amount(view.against, votesDecimals, votesAsset) : DASH} />
+          <DetailRow label="For" value={view ? amount(view.for, VP_DECIMALS, VP_ASSET) : DASH} />
+          <DetailRow label="Against" value={view ? amount(view.against, VP_DECIMALS, VP_ASSET) : DASH} />
           <DetailRow
             label="Quorum threshold"
             value={view ? bips(view.thresholdBIPS) : DASH}
@@ -106,11 +106,21 @@ export function ProposalDetail({
             value={view ? bips(view.majorityBIPS) : DASH}
             {...(view ? { sub: `${view.majorityBIPS / 100}% of votes cast must be in favour` } : {})}
           />
+          {/* Labelled PER SOURCE. The trailing uint is a different field in each contract:
+              the FTSO shape's is an UNCONFIRMED best-effort total, while `IGovernor` names
+              its own `_circulatingSupply` authoritatively. Rendering the foundation value
+              under "Total vote power" relabelled a named field as something it isn't — and
+              the disclaimer that would have said so was gated on `isFtso`, so it never
+              appeared there. Each source now carries its own label and its own sub-line. */}
           <DetailRow
-            label="Total vote power"
-            value={view && view.totalVotePower !== undefined ? amount(view.totalVotePower, votesDecimals, votesAsset) : DASH}
-            {...(view && isFtso
-              ? { sub: 'As reported by the FTSO proposal — a vote-power total, not a definitive circulating supply.' }
+            label={isFtso ? 'Total vote power' : 'Circulating supply'}
+            value={view && view.totalVotePower !== undefined ? amount(view.totalVotePower, VP_DECIMALS, VP_ASSET) : DASH}
+            {...(view
+              ? {
+                  sub: isFtso
+                    ? 'As reported by the FTSO proposal — a vote-power total, not a definitive circulating supply.'
+                    : 'The foundation proposal’s own `circulatingSupply` field, as the contract reports it.',
+                }
               : {})}
           />
         </Details>
@@ -136,7 +146,7 @@ export function ProposalDetail({
           />
           <DetailRow
             label="Your vote power"
-            value={view?.accountVotes !== undefined ? amount(view.accountVotes, votesDecimals, votesAsset) : DASH}
+            value={view?.accountVotes !== undefined ? amount(view.accountVotes, VP_DECIMALS, VP_ASSET) : DASH}
             {...(view && isFtso && view.accountVotes === undefined
               ? { sub: 'The FTSO proposal shape exposes no per-account getVotes.' }
               : {})}
@@ -164,9 +174,11 @@ export function ProposalDetail({
           </Button>
         </div>
 
+        {/* The reason comes from `planCastVote` and ONLY from there. This file used to carry
+            its own paraphrase as a fallback — two copies of the same claim about protocol
+            reality, which will diverge. */}
         <Note tone="info" title="Voting isn't built here yet">
-          {carriedVoteReason ??
-            'Casting a vote is carried this milestone: no Active proposal is executable on the write network (Coston2 hosts none) and this account holds no verified mainnet governance vote power. The path is built and gated — never signed until a live run confirms it.'}
+          {carriedVoteReason}
         </Note>
       </Panel>
     </div>

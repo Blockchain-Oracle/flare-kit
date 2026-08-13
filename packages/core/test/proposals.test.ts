@@ -126,10 +126,15 @@ describe('discoverProposals — bounded scan + getLastProposal (M12-R5)', () => 
     expect(windows.length).toBeGreaterThan(0)
     for (const w of windows) {
       expect(w.to - w.from + 1n).toBeLessThanOrEqual(30n)
-      expect(w.from).toBeGreaterThanOrEqual(900n)
+      expect(w.from).toBeGreaterThanOrEqual(901n)
       expect(w.to).toBeLessThanOrEqual(1000n)
     }
-    expect(windows[0]?.from).toBe(900n) // stops at lookbackBlocks
+    // EXACTLY lookbackBlocks (100) blocks scanned, inclusive of latest — 901..1000, not
+    // 900..1000, which would be 101.
+    expect(windows[0]?.from).toBe(901n)
+    expect(windows[windows.length - 1]?.to).toBe(1000n)
+    const scanned = windows.reduce((n, w) => n + (w.to - w.from + 1n), 0n)
+    expect(scanned).toBe(100n)
 
     expect(found).toEqual([
       {
@@ -209,6 +214,25 @@ describe('discoverProposals — bounded scan + getLastProposal (M12-R5)', () => 
       },
     })
     await expect(discoverProposals(client, FLARE, 100n, 30n)).rejects.toThrow('rpc down')
+  })
+
+  // M-h4: `?? 0n` turned an undecodable event field into a confident epoch-0 timestamp, so
+  // the first screen to render a voting window would have rendered 1 January 1970.
+  it('an undecodable voteTimes leaves voteStart/voteEnd undefined — never a fabricated 1970 window', async () => {
+    const client = fakeClient({
+      latest: 1000n,
+      events: (from, to) =>
+        from <= 950n && 950n <= to
+          ? [{ blockNumber: 950n, args: { proposalId: 7n, proposer: PROPOSER, votePowerBlock: 940n } }] // no voteTimes
+          : [],
+      reads: { getLastProposal: () => [0n, ''], state: () => 1 },
+    })
+    const found = await discoverProposals(client, FLARE, 100n, 30n)
+    expect(found[0]?.voteStart).toBeUndefined()
+    expect(found[0]?.voteEnd).toBeUndefined()
+    expect(found[0]?.voteStart).not.toBe(0n)
+    // The fields that DID decode are intact.
+    expect(found[0]?.votePowerBlock).toBe(940n)
   })
 
   it('a throwing state(id) read -> that summary is state:unknown, real event fields intact (never fabricated)', async () => {

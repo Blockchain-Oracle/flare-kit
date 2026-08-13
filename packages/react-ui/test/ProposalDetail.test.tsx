@@ -1,4 +1,5 @@
 import type { ProposalDetailView, ProposalUnknown } from '@flare-kit/core'
+import { planCastVote } from '@flare-kit/core'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ProposalDetail } from '../src/ProposalDetail.js'
@@ -15,6 +16,13 @@ import { ProposalDetail } from '../src/ProposalDetail.js'
  */
 
 const PROPOSER = '0x1111111111111111111111111111111111111111' as `0x${string}`
+
+// `carriedVoteReason` is REQUIRED: `planCastVote` is the one authority on why the vote path is
+// carried, so the component no longer keeps its own paraphrase as a fallback.
+const CARRIED = planCastVote({
+  proposal: { id: 1n, source: 'ftso', state: 'defeated', proposer: PROPOSER, votePowerBlock: undefined, voteStart: 1_000n, voteEnd: 2_000n },
+  reads: { votes: 0n, delegate: '0x0000000000000000000000000000000000000000' },
+}).error.reason
 
 const ftsoDefeated: ProposalDetailView = {
   id: 1n,
@@ -49,7 +57,7 @@ const buttonByText = (c: HTMLElement, text: string) =>
 
 describe('ProposalDetail — full state, tallies, BIPS, totalVotePower (mono, full precision)', () => {
   it('renders the full Defeated state and the for/against tallies at full precision in the mono face', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
 
     // The lifecycle state, as a word.
     expect(screen.getByText('Defeated')).toBeInTheDocument()
@@ -62,7 +70,7 @@ describe('ProposalDetail — full state, tallies, BIPS, totalVotePower (mono, fu
   })
 
   it('renders the quorum threshold and majority BIPS as their exact integers in mono', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
     const threshold = valueOf(container, 'Quorum threshold')
     const majority = valueOf(container, 'Majority')
     expect(threshold.textContent).toContain('6600')
@@ -72,7 +80,7 @@ describe('ProposalDetail — full state, tallies, BIPS, totalVotePower (mono, fu
   })
 
   it('renders totalVotePower HONESTLY — its real value, labelled as vote power, NOT a definitive circulating supply', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
     // The real value, full precision, in the mono face.
     const tvp = valueOf(container, 'Total vote power')
     expect(tvp.textContent).toContain('5217.782567582675528275')
@@ -84,9 +92,43 @@ describe('ProposalDetail — full state, tallies, BIPS, totalVotePower (mono, fu
   })
 })
 
+// M-h2: unreachable today (no foundation proposal exists on either network), but the trailing
+// uint is a DIFFERENT field per contract — `IGovernor` names its own `_circulatingSupply`
+// authoritatively, and rendering it under "Total vote power" relabelled a named field as
+// something it isn't, with the disclaimer gated on `isFtso` so it never appeared.
+describe('ProposalDetail — the trailing uint is labelled PER SOURCE', () => {
+  const foundationDetail: ProposalDetailView = {
+    ...ftsoDefeated,
+    id: 42n,
+    source: 'foundation',
+    state: 'active',
+    votePowerBlock: 1_234n,
+    hasVoted: false,
+    accountVotes: 0n,
+  }
+
+  it('a foundation proposal labels it "Circulating supply" — the field IGovernor actually names', () => {
+    const { container } = render(<ProposalDetail detail={foundationDetail} carriedVoteReason={CARRIED} />)
+    expect(screen.getByText('Circulating supply')).toBeInTheDocument()
+    expect(screen.queryByText('Total vote power')).toBeNull()
+    // And it carries its own sub-line rather than silently dropping the FTSO-gated one.
+    const row = valueOf(container, 'Circulating supply')
+    expect(row.querySelector('.fk-row-v-sub')?.textContent?.toLowerCase()).toContain('circulatingsupply')
+    // The FTSO-only disclaimer must NOT appear on a foundation proposal.
+    expect(container.textContent?.toLowerCase()).not.toContain('as reported by the ftso proposal')
+  })
+
+  it('an FTSO proposal keeps "Total vote power" and its unconfirmed-total disclaimer', () => {
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
+    expect(screen.getByText('Total vote power')).toBeInTheDocument()
+    expect(screen.queryByText('Circulating supply')).toBeNull()
+    expect(valueOf(container, 'Total vote power').textContent?.toLowerCase()).toContain('not a definitive circulating supply')
+  })
+})
+
 describe('ProposalDetail — the FTSO shape lacks fields, and they render "—", never fabricated', () => {
   it('votePowerBlock undefined → "—", never a fabricated block number', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
     const block = bareOf(container, 'Vote-power block')
     expect(block).toBe('—')
     // No fabricated numeric block leaked into the value.
@@ -94,7 +136,7 @@ describe('ProposalDetail — the FTSO shape lacks fields, and they render "—",
   })
 
   it('hasVoted undefined → "—", never a fabricated Yes/No', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
     const voted = bareOf(container, 'You voted')
     expect(voted).toBe('—')
     expect(voted.toLowerCase()).not.toContain('yes')
@@ -102,7 +144,7 @@ describe('ProposalDetail — the FTSO shape lacks fields, and they render "—",
   })
 
   it('accountVotes undefined → "—", never a fabricated 0', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
     const yourVp = bareOf(container, 'Your vote power')
     expect(yourVp).toBe('—')
     expect(yourVp).not.toMatch(/\d/)
@@ -111,7 +153,7 @@ describe('ProposalDetail — the FTSO shape lacks fields, and they render "—",
 
 describe('ProposalDetail — castVote is CARRIED (declared-unbuilt), never a success', () => {
   it('presents the cast-vote affordance disabled, marks the surface carried, and never renders a success', () => {
-    const { container } = render(<ProposalDetail detail={ftsoDefeated} />)
+    const { container } = render(<ProposalDetail detail={ftsoDefeated} carriedVoteReason={CARRIED} />)
 
     // The affordance is present but not actionable — it is built and gated, never signable this milestone.
     const cast = buttonByText(container, 'cast vote')
@@ -139,7 +181,7 @@ describe('ProposalDetail — castVote is CARRIED (declared-unbuilt), never a suc
 
 describe('ProposalDetail — an unknown proposal renders "—", never a fabricated tally', () => {
   it('a failed detail read (ProposalUnknown) shows Unknown and every tally as "—"', () => {
-    const { container } = render(<ProposalDetail detail={unknownDetail} />)
+    const { container } = render(<ProposalDetail detail={unknownDetail} carriedVoteReason={CARRIED} />)
 
     expect(screen.getByText('Unknown')).toBeInTheDocument()
     expect(root(container)?.getAttribute('data-proposal-state')).toBe('unknown')

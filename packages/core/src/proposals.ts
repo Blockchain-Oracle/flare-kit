@@ -82,7 +82,9 @@ export async function discoverProposals(
   // 1) Bounded PollingFoundation ProposalCreated scan (the ~30-block eth_getLogs cap).
   const latest = await client.getBlockNumber()
   const step = maxRange > 0n ? maxRange : 1n
-  let cursor = latest > lookbackBlocks ? latest - lookbackBlocks : 0n
+  // `+ 1n` so the scan covers EXACTLY `lookbackBlocks` blocks inclusive of `latest` (the
+  // Task-1 probe's `latest - LOOKBACK + 1n`), not `lookbackBlocks + 1`.
+  let cursor = latest > lookbackBlocks ? latest - lookbackBlocks + 1n : 0n
   while (cursor <= latest) {
     const end = cursor + step - 1n > latest ? latest : cursor + step - 1n
     const logs = (await client.getContractEvents({
@@ -102,8 +104,10 @@ export async function discoverProposals(
         state,
         proposer: log.args.proposer as `0x${string}`,
         votePowerBlock: log.args.votePowerBlock,
-        voteStart: log.args.voteTimes?.[0] ?? 0n,
-        voteEnd: log.args.voteTimes?.[1] ?? 0n,
+        // An undecodable `voteTimes` stays undefined — `?? 0n` would have turned it into a
+        // confident 1970 voting window.
+        voteStart: log.args.voteTimes?.[0],
+        voteEnd: log.args.voteTimes?.[1],
       })
     }
     cursor = end + 1n

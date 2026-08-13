@@ -27,8 +27,9 @@ import { type FlareNetworkKey, type GovernanceDeployment, governanceFor } from '
  *    `0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d`) read back the
  *    zero address. `governanceVerified` flipped true on Coston2 only — Flare mainnet
  *    stays false (a read lens, never a write target this milestone).
- *  - The one real proposal (Flare mainnet, `getLastProposal`, source 'ftso'): id 1,
- *    "Block-latency parameter changes", state index 3 = Defeated (the FTSO enum, NOT the
+ *  - The one real proposal (Flare mainnet, `getLastProposal`, source 'ftso'): id 1, whose
+ *    description string is carried VERBATIM from the probe (name/description/url, single
+ *    quotes as the chain returned them), state index 3 = Defeated (the FTSO enum, NOT the
  *    foundation one — see `proposal-mapping.ts`), for 2354.308387975507843417, against 0,
  *    threshold 6600 BIPS, majority 5000 BIPS, totalVotePower 5217.782567582675528275
  *    (UNCONFIRMED best-effort). Coston2 hosts no proposal — `getLastProposal` id 0,
@@ -59,7 +60,13 @@ export const MOCK_GOVERNANCE_OBSERVED = {
   // The one real proposal ever discoverable live (Flare mainnet, source 'ftso', id 1).
   proposal: {
     id: 1n,
-    description: '{"name":"Block-latency parameter changes"}',
+    // VERBATIM from the probe (`.thoughts/verification/2026-08-13-m12-probe.json`,
+    // `networks.flare.discovery.pollingFtso.lastProposalDescription`). Copied character for
+    // character, single quotes and all — reformatting or truncating it would be the one place
+    // in this file that does not reproduce exactly what the chain returned, which is the
+    // whole discipline of the file.
+    description:
+      "{'name': 'Block-latency parameter changes', 'description': 'Block-latency parameter changes', 'url': 'https://forum.flare.network/t/fast-updates-parameter-changes/423'}",
     proposer: '0xb5Dd6cA7b14bd7d2B6E296983D0AA0D373979CFE' as Address,
     voteStart: 1_733_413_499n,
     voteEnd: 1_733_586_299n,

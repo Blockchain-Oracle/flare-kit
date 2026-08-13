@@ -27,11 +27,17 @@ import { FLARE_NETWORKS, type FlareNetworkKey } from './chains.js'
  * ABSENT from `getAllContracts()` on both. No second literal exists anywhere else (R2).
  *
  * `governanceVerified` is the M12 analog of `delegationVerified` / `stakeVerified`: the
- * surface is trusted to emit a governance-delegation plan (move real governance vote
- * power to a representative) only after a live run confirms the round trip on-chain. It
- * starts `false` on BOTH networks. Only Coston2 ever flips it — in the Task 6 live
- * verification, after a confirmed `getDelegateOfAtNow` read following a real delegate.
- * Mainnet is a read lens and never flips this milestone. Never before a confirmed read.
+ * surface is trusted to emit a governance-delegation plan (move real governance vote power to
+ * a representative) only after a live run confirms the round trip on-chain. It started `false`
+ * on both networks and is now `true` on COSTON2 ONLY, flipped by the Task 6 live round trip on
+ * 2026-08-13 — `delegate(0xDddF9918…ea0a)` (tx `0xc0da39ab…19d7`, block 34007574) read back the
+ * target through `getDelegateOfAtNow`, and `undelegate()` (tx `0x5537335d…bea7d`, block
+ * 34007843) read back the zero address. Evidence:
+ * `.thoughts/verification/2026-08-13-m12-governance.md`.
+ *
+ * Flare mainnet stays `false`: it is the proposal read lens, never a write target this
+ * milestone, and no live run has driven a governance delegation there. The rule the flip
+ * followed still binds anything that comes after it — never `true` before a confirmed read.
  */
 
 export interface GovernanceDeployment {
@@ -46,9 +52,10 @@ export interface GovernanceDeployment {
   /** 114 Coston2 (write/verify target) | 14 Flare (proposal read lens). */
   readonly chainId: number
   /**
-   * Starts false on both networks. Only a live Coston2 governance-delegation round trip
-   * (Task 6) flips it, after the on-chain `getDelegateOfAtNow` read-back confirms it.
-   * Mainnet is a read lens and never flips. Never before a confirmed read.
+   * `true` on Coston2 only, flipped by the live Task 6 round trip (2026-08-13) after the
+   * on-chain `getDelegateOfAtNow` read-back confirmed both the delegate and the undelegate.
+   * Flare mainnet stays `false` — a read lens, never a write target this milestone. Never
+   * `true` before a confirmed read.
    */
   readonly governanceVerified: boolean
 }
@@ -63,8 +70,9 @@ const GOVERNANCE_INTERNAL: Readonly<Record<FlareNetworkKey, GovernanceDeployment
     pollingFtso: '0x0f86aD3D5a910Bd0D6A73f7c256bDae1A8Ff7563',
     pollingManagementGroup: '0x056A8AcdCd2B5D3bF7a4F1d218B8A1660BB4D912',
     chainId: FLARE_NETWORKS.coston2.id,
-    // Starts false. Task 6 flips this after the confirmed on-chain round trip
-    // (delegate → getDelegateOfAtNow read → undelegate). Never before.
+    // Flipped by the Task 6 live round trip, 2026-08-13: delegate tx 0xc0da39ab…19d7 (block
+    // 34007574) read back the target, undelegate tx 0x5537335d…bea7d (block 34007843) read
+    // back the zero address. Evidence: .thoughts/verification/2026-08-13-m12-governance.md.
     governanceVerified: true,
   },
   flare: {

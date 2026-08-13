@@ -51,8 +51,14 @@ export interface ProposalSummary {
   readonly proposer: `0x${string}`
   /** `undefined` for FTSO proposals — the deployed FTSO shape has no votePowerBlock. */
   readonly votePowerBlock: bigint | undefined
-  readonly voteStart: bigint
-  readonly voteEnd: bigint
+  /**
+   * The voting window, in seconds. `undefined` — never `0n` — when the event's `voteTimes`
+   * array did not decode: an epoch-0 timestamp is a confident claim that voting opened on
+   * 1 January 1970, and the first screen to render a voting window would render exactly that.
+   * Consistent with `votePowerBlock` above: an absent field renders "—", not a fabrication.
+   */
+  readonly voteStart: bigint | undefined
+  readonly voteEnd: bigint | undefined
 }
 
 export interface ProposalDetailView extends ProposalSummary {
