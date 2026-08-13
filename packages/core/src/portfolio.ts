@@ -9,6 +9,7 @@ import {
 } from './observation.js'
 import type { OperationState } from './states.js'
 import type { DelegationMode, DelegationReads } from './delegation-adapter.js'
+import type { PersonalAccountState } from './smart-accounts/personal-account.js'
 import type { StakePosition } from './pchain-rpc.js'
 
 /**
@@ -72,6 +73,12 @@ export const UNBUILT_POSITION_TYPES: readonly UnbuiltPositionType[] = Object.fre
     label: 'Stakes',
     reason: 'No staking capability is verified yet, so stakes are not read.',
   }),
+  // M13-R11: the smart account is BUILT and VERIFIED — the live Coston2 instruction round
+  // trip (2026-08-13, XRPL payment E4385C7A…117D → FDC round 1424618 → dispatch
+  // 0xd23a2d66…abb1, confirmed by exact balance deltas) flipped `smartAccountsVerified`
+  // true, so its position is observed via `smartAccountPosition` below and it declares
+  // itself unbuilt no longer. Mainnet stays a read lens; its flag never flips this
+  // milestone, which is why the view takes the deployment rather than assuming Coston2.
   // M12-R10 / Task 6: governance is now BUILT — the live Coston2 delegate/undelegate round trip
   // (2026-08-13, delegate tx 0xc0da39ab…d1419d7, read back via getDelegateOfAtNow) flipped
   // `governanceVerified` true, so its position is observed via `governancePosition`
@@ -177,6 +184,56 @@ export interface Portfolio {
   /** True when any attached identity holds no key (M2-AC5). */
   readonly readOnly: boolean
   readonly assembledAt: number
+}
+
+/**
+ * The XRPL-controlled smart-account position (M13-R11).
+ *
+ * Three states, and the middle one is the reason this is not a boolean. A personal account
+ * is a CREATE2 address that EXISTS as an answer before the contract exists on chain, so
+ * "derived but never deployed" is a real, common holding — it is what every XRPL address
+ * has until its first instruction. Rendering it as `observed` would imply a contract is
+ * there; rendering it as `unavailable` would imply we could not look. It is its own state.
+ *
+ * `unavailable` is reserved for a read that did not land. The M2 coverage rule applies
+ * unchanged: an absent read is never a confident zero.
+ */
+export type SmartAccountPositionView =
+  | {
+      readonly status: 'observed'
+      readonly address: `0x${string}`
+      readonly xrplOwner: string
+      /** `undefined` where the balance read failed — never a zero standing in for it. */
+      readonly fassetBalance: bigint | undefined
+      readonly nonce: bigint | undefined
+    }
+  | {
+      /** Derived, and demonstrably not deployed yet. The first instruction deploys it. */
+      readonly status: 'not-deployed'
+      readonly address: `0x${string}`
+      readonly xrplOwner: string
+    }
+  | { readonly status: 'unavailable' }
+
+export function smartAccountPosition(
+  account: PersonalAccountState | undefined,
+  verified: boolean,
+): SmartAccountPositionView {
+  // The verified gate first, exactly as the plan does it: an unverified network must not
+  // present a position read off a path no live run has confirmed.
+  if (!verified || account === undefined) return { status: 'unavailable' }
+  // `deployed === undefined` is a FAILED code read, not a "no". It cannot claim
+  // `not-deployed`, so it falls through to the observed row with what was actually read.
+  if (account.deployed === false) {
+    return { status: 'not-deployed', address: account.address, xrplOwner: account.xrplOwner }
+  }
+  return {
+    status: 'observed',
+    address: account.address,
+    xrplOwner: account.xrplOwner,
+    fassetBalance: account.fassetBalance,
+    nonce: account.nonce,
+  }
 }
 
 export interface AssemblePortfolioInput {

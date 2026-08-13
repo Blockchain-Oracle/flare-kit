@@ -1152,8 +1152,12 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   backfill scan over the indexed `InstructionExecuted` topics; an incomplete
   scan yields `unavailable`, never an empty history.
 - `packages/core/src/mock-smart-accounts.ts` — M13-R8. Written after the live
-  run; drives the real plan builder and real reconciler, copies observed,
-  refuses unobserved.
+  runs of 2026-08-13; drives the real plan builder and real reconciler, copies
+  observed, refuses unobserved. Its recorded references are re-derived by the
+  real encoder in test, so they stay bytes the Coston2 controller actually
+  accepted. The deposit is recorded with `dispatchedByUs: false` — its
+  instruction executed and its effect is real, but the operator's backend
+  submitted the proof first, and claiming that leg would be inventing it.
 - `packages/core/scripts/probe-smart-accounts.mjs` — M13 Verification / M13-R1.
   Dev, not shipped: the keyless both-network probe (controller by name, operator
   wallets, source id, proof window, fees, vaults, agent vaults, executor, and the
