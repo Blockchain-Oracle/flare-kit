@@ -135,7 +135,7 @@ function Probe() {
 
 export function UseAttestationDemo() {
   return (
-    <Preview code={CODE}>
+    <Preview code={CODE} label="mock kit — compressed round clock">
       <MockKitProvider>
         <Probe />
       </MockKitProvider>

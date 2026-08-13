@@ -49,6 +49,10 @@ export function Incentive({ reader, payer, onOffer }) {
  * computed rather than quoted: it lands on 366210937499999999 wei, which the
  * live contract accepted in a dry run and rejected one wei below.
  */
+/* The five literal readings below are the recorded Coston2 measurements —
+   .thoughts/verification/2026-08-05-live-ftso-flare-testnet-coston2.json. If
+   the incentive state is ever re-measured, update them from that record so
+   this page cannot silently disagree with OBSERVED_INCENTIVE_PRICING. */
 const OBSERVED_COSTON2_INCENTIVE_STATE: Readonly<Record<string, bigint>> = {
   getRange: 243_388_915_243_820_045_087_367_015_432_192n,
   getExpectedSampleSize: 1_993_841_993_677_373_809_355_710_590_420_516_864n,

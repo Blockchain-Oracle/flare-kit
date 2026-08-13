@@ -1,14 +1,16 @@
 ---
 title: Mock mode
-description: Every widget in these docs runs against createMockKit — a real seeded state machine, no wallet or chain. It is always labelled, and never a failure fallback.
+description: Every preview in these docs runs against the seeded mock kit or fixtures observed in recorded live runs — no wallet or chain. The label names the source, and mock is never a failure fallback.
 breadcrumb: ['Docs', 'Mock mode']
 prev: { href: '/docs/theming', label: 'Theming' }
 next: { href: '/docs/components/mint-fxrp', label: 'MintFXRP' }
 ---
 
-Every preview in these docs runs on `createMockKit()`. No wallet, no chain, no
-testnet funds — and it is the same components and hooks you ship, driven by a
-real state machine rather than a set of fixtures.
+No preview in these docs touches a wallet, a chain or testnet funds. The
+operation surfaces run on `createMockKit()` — a real seeded state machine —
+and the read surfaces render fixtures **observed** in recorded live runs, so
+what you see is either the machine running or a value a chain actually
+returned. Nothing is authored for the screenshot.
 
 ## A seeded state machine
 
@@ -43,9 +45,12 @@ Each scenario is a real path the operation can take, not a cosmetic flag:
 
 ## Always labelled, never a fallback
 
-A mock surface is always labelled `mock kit`. Mock mode is explicit — it is never
-triggered by a failure, and a mock value is never dressed up as a live chain
-result. That rule is why a screenshot from these docs can be trusted.
+Every preview carries a label naming what drove it — `mock kit` for the state
+machine, `observed fixtures` for values recorded from live runs, `registry
+constants` where a table reads the package itself. Mock mode is explicit — it
+is never triggered by a failure, and a mock value is never dressed up as a
+live chain result. That rule is why a screenshot from these docs can be
+trusted.
 
 ## Swap to live
 

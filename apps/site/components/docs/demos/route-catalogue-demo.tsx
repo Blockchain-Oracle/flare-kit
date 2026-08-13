@@ -34,5 +34,5 @@ export function Routes({ fees }: { fees: Record<string, Amount | null> }) {
 }`
 
 export function RouteCatalogueDemo() {
-  return <GalleryDemo cases={ROUTE_CASES} code={CODE} />
+  return <GalleryDemo cases={ROUTE_CASES} code={CODE} label="observed fixtures" />
 }
