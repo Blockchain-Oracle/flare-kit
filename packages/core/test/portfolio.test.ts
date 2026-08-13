@@ -6,9 +6,9 @@ import {
   UNBUILT_POSITION_TYPES,
   assemblePortfolio,
   delegationPosition,
-  governancePosition,
   stakePosition,
 } from '../src/portfolio.js'
+import { governancePosition } from '../src/governance.js'
 import type { DelegationReads } from '../src/delegation-adapter.js'
 import type { StakePosition } from '../src/pchain-rpc.js'
 import {

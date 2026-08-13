@@ -9,7 +9,6 @@ import {
 } from './observation.js'
 import type { OperationState } from './states.js'
 import type { DelegationMode, DelegationReads } from './delegation-adapter.js'
-import type { GovernanceVoteReads } from './governance-adapter.js'
 import type { StakePosition } from './pchain-rpc.js'
 
 /**
@@ -73,8 +72,8 @@ export const UNBUILT_POSITION_TYPES: readonly UnbuiltPositionType[] = Object.fre
     label: 'Stakes',
     reason: 'No staking capability is verified yet, so stakes are not read.',
   }),
-  // M12: the governance position MECHANISM is built (`governancePosition` below), but
-  // `governance` STAYS declared-unbuilt while `governanceVerified` is false — same rule as
+  // M12: the governance position MECHANISM is built (`governancePosition` in `governance.ts`),
+  // but `governance` STAYS declared-unbuilt while `governanceVerified` is false — same rule as
   // stake. This row is removed (exactly as delegation's was) only when a live Coston2 round
   // trip flips `governanceVerified` true (Task 6).
   Object.freeze({
@@ -143,27 +142,6 @@ export function stakePosition(
 ): StakePositionView {
   if (reads === undefined) return { status: 'unavailable' }
   return { status: 'observed', stakes: reads.stakes, mirroredVotePower: reads.mirroredVotePower }
-}
-
-/**
- * The governance position (M12). The mechanism mirrors `delegationPosition` / `stakePosition`:
- * an ABSENT read (`undefined` — `readGovernanceVotes` returned undefined because a read
- * threw) is `unavailable`, NEVER a fabricated confident zero, because a read that never
- * returned knows nothing about this account. A present read is `observed`, even when it
- * observes an empty position — a genuine blank-slate account really reads `getVotes` 0n and
- * `getDelegateOfAtNow` the zero address (probe-confirmed), and that is a REAL observed-empty
- * holding, distinct from unavailable.
- *
- * The portfolio keeps `governance` DECLARED-UNBUILT (above) while `governanceVerified` is
- * false: this function is the built mechanism the flip surfaces, not the flip itself.
- */
-export type GovernancePositionView =
-  | { readonly status: 'observed'; readonly votes: bigint; readonly delegate: `0x${string}` }
-  | { readonly status: 'unavailable' }
-
-export function governancePosition(reads: GovernanceVoteReads | undefined): GovernancePositionView {
-  if (reads === undefined) return { status: 'unavailable' }
-  return { status: 'observed', votes: reads.votes, delegate: reads.delegate }
 }
 
 /**

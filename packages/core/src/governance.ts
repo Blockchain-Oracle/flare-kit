@@ -2,7 +2,7 @@
 import { isAddress, zeroAddress } from 'viem'
 import type { GovernanceDeployment } from '@flare-kit/contracts'
 import type { OperationRecord, OperationStep } from './operation.js'
-import { buildDelegateCall, buildUndelegateCall } from './governance-adapter.js'
+import { buildDelegateCall, buildUndelegateCall, type GovernanceVoteReads } from './governance-adapter.js'
 
 /**
  * The M12 governance-delegation plan builder — delegate governance vote power to a single
@@ -123,4 +123,28 @@ export function planGovernance(args: {
   // undelegate: refuse when there is no current delegate to clear (a gas-burning no-op).
   if (reads.delegate.toLowerCase() === zeroAddress) return asError({ code: 'no_delegate' })
   return asPlan(intent, [buildUndelegateCall(deployment)])
+}
+
+/**
+ * The governance position view (M12). It lives here in the governance domain module (not
+ * in `portfolio.ts`, which keeps the `governance` DECLARED-UNBUILT entry) — the M12 read
+ * mechanism stays together, and `portfolio.ts` stays under the 300-line limit.
+ *
+ * The mechanism mirrors `delegationPosition` / `stakePosition`: an ABSENT read (`undefined`
+ * — `readGovernanceVotes` returned undefined because a read threw) is `unavailable`, NEVER
+ * a fabricated confident zero, because a read that never returned knows nothing about this
+ * account. A present read is `observed`, even when it observes an empty position — a genuine
+ * blank-slate account really reads `getVotes` 0n and `getDelegateOfAtNow` the zero address
+ * (probe-confirmed), and that is a REAL observed-empty holding, distinct from unavailable.
+ *
+ * The portfolio keeps `governance` DECLARED-UNBUILT while `governanceVerified` is false: this
+ * function is the built mechanism the flip surfaces, not the flip itself.
+ */
+export type GovernancePositionView =
+  | { readonly status: 'observed'; readonly votes: bigint; readonly delegate: `0x${string}` }
+  | { readonly status: 'unavailable' }
+
+export function governancePosition(reads: GovernanceVoteReads | undefined): GovernancePositionView {
+  if (reads === undefined) return { status: 'unavailable' }
+  return { status: 'observed', votes: reads.votes, delegate: reads.delegate }
 }
