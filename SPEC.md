@@ -119,6 +119,11 @@ every later capability reuses the lifecycle engine it forces us to build.
 - `brand/build.mjs` — regenerates the three identity files from the vendored
   Bricolage and Hanken faces. Run by hand; its two tools are deliberately not
   workspace dependencies
+- `apps/site/**` — `flare-kit.xyz`: the landing page and the documentation, one
+  Next.js App Router application. Specified in
+  `.thoughts/specs/2026-08-13-docs-site.md`; the framework is chosen in
+  `.thoughts/decisions/2026-08-13-docs-site-framework.md`. `apps/*` deploys and
+  never publishes, so it is outside the publint and dual-format rules
 - `packages/contracts/src/chains.ts` — network + underlying-chain constants (ids,
   RPCs, explorers); split from the address registry because it is what makes
   "mainnet-capable with no source rewrite" true
