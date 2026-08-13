@@ -33,3 +33,6 @@ developer-hub
 
 # Signing keys for a live testnet run. Never committed.
 .secrets/
+
+# fumadocs-mdx generated content layer, rewritten on every build.
+.source/

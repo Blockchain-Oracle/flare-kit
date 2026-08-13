@@ -1,3 +1,4 @@
+import { createMDX } from 'fumadocs-mdx/next'
 import type { NextConfig } from 'next'
 
 const config: NextConfig = {
@@ -9,4 +10,6 @@ const config: NextConfig = {
   transpilePackages: ['@flare-kit/react-ui', '@flare-kit/react', '@flare-kit/core'],
 }
 
-export default config
+const withMDX = createMDX()
+
+export default withMDX(config)

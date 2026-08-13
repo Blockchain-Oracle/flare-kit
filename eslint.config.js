@@ -18,6 +18,8 @@ export default tseslint.config(
       '.claude/**',
       '**/dist/**',
       '**/.next/**',
+      // fumadocs-mdx writes apps/site/.source on every build. Generated, not ours.
+      '**/.source/**',
       '**/node_modules/**',
     ],
   },

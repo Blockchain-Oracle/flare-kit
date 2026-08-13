@@ -1,0 +1,34 @@
+---
+title: Introduction
+description: flare-kit is the developer toolkit for Flare — one operation lifecycle across headless TypeScript, React hooks, embeddable widgets and agent tools.
+breadcrumb: ['Docs', 'Introduction']
+next: { href: '/docs/quickstart', label: 'Quickstart' }
+---
+
+Flare operations are slow and multi-party. A mint waits on an XRPL payment, then
+on ledger finality, then on the Flare Data Connector to finalise a voting round,
+then on an executor. Any of those can be late. Some can be partial.
+
+flare-kit models that directly. Every operation is a record with a state, a set
+of steps, the actor currently being waited on, and the evidence gathered so far.
+You render that record; you do not invent a status for it.
+
+## What you get
+
+- **`@flare-kit/core`** — the typed client and the operation state machine, with
+  a deterministic mock you can develop against.
+- **`@flare-kit/react`** — a provider and hooks over the same lifecycle.
+- **`@flare-kit/react-ui`** — styled, embeddable widgets on the DESIGN.md token
+  contract.
+- **`@flare-kit/contracts`** — addresses and ABIs for both networks, so nothing
+  is hardcoded anywhere else.
+
+## The rules the kit holds itself to
+
+`submitted` is never rendered as `succeeded`. An unknown outcome is never
+rendered as failed. A wait states the stage, the expected end, the actor being
+waited on, and the safe action — never a bare spinner. Mock mode is explicit and
+labelled, and is never a fallback triggered by a failure.
+
+These are not style preferences. They are what makes a long, multi-party
+operation legible to the person waiting on it.
