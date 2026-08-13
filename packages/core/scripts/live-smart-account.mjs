@@ -432,7 +432,11 @@ async function dispatch() {
   // payment first. It did, on the M13 deposit run: our proof reached a payment already
   // consumed and the call reverted with TransactionAlreadyExecuted. The plan's replay gate
   // cannot close this; it runs BEFORE the payment, and the race happens after.
-  const txId = `0x${transactionId.toLowerCase()}`
+  // The attest phase records which XRPL payment it attested; take it from there rather
+  // than assuming the most recent `pay`.
+  const attested = evidence.phases?.attest?.transactionId
+  if (!attested) throw new Error('no attested transaction id recorded — run `attest` first')
+  const txId = `0x${attested.toLowerCase()}`
   if ((await readTransactionIdUsed(publicClient, deployment, txId)) === true) {
     record('dispatch', {
       transactionId: txId,
