@@ -486,7 +486,12 @@ self-reconciling operation lifecycle M1 forced into being.
 
 `@flare-kit/react`:
 - `packages/react/src/use-smart-account.ts` — identity + plan + lifecycle. M13-R9.
-- `packages/react/src/use-instruction-catalogue.ts` — discovery. M13-R9.
+- `packages/react/src/use-instruction.ts` — the plan and the durable four-leg lifecycle.
+  M13-R9. **Deviation, found in build:** this replaces the planned
+  `use-instruction-catalogue.ts`. Discovery is derived from the same `readDeploymentSettings`
+  call `use-smart-account.ts` already makes, so a separate catalogue hook would issue a
+  second identical RPC read for an answer already in hand. What was genuinely missing was
+  the operation hook, so that is what this is.
 - `packages/react/src/index.ts` — export the above.
 
 `@flare-kit/react-ui`:

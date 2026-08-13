@@ -1163,8 +1163,13 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   `executeInstruction`, effect read-back (keys from `.secrets`, never logged).
 - `packages/react/src/use-smart-account.ts` — M13-R9. Account identity, plan and
   the durable lifecycle; reads keyless, signing via an injected wallet client.
-- `packages/react/src/use-instruction-catalogue.ts` — M13-R9. Instruction
-  discovery; `undefined` (unavailable) and `[]` (confirmed-empty) stay distinct.
+- `packages/react/src/use-instruction.ts` — M13-R9. The plan and the durable
+  four-leg lifecycle for one instruction. Planning is keyless and pure; SIGNING
+  is deliberately the host's job, because the payment is an XRPL transaction and
+  a hook that took an XRPL seed would put key material in the render tree for no
+  gain. Replaces the planned `use-instruction-catalogue.ts`: discovery is derived
+  from the same settings read `use-smart-account.ts` already performs, so a
+  separate catalogue hook would double the RPC traffic for the same answer.
 - `packages/react-ui/src/SmartAccountCard.tsx` (+
   `packages/react-ui/src/smart-account-card-state.ts`) — M13-R10. The identity
   surface: XRPL controller, personal account, deployed / not deployed as a

@@ -1,0 +1,44 @@
+{
+  "milestone": "M13 — XRPL-controlled Smart Accounts",
+  "network": "coston2",
+  "phases": {
+    "preflight": {
+      "at": "2026-08-13T17:09:35.070Z",
+      "smartAccountsVerified": false,
+      "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "operatorWallet": "rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq",
+      "sourceId": "testXRP",
+      "proofWindowSeconds": "86400",
+      "instruction": {
+        "id": "0x01",
+        "action": "transfer",
+        "availability": "available"
+      },
+      "feeDrops": "1000",
+      "reference": "0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a",
+      "personalAccount": {
+        "address": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
+        "deployed": false,
+        "nonce": "0",
+        "fassetBalance": "0",
+        "needsFunding": true
+      },
+      "signer": {
+        "address": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+        "fassetBalance": "21796258",
+        "nativeBalance": "146479173436830560487"
+      },
+      "xrplOwner": {
+        "address": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+        "balanceDrops": "94890038"
+      },
+      "plannedChain": [
+        "fund the personal account with 2000000 units of FTestXRP (EVM transfer)",
+        "sign an XRPL Payment of 1000 drops to rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq carrying 0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a",
+        "request the FDC Payment attestation and retrieve the proof",
+        "submit executeInstruction with the proof and the XRPL address",
+        "read back: personal account deployed, InstructionExecuted, and 0xDddF991858311597bFD3D125cb342a0d4B56ea0a +1000000"
+      ]
+    }
+  }
+}
