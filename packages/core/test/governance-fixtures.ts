@@ -26,7 +26,7 @@ function assertTransition<I>(record: OperationRecord<I>, to: OperationState, at:
 }
 
 /** The two-step governance spine a plan produces: one wallet call, one `flare` record step. */
-export function governanceSpine(intent: GovernanceIntent) {
+function governanceSpine(intent: GovernanceIntent) {
   return [
     {
       id: 'call-0',

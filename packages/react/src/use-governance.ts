@@ -51,7 +51,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  *  `StakeEvmClient` — react stays viem-free; no new dependency this milestone). */
 export type GovernanceEvmClient = Parameters<typeof readGovernanceVotes>[0]
 
-
 /** The one write capability `delegate`/`undelegate` need from a `viem` `WalletClient`: submit
  *  one already-built governance call, returning its transaction hash. Kept structural — not
  *  a direct `viem` import — so react stays viem-free; a real `WalletClient` satisfies it

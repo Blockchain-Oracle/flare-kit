@@ -66,7 +66,6 @@ export interface DelegationCardProps {
   readonly className?: string
 }
 
-
 export function DelegationCard(props: DelegationCardProps) {
   const { operation: op, planResult, position, nativeToken, wrappedToken, theme } = props
   const providers = props.providers ?? []

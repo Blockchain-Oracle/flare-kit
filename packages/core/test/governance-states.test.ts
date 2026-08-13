@@ -33,7 +33,6 @@ describe('reconcileGovernance — succeeded ONLY from the getDelegateOfAtNow rea
     expect(op.steps.every((s) => s.state === 'done')).toBe(false)
   })
 
-
   it('a submitted delegate whose read-back is still the zero address stays awaiting_external (actor flare), NEVER succeeded', () => {
     const r = reconcileGovernance(submittedRecord(DELEGATE), { delegate: ZERO }, NOW + 5000)
     expect(r.state).toBe('awaiting_external')

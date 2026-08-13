@@ -41,7 +41,6 @@ import { claimStateNote } from './claim-card-notes.js'
 const DEFAULT_FLAREDROP_ENDED = '2026-01-30'
 const RNAT_DECIMALS = 18
 
-
 export interface ClaimCardProps {
   readonly kind: ClaimKind
   /** The host-held operation for THIS kind (from `useRewards`); its state owns the lifecycle. */
