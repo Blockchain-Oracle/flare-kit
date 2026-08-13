@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { M12_GOVERNANCE_SECTIONS } from './m12-governance-sections.js'
 import { M11_STAKING_SECTIONS } from './m11-staking-sections.js'
 import { M10_DELEGATION_SECTIONS } from './m10-delegation-sections.js'
 import { M10_CLAIMS_SECTIONS } from './m10-claims-sections.js'
@@ -45,6 +46,7 @@ export function Gallery() {
       </header>
 
       {[
+        ...M12_GOVERNANCE_SECTIONS,
         ...M11_STAKING_SECTIONS,
         ...M10_DELEGATION_SECTIONS,
         ...M10_CLAIMS_SECTIONS,
