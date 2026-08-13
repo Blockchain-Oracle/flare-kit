@@ -54,8 +54,22 @@ async function readState(
  *    `eth_getLogs` to ~30 blocks/call) -> `source:'foundation'` summaries from the event args;
  *  - PLUS `PollingFtso.getLastProposal()` -> when it returns a non-zero id, one
  *    `source:'ftso'` summary.
- * Each id's `state` is read + mapped via its source's enum. Deduped by (source,id). Returns
- * `[]` (honest-empty) when neither source yields a proposal — it never invents one.
+ * Each id's `state` is read + mapped via its source's enum. Deduped by (source,id).
+ *
+ * **THE FAILURE CONTRACT (load-bearing): discovery THROWS on a failed read.** Neither leg is
+ * guarded, so any RPC failure — the block-number read, a scan window, `getLastProposal`, or
+ * `getProposalInfo` — propagates to the caller. That is deliberate: a returned `[]` is not the
+ * absence of an answer, it IS an answer ("the read succeeded and found none"), which
+ * `useProposals` forwards and `ProposalCatalogue` renders as "nothing failed". Swallowing a
+ * throw would make an outage indistinguishable from a confirmed-empty catalogue — and on Flare
+ * mainnet, where the bounded foundation scan is always empty (real proposals are months apart,
+ * the window is hours), `getLastProposal` is the ONLY read that ever yields a proposal, so one
+ * absorbed error would turn "1 proposal, Defeated" into a confident false claim that mainnet
+ * hosts none. `[]` is returned ONLY when both legs genuinely succeeded and neither found a
+ * proposal — it never invents one, and it never covers for one that could not be read.
+ *
+ * Per-proposal `state(id)` is the one exception, and narrows a FIELD rather than the container:
+ * a throwing `state` read yields `'unknown'` on that summary, never a fabricated state.
  */
 export async function discoverProposals(
   client: PublicClient,
@@ -96,32 +110,30 @@ export async function discoverProposals(
   }
 
   // 2) The reliable FTSO discovery: getLastProposal. A non-zero id is a real proposal.
-  try {
-    const [ftsoId] = (await client.readContract({
+  // NOT guarded: a failed read here must reach the caller, never be absorbed into `[]` — see
+  // the contract note on this function.
+  const [ftsoId] = (await client.readContract({
+    address: d.pollingFtso,
+    abi: POLLING_FTSO_ABI,
+    functionName: 'getLastProposal',
+  })) as readonly [bigint, string]
+  if (ftsoId > 0n) {
+    const info = (await client.readContract({
       address: d.pollingFtso,
       abi: POLLING_FTSO_ABI,
-      functionName: 'getLastProposal',
-    })) as readonly [bigint, string]
-    if (ftsoId > 0n) {
-      const info = (await client.readContract({
-        address: d.pollingFtso,
-        abi: POLLING_FTSO_ABI,
-        functionName: 'getProposalInfo',
-        args: [ftsoId],
-      })) as readonly unknown[]
-      const state = await readState(client, d, ftsoId, 'ftso')
-      byKey.set(`ftso:${ftsoId}`, {
-        id: ftsoId,
-        source: 'ftso',
-        state,
-        proposer: info[2] as `0x${string}`,
-        votePowerBlock: undefined, // FTSO shape has no votePowerBlock — never fabricated
-        voteStart: info[3] as bigint,
-        voteEnd: info[4] as bigint,
-      })
-    }
-  } catch {
-    // A throw here loses only the FTSO summary — never fabricates one; foundation results stand.
+      functionName: 'getProposalInfo',
+      args: [ftsoId],
+    })) as readonly unknown[]
+    const state = await readState(client, d, ftsoId, 'ftso')
+    byKey.set(`ftso:${ftsoId}`, {
+      id: ftsoId,
+      source: 'ftso',
+      state,
+      proposer: info[2] as `0x${string}`,
+      votePowerBlock: undefined, // FTSO shape has no votePowerBlock — never fabricated
+      voteStart: info[3] as bigint,
+      voteEnd: info[4] as bigint,
+    })
   }
 
   return [...byKey.values()]

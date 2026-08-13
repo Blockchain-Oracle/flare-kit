@@ -45,6 +45,24 @@ function makeThrowingClient(): ProposalsEvmClient {
   } as unknown as ProposalsEvmClient
 }
 
+/** The MIXED failure C1 names: the foundation scan genuinely succeeds and finds nothing, but
+ *  `getLastProposal` — on mainnet the ONLY read that ever yields a proposal — throws. The whole
+ *  discovery read must be unavailable; a partial success is not a confirmed-empty catalogue. */
+function makeMixedFailureClient(): ProposalsEvmClient {
+  return {
+    async getBlockNumber() {
+      return 1000n
+    },
+    async getContractEvents() {
+      return []
+    },
+    async readContract({ functionName }: { functionName: string }) {
+      if (functionName === 'getLastProposal') throw new Error('rpc down')
+      throw new Error(`unexpected read ${functionName}`)
+    },
+  } as unknown as ProposalsEvmClient
+}
+
 const FTSO_INFO = [
   247n,
   '{"name":"Block-latency parameter changes"}',
@@ -100,6 +118,19 @@ describe('useProposals — confirmed-empty vs unavailable (M12, load-bearing)', 
     // The load-bearing distinction: an outage must never wear the shape of a confirmed-empty
     // catalogue — [] would tell a consumer "no proposals on this network", a different claim.
     expect(result.current.proposals).not.toEqual([])
+  })
+
+  it('a PARTIAL discovery failure (scan empty, getLastProposal throws) is unavailable too — never []', async () => {
+    const publicClient = makeMixedFailureClient()
+    const { result } = renderHook(() => useProposals({ readDeployment, publicClient, account: ACCOUNT }))
+
+    await waitFor(() => expect(result.current.loading).toBe(false))
+    // The read that could have found the one real mainnet proposal never answered, so the
+    // catalogue is UNAVAILABLE. `[]` here would state "mainnet hosts no proposals" off a
+    // failed read — the C1 collapse.
+    expect(result.current.proposals).toBeUndefined()
+    expect(result.current.proposals).not.toEqual([])
+    expect(result.current.error).toBeDefined()
   })
 })
 

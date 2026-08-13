@@ -179,6 +179,38 @@ describe('discoverProposals — bounded scan + getLastProposal (M12-R5)', () => 
     expect(found[0]?.votePowerBlock).toBeUndefined()
   })
 
+  // C1: `[]` is not the absence of an answer here — it IS an answer ("the read succeeded and
+  // found none"), which `useProposals` forwards and `ProposalCatalogue` renders as "nothing
+  // failed". On Flare mainnet the foundation scan is ALWAYS empty, so `getLastProposal` is the
+  // only read that ever yields a proposal: swallowing its throw would turn one transient RPC
+  // error into a confident false claim that mainnet hosts no proposals. Discovery THROWS.
+  it('a throwing getLastProposal REJECTS — never a confirmed-empty [] built on a failed read', async () => {
+    const client = fakeClient({
+      latest: 1000n,
+      events: () => [], // the foundation scan genuinely succeeds and finds nothing
+      reads: {
+        getLastProposal: () => {
+          throw new Error('rpc down')
+        },
+      },
+    })
+    await expect(discoverProposals(client, FLARE, 100n, 30n)).rejects.toThrow('rpc down')
+  })
+
+  it('a throwing getProposalInfo after a real getLastProposal id REJECTS — never a silently dropped row', async () => {
+    const client = fakeClient({
+      latest: 1000n,
+      events: () => [],
+      reads: {
+        getLastProposal: () => [1n, 'desc'],
+        getProposalInfo: () => {
+          throw new Error('rpc down')
+        },
+      },
+    })
+    await expect(discoverProposals(client, FLARE, 100n, 30n)).rejects.toThrow('rpc down')
+  })
+
   it('a throwing state(id) read -> that summary is state:unknown, real event fields intact (never fabricated)', async () => {
     const client = fakeClient({
       latest: 1000n,
