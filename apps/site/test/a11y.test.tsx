@@ -4,7 +4,7 @@ import type { ReactElement } from 'react'
 import { describe, expect, it } from 'vitest'
 import { SiteFooter } from '../components/footer'
 import { Hero } from '../components/landing/hero'
-import { LiveOperation } from '../components/landing/live-operation'
+import { HeroDemo } from '../components/landing/hero-demo'
 import { ThemeToggle } from '../components/theme-toggle'
 
 /**
@@ -14,7 +14,7 @@ import { ThemeToggle } from '../components/theme-toggle'
  */
 const SURFACES: [string, ReactElement][] = [
   ['Hero', <Hero key="hero" />],
-  ['LiveOperation', <LiveOperation key="live" />],
+  ['HeroDemo', <HeroDemo key="demo" />],
   ['SiteFooter', <SiteFooter key="footer" />],
   ['ThemeToggle', <ThemeToggle key="toggle" />],
 ]

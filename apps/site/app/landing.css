@@ -2,13 +2,23 @@
    The landing page. Tokens only.
    ============================================================ */
 
-.hero-inner {
+/* Two-column hero: copy left, the signature component running live right.
+   Split and gap from the accepted specimen's hero-grid (1.04fr .96fr),
+   collapsing to one column at 960. */
+.hero-grid {
   display: grid;
-  gap: 22px;
-  max-width: 54rem;
+  grid-template-columns: 1.04fr 0.96fr;
+  gap: 48px;
+  align-items: center;
+}
+.hero-copy {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+  min-width: 0;
 }
 .hero-title {
-  margin-top: 4px;
+  margin-top: 2px;
 }
 .hero-accent {
   /* --fk-brand is 4.34:1 on paper and never carries text; --fk-brand-text is
@@ -16,38 +26,86 @@
   color: var(--fk-brand-text);
 }
 .hero-lede {
-  max-width: 46rem;
+  max-width: 40ch;
 }
 .hero-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
-/* ---------- Live operation ---------- */
-.live-operation {
-  display: grid;
-  gap: 14px;
-  max-width: 54rem;
-}
-.live-operation-head {
+/* Honest proof row — every item is true today; no invented protocol reality. */
+.hero-proof {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
   flex-wrap: wrap;
+  gap: 8px 20px;
+  list-style: none;
+  padding: 0;
+  margin-top: 8px;
+  font-size: 0.76rem;
+  color: var(--fk-text-faint);
 }
-.live-operation-tag {
+.hero-proof li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hero-proof li::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: var(--fk-r-full);
+  background: var(--fk-brand);
+}
+
+/* ---------- Hero live demo ---------- */
+.hero-demo {
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  background: var(--fk-card);
+  box-shadow: var(--fk-sh-2);
+  overflow: hidden;
+  min-width: 0;
+}
+.hero-demo-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--fk-border);
+  background: var(--fk-surface);
+}
+.hero-demo-name {
+  font-size: 0.76rem;
+  color: var(--fk-text-muted);
+}
+.hero-demo-tag {
+  margin-left: auto;
   padding: 3px 8px;
   border: 1px solid var(--fk-border);
   border-radius: var(--fk-r-sm);
-  background: var(--fk-surface);
-  color: var(--fk-text-muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
 }
-.live-operation-lede {
-  max-width: 46rem;
-  margin-bottom: 8px;
+.hero-demo-stage {
+  padding: 20px 18px;
+  /* The dotted-grid well: the component reads as sitting on a stage. */
+  background-image: radial-gradient(var(--fk-border) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+@media (max-width: 960px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .hero-lede {
+    max-width: none;
+  }
 }
 
 /* ---------- Copy field ---------- */
@@ -70,4 +128,140 @@
 .copyline-prefix {
   color: var(--fk-text-faint);
   user-select: none;
+}
+
+/* ---------- Package strip ---------- */
+.pkg-strip {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.pkg {
+  display: grid;
+  gap: 7px;
+  padding: 16px 18px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+}
+.pkg-name {
+  font-size: 0.9rem;
+  color: var(--fk-text);
+}
+.pkg-blurb {
+  font-size: 0.88rem;
+  color: var(--fk-text-muted);
+  line-height: 1.5;
+}
+
+/* ---------- Quickstart teaser ---------- */
+.qs-split {
+  display: grid;
+  grid-template-columns: 0.85fr 1.15fr;
+  gap: 44px;
+  align-items: center;
+}
+.qs-copy {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  min-width: 0;
+}
+.qs-copy .h-sec {
+  margin-top: 2px;
+}
+.qs-copy .fk-btn {
+  justify-self: start;
+  margin-top: 2px;
+}
+.qs-code {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* ---------- Principles ---------- */
+.principles {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 44px;
+  align-items: start;
+}
+.principles-head {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+.principles-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+}
+.principle {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  padding: 20px 0;
+  border-top: 1px solid var(--fk-border);
+}
+.principle:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.principle-n {
+  color: var(--fk-brand-text);
+  font-size: 0.8rem;
+  padding-top: 4px;
+}
+.principle-title {
+  font-family: var(--fk-font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--fk-text);
+  margin-bottom: 5px;
+}
+.principle-text {
+  color: var(--fk-text-muted);
+  line-height: 1.55;
+  font-size: 0.96rem;
+}
+
+/* ---------- CTA band ---------- */
+.cta-band {
+  border-top: 1px solid var(--fk-border);
+  background: var(--fk-surface);
+  padding-block: clamp(48px, 7vw, 88px);
+}
+.cta-inner {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+}
+.cta-lede {
+  max-width: 44ch;
+}
+.cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+@media (max-width: 860px) {
+  .qs-split,
+  .principles {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+@media (max-width: 640px) {
+  .pkg-strip {
+    grid-template-columns: 1fr;
+  }
 }
