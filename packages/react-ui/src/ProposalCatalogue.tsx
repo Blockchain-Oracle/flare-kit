@@ -111,7 +111,10 @@ export function ProposalCatalogue({
       {...(theme ? { 'data-theme': theme } : {})}
       data-availability={availability}
     >
-      <DataTable caption="Proposals on Flare mainnet" columns={COLUMNS}>
+      {/* The caption is the table's accessible name, so it tracks `networkLabel` rather than
+          hardcoding mainnet — a Coston2 catalogue announced as "Flare mainnet" would make to a
+          screen reader exactly the whole-surface network claim the per-row labels exist to avoid. */}
+      <DataTable caption={`Proposals on ${networkLabel}`} columns={COLUMNS}>
         {stillLoading ? <SkeletonRows columns={COLUMNS.length} label="Discovering proposals" /> : null}
 
         {/* `[]` — a CONFIRMED-empty discovery. Distinct sentence from the

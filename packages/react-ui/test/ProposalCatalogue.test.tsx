@@ -71,6 +71,17 @@ describe('ProposalCatalogue — a discovered proposal: id + state + the cross-ne
     expect(row(container, '1')?.getAttribute('data-source')).toBe('ftso')
     expect(availability(container)).toBe('listed')
   })
+
+  it('names the table after the network actually read, so a screen reader is never told the wrong chain', () => {
+    // The caption is `fk-sr` (the table's accessible name), so a hardcoded "Flare
+    // mainnet" would make to a screen reader exactly the whole-surface network claim
+    // the per-row labels exist to avoid — invisibly, on a Coston2 catalogue.
+    const mainnet = render(<ProposalCatalogue proposals={[]} loading={false} />)
+    expect(mainnet.container.querySelector('caption')?.textContent).toBe('Proposals on Flare mainnet')
+
+    const coston2 = render(<ProposalCatalogue proposals={[]} loading={false} networkLabel="Coston2" />)
+    expect(coston2.container.querySelector('caption')?.textContent).toBe('Proposals on Coston2')
+  })
 })
 
 describe('ProposalCatalogue — the three outcomes stay three (undefined ≠ [] ≠ rows)', () => {
