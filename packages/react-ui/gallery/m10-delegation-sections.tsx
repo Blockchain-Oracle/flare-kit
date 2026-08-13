@@ -10,7 +10,7 @@ import {
   amount,
   delegationPosition,
 } from '@flare-kit/core'
-import { DelegationCard, type DelegationOperation } from '../src/index.js'
+import { DelegationCard, type DelegationOperation } from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**

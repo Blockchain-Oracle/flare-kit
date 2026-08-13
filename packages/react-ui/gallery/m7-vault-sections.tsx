@@ -5,7 +5,7 @@ import {
   MOCK_EPOCH, advanceSteps, amount, applyDepositQuote, applyTransition, applyWithdrawQuote,
   createDeposit, createWithdraw, observe, startQuoting, vaultByKey,
 } from '@flare-kit/core'
-import { DepositCard, VaultCatalogue, WithdrawCard, type VaultReadsView, type VaultRow } from '../src/index.js'
+import { DepositCard, VaultCatalogue, WithdrawCard, type VaultReadsView, type VaultRow } from '@flare-kit/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M7 vault surfaces, in both themes (the one

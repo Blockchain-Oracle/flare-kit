@@ -4,7 +4,7 @@ import {
   MOCK_EPOCH,
   mockX402Challenge,
 } from '@flare-kit/core'
-import { X402Card } from '../src/index.js'
+import { X402Card } from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**

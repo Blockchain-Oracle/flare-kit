@@ -12,7 +12,7 @@ import {
   serializeError,
   startQuoting,
 } from '@flare-kit/core'
-import { SwapCard, TokenSelector, type TokenChoice } from '../src/index.js'
+import { SwapCard, TokenSelector, type TokenChoice } from '@flare-kit/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M5 swap surfaces, in both themes (the one

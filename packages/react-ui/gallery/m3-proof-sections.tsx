@@ -8,7 +8,7 @@ import {
   evmTransactionFamily,
   xrpPaymentNonexistenceFamily,
 } from '@flare-kit/core'
-import { AttestationTimeline, ProofDetail } from '../src/index.js'
+import { AttestationTimeline, ProofDetail } from '@flare-kit/react-ui'
 import {
   FINALIZED_NO_PROOF,
   type GallerySection,

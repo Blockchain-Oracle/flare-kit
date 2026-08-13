@@ -6,7 +6,7 @@ import {
   MOCK_EPOCH,
   amount,
 } from '@flare-kit/core'
-import { GaslessCard } from '../src/index.js'
+import { GaslessCard } from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**

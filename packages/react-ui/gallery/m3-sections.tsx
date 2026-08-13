@@ -8,7 +8,7 @@ import {
   mockCatalogueUnreachableGroup,
   reconcileAttestation,
 } from '@flare-kit/core'
-import { AttestationCatalogue, AttestationRequestBuilder } from '../src/index.js'
+import { AttestationCatalogue, AttestationRequestBuilder } from '@flare-kit/react-ui'
 
 /**
  * FDC-01 and FDC-02, in every state the M3 spec requires, plus the fixtures

@@ -17,7 +17,7 @@ import {
   planStake,
   stakePosition,
 } from '@flare-kit/core'
-import { ClaimCard, StakeCard } from '../src/index.js'
+import { ClaimCard, StakeCard } from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**

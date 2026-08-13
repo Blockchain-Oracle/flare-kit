@@ -25,7 +25,7 @@ import {
   PendingTray,
   PortfolioTable,
   SourceDrawer,
-} from '../src/index.js'
+} from '@flare-kit/react-ui'
 
 /**
  * Every required state of every M2 surface, as data.

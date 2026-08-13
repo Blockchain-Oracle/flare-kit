@@ -20,7 +20,7 @@ import {
   serializeError,
   startQuoting,
 } from '@flare-kit/core'
-import { AddLiquidityCard, PoolCatalogue, PositionCard } from '../src/index.js'
+import { AddLiquidityCard, PoolCatalogue, PositionCard } from '@flare-kit/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M6 liquidity surfaces, in both themes (the

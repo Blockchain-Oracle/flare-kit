@@ -1,5 +1,5 @@
 import { createMockFtsoReader, readSecureRandom } from '@flare-kit/core'
-import { ScalingProofDetail, SecureRandomPanel } from '../src/index.js'
+import { ScalingProofDetail, SecureRandomPanel } from '@flare-kit/react-ui'
 import type { GallerySection } from './m3-sections.js'
 import {
   ANCHOR_FLR,

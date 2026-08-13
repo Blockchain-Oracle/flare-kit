@@ -10,7 +10,7 @@ import {
   observe,
   routeByKey,
 } from '@flare-kit/core'
-import { BridgeCard, RouteCatalogue, type RouteRow } from '../src/index.js'
+import { BridgeCard, RouteCatalogue, type RouteRow } from '@flare-kit/react-ui'
 
 /**
  * Dev-only. Every AC5 state of the M8 cross-chain surfaces, in both themes (the one

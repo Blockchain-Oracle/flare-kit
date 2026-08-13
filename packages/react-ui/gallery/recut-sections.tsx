@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AssetLogo, ConnectModal, NetworkLogo, type WalletOption } from '../src/index.js'
+import { AssetLogo, ConnectModal, NetworkLogo, type WalletOption } from '@flare-kit/react-ui'
 
 /**
  * Dev-only. The 2026-08-09 re-cut pieces, so Abu can review them directly:

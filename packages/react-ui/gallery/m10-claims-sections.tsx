@@ -10,7 +10,7 @@ import {
   MOCK_EPOCH,
   MOCK_REWARDS_OBSERVED,
 } from '@flare-kit/core'
-import { ClaimCard, type RewardsClaimOperation } from '../src/index.js'
+import { ClaimCard, type RewardsClaimOperation } from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**

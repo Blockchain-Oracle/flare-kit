@@ -7,8 +7,8 @@ import {
   readCustomFeeds,
   readFeeds,
 } from '@flare-kit/core'
-import { CustomFeedReview, IncentiveComposer } from '../src/index.js'
-import type { ExcludedCustomFeed } from '../src/CustomFeedReview.js'
+import { CustomFeedReview, IncentiveComposer } from '@flare-kit/react-ui'
+import type { ExcludedCustomFeed } from '@flare-kit/react-ui'
 import type { GallerySection } from './m3-sections.js'
 import { COSTON2, M4_NOW, PAYER, SOURCE } from './m4-fixtures.js'
 
@@ -45,7 +45,7 @@ const QUOTE: IncentiveQuote = {
 
 const OVER_LIMIT: IncentiveQuote = { ...QUOTE, rangeLimit: RANGE_INCREASE / 2n }
 
-const TX = `0x${'5d'.repeat(32)}`
+const TX: `0x${string}` = `0x${'5d'.repeat(32)}`
 
 /** `sampleSizeIncrease` was 0 in the real mainnet offer. Rendered as exactly that. */
 const EFFECT_CONFIRMED: IncentiveEffect = {

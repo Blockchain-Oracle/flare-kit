@@ -6,7 +6,7 @@ import {
   OperationTimeline,
   RecoveryPanel,
   RedeemFXRP,
-} from '../src/index.js'
+} from '@flare-kit/react-ui'
 import type { Section } from './sections.js'
 
 /**
@@ -352,6 +352,8 @@ export const M1_SECTIONS: readonly Section[] = [
                   movesNewValue: false,
                   signs: false,
                   broadcasts: true,
+                  preconditions: ['the original proof has not already been consumed'],
+                  nextState: 'submitted',
                   expiresAt: M1_NOW - 60_000,
                 },
               ],
