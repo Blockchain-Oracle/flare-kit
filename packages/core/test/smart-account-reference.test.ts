@@ -1,6 +1,7 @@
 import { BUILT_IN_INSTRUCTIONS } from '@flare-kit/contracts'
 import { describe, expect, it } from 'vitest'
 import {
+  type EncodePaymentReferenceInput,
   decodePaymentReference,
   encodePaymentReference,
 } from '../src/smart-accounts/payment-reference.js'
@@ -26,7 +27,13 @@ const SHIFTS = {
 
 const RECIPIENT = '0xDddF991858311597bFD3D125cb342a0d4B56ea0a'
 
-const FIXTURES = [
+interface Fixture {
+  readonly what: string
+  readonly input: EncodePaymentReferenceInput
+  readonly hex: `0x${string}`
+}
+
+const FIXTURES: readonly Fixture[] = [
   {
     what: 'FXRP transfer — value in drops, a 20-byte recipient in bytes 12–31',
     input: { instructionId: 0x01, value: 1_000_000n, recipient: RECIPIENT },
@@ -57,7 +64,7 @@ const FIXTURES = [
     input: { instructionId: 0x23, value: 20260813n, vaultId: 2 },
     hex: '0x2300000000000000013527cd0000000200000000000000000000000000000000',
   },
-] as const
+]
 
 describe('the payment reference matches the Solidity layout', () => {
   it.each(FIXTURES)('$what', (fixture) => {

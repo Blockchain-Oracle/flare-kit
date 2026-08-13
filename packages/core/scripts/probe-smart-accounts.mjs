@@ -61,6 +61,17 @@ const ERC20_ABI = [
 // The M8-M12 XRPL testnet account — ADDRESS ONLY (keyless read).
 const XRPL_OWNER = 'rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio'
 
+// A REAL historic XRPL testnet payment (the M8 cross-chain redeem's XRPL settlement leg,
+// recorded in .thoughts/verification/2026-08-11-m8-cross-chain.md). Used read-only, to
+// confirm the Payment attestation actually returns `standardPaymentReference`.
+const SAMPLE_XRPL_TX =
+  '0x401f75919bf99ba32e6298357946de912d4166b360f0ed5de3d7e0498de10f8f'
+// `Payment`, right-zero-padded to 32 bytes — the attestation type name encoding.
+const PAYMENT_ATTESTATION_TYPE =
+  '0x5061796d656e7400000000000000000000000000000000000000000000000000'
+const TEST_XRP_SOURCE_ID =
+  '0x7465737458525000000000000000000000000000000000000000000000000000'
+
 const NETWORKS = [
   { key: 'coston2', chainId: 114, rpc: 'https://coston2-api.flare.network/ext/C/rpc' },
   { key: 'flare', chainId: 14, rpc: 'https://flare-api.flare.network/ext/C/rpc' },
@@ -233,11 +244,55 @@ async function probePaymentRoute(network, blockers) {
       'coston2: the XRPL verifier does NOT serve /verifier/xrp/Payment/prepareRequest — no instruction can be dispatched',
     )
   }
-  return {
+  const out = {
     prepareRequestUrl: url,
     servesPayment: serves,
     servesXrpPayment: result.value.includes('/verifier/xrp/XRPPayment/prepareRequest'),
   }
+
+  // Serving the route is not the same claim as returning the field the controller reads.
+  // On the write/verify network, attest a REAL historic XRPL payment and confirm
+  // `standardPaymentReference` actually comes back — the whole dispatch depends on it, and
+  // this costs nothing and signs nothing.
+  if (serves && network.key === 'coston2' && SAMPLE_XRPL_TX) {
+    out.sample = await attempt('Payment prepareResponse', async () => {
+      const response = await fetch(url.replace('/prepareRequest', '/prepareResponse'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(services.publicApiKey ? { [services.apiKeyHeader]: services.publicApiKey } : {}),
+        },
+        body: JSON.stringify({
+          attestationType: PAYMENT_ATTESTATION_TYPE,
+          sourceId: TEST_XRP_SOURCE_ID,
+          requestBody: { transactionId: SAMPLE_XRPL_TX, inUtxo: '0', utxo: '0' },
+        }),
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      const body = await response.json()
+      const responseBody = body?.response?.responseBody
+      return {
+        transactionId: SAMPLE_XRPL_TX,
+        status: body?.status,
+        // The field `executeInstruction` decodes the instruction from. Its presence here
+        // is the difference between this family and XRPPayment.
+        carriesStandardPaymentReference:
+          typeof responseBody?.standardPaymentReference === 'string',
+        standardPaymentReference: responseBody?.standardPaymentReference,
+        sourceAddressHash: responseBody?.sourceAddressHash,
+        receivingAddressHash: responseBody?.receivingAddressHash,
+        receivedAmount: responseBody?.receivedAmount,
+        blockTimestamp: responseBody?.blockTimestamp,
+      }
+    })
+    if (out.sample.value && !out.sample.value.carriesStandardPaymentReference) {
+      blockers.push(
+        'coston2: the Payment attestation returned no standardPaymentReference — no instruction could be dispatched from it',
+      )
+    }
+  }
+
+  return out
 }
 
 async function main() {

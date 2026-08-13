@@ -1,6 +1,6 @@
 {
   "milestone": "M13 — XRPL-controlled Smart Accounts (part one, proof-based flow)",
-  "probedAt": "2026-08-13T16:31:45.881Z",
+  "probedAt": "2026-08-13T16:39:01.905Z",
   "keyless": true,
   "xrplOwner": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
   "networks": {
@@ -136,7 +136,19 @@
       "paymentAttestationRoute": {
         "prepareRequestUrl": "https://fdc-verifiers-testnet.flare.network/verifier/xrp/Payment/prepareRequest",
         "servesPayment": true,
-        "servesXrpPayment": true
+        "servesXrpPayment": true,
+        "sample": {
+          "value": {
+            "transactionId": "0x401f75919bf99ba32e6298357946de912d4166b360f0ed5de3d7e0498de10f8f",
+            "status": "VALID",
+            "carriesStandardPaymentReference": true,
+            "standardPaymentReference": "0x4642505266410002000000000000000000000000000000000000000002ade19c",
+            "sourceAddressHash": "0x8cae25d36bfc00b49650257bd4a07b555105eee720815e9308d34b3218a91aa8",
+            "receivingAddressHash": "0xa918f534967b6d670c4c86631384f65fc078c03943797c5c3353c4770501c0cc",
+            "receivedAmount": "9940050",
+            "blockTimestamp": "1786484492"
+          }
+        }
       }
     },
     "flare": {
