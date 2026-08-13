@@ -63,48 +63,37 @@ describe('governanceFor — the two-network snapshot', () => {
   })
 })
 
-describe('the three governance ABIs expose the functions the surface drives', () => {
-  it('GOVERNANCE_VOTE_POWER_ABI has the delegation + vote-power getters', () => {
+/**
+ * Task 2's acceptance mandates asserting the ABI surface, so these stay — but trimmed to the
+ * functions the PRODUCT actually calls, so they can break honestly. A list that simply repeats
+ * every name declared ten lines above cannot fail; a list of what core drives fails the moment
+ * a fragment a call site needs is removed.
+ *
+ * `castVote` is the one deliberate exception on the write side: M12-R6 requires the vote path
+ * be built and CARRIED, so it is asserted present even though `planCastVote` refuses
+ * unconditionally and never encodes against it.
+ */
+describe('the three governance ABIs expose the functions the kit actually drives', () => {
+  it('GOVERNANCE_VOTE_POWER_ABI: the delegate/undelegate writes + the two reads the adapter makes', () => {
+    // governance-adapter.ts: buildDelegateCall/buildUndelegateCall + readGovernanceVotes.
     const names = functionNames(GOVERNANCE_VOTE_POWER_ABI)
-    for (const fn of [
-      'delegate',
-      'undelegate',
-      'getVotes',
-      'votePowerOfAt',
-      'getDelegateOfAt',
-      'getDelegateOfAtNow',
-    ]) {
+    for (const fn of ['delegate', 'undelegate', 'getVotes', 'getDelegateOfAtNow']) {
       expect(names).toContain(fn)
     }
   })
 
-  it('GOVERNOR_ABI (PollingFoundation) has the proposal read + vote surface', () => {
+  it('GOVERNOR_ABI (PollingFoundation): the foundation proposal reads + the carried castVote', () => {
+    // proposals.ts readState/readProposalDetail/readFoundationAccountReads + readEligibility.
     const names = functionNames(GOVERNOR_ABI)
-    for (const fn of [
-      'state',
-      'getProposalInfo',
-      'getProposalVotes',
-      'hasVoted',
-      'getVotes',
-      'isProposer',
-      'castVote',
-    ]) {
+    for (const fn of ['state', 'getProposalInfo', 'getProposalVotes', 'hasVoted', 'getVotes', 'isProposer', 'castVote']) {
       expect(names).toContain(fn)
     }
   })
 
-  it('POLLING_FTSO_ABI has the management-group proposal + eligibility surface', () => {
+  it('POLLING_FTSO_ABI: the FTSO discovery/detail reads + the reliable eligibility gates', () => {
+    // proposals.ts discoverProposals/readProposalDetail + readEligibility (canPropose, isMember).
     const names = functionNames(POLLING_FTSO_ABI)
-    for (const fn of [
-      'getLastProposal',
-      'state',
-      'getProposalInfo',
-      'getProposalVotes',
-      'canPropose',
-      'canVote',
-      'isMember',
-      'getManagementGroupMembers',
-    ]) {
+    for (const fn of ['getLastProposal', 'state', 'getProposalInfo', 'getProposalVotes', 'canPropose', 'isMember']) {
       expect(names).toContain(fn)
     }
   })

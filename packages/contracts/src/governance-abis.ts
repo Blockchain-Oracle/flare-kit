@@ -42,28 +42,6 @@ export const GOVERNANCE_VOTE_POWER_ABI = [
     inputs: [{ name: '_who', type: 'address' }],
     outputs: [{ type: 'uint256' }],
   },
-  // Governance vote power of `_who` at a historical block (a proposal's vote-power block).
-  {
-    name: 'votePowerOfAt',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [
-      { name: '_who', type: 'address' },
-      { name: '_blockNumber', type: 'uint256' },
-    ],
-    outputs: [{ type: 'uint256' }],
-  },
-  // Who `_who` was delegating governance vote power to at a historical block.
-  {
-    name: 'getDelegateOfAt',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [
-      { name: '_who', type: 'address' },
-      { name: '_blockNumber', type: 'uint256' },
-    ],
-    outputs: [{ type: 'address' }],
-  },
   // Who `_who` delegates governance vote power to now — zero when undelegated (probe read).
   {
     name: 'getDelegateOfAtNow',
@@ -158,6 +136,14 @@ export const GOVERNOR_ABI = [
     outputs: [{ type: 'bool' }],
   },
   // Cast a vote: _support 0 = Against, 1 = For. Returns the vote power cast.
+  //
+  // DELIBERATELY STAGED AHEAD OF ITS CONSUMER — nothing in the kit calls this today. M12-R6
+  // requires the vote path be BUILT and CARRIED: core's `planCastVote` refuses
+  // unconditionally (no Active proposal is reachable on the write/verify network, and the
+  // account holds no verified mainnet governance vote power), so no call is ever encoded
+  // against this fragment. It is kept because deleting it would erode "built"; it is NOT
+  // evidence that a vote path is live. Unlike this one, ABI fragments with no consumer and
+  // no such mandate were removed.
   {
     name: 'castVote',
     type: 'function',
@@ -257,17 +243,6 @@ export const POLLING_FTSO_ABI = [
     inputs: [{ name: '_account', type: 'address' }],
     outputs: [{ type: 'bool' }],
   },
-  // Whether `_account` may vote on a specific proposal.
-  {
-    name: 'canVote',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [
-      { name: '_account', type: 'address' },
-      { name: '_proposalId', type: 'uint256' },
-    ],
-    outputs: [{ type: 'bool' }],
-  },
   // Whether `_account` is a member. NOTE: the probe found this REVERTS on both networks for
   // a non-member — the adapter records that honestly (reverted, not false); `canPropose`/
   // `isProposer` are the reliable gates.
@@ -277,13 +252,5 @@ export const POLLING_FTSO_ABI = [
     stateMutability: 'view',
     inputs: [{ name: '_account', type: 'address' }],
     outputs: [{ type: 'bool' }],
-  },
-  // The current management-group member list.
-  {
-    name: 'getManagementGroupMembers',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [],
-    outputs: [{ name: '_list', type: 'address[]' }],
   },
 ] as const

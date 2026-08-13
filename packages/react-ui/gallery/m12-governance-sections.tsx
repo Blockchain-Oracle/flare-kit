@@ -175,7 +175,7 @@ const UNKNOWN_DETAIL: ProposalUnknown = { id: P.id, source: 'ftso', state: 'unkn
 const CARRIED_VOTE = planCastVote({ proposal: FTSO_SUMMARY, reads: { votes: 0n, delegate: ZERO } }).error.reason
 
 const READ_FAILED = 'The RPC did not answer the discovery read.'
-const govBase = { account: ACCOUNT, eligibility: ELIGIBILITY, networkLabel: 'Coston2' } as const
+const govBase = { eligibility: ELIGIBILITY, networkLabel: 'Coston2' } as const
 
 export const M12_GOVERNANCE_SECTIONS: readonly Section[] = [
   {

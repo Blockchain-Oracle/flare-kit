@@ -1,4 +1,4 @@
-import { amount } from '@flare-kit/core'
+import { amount, truncateAddress } from '@flare-kit/core'
 import type { Eligibility, GovernanceOperation, GovernancePlanResult, GovernancePositionView } from '@flare-kit/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
@@ -40,13 +40,8 @@ export interface GovernanceCardProps {
   readonly position: GovernancePositionView
   /** The keyless eligibility read; `isMember` is `undefined` on the observed revert. */
   readonly eligibility?: Eligibility
-  /** The composing account (used to frame a self-delegation refusal). */
-  readonly account?: `0x${string}`
   /** The SINGLE target address the composer delegates all governance vote power to. */
   readonly targetText?: string
-  /** Vote-power scale/unit — governance VP is 18-decimal WNat weight, labelled `VP`. */
-  readonly votesDecimals?: number
-  readonly votesAsset?: string
   readonly mockLabel?: string
   readonly networkLabel?: string
   readonly onTargetChange?: (text: string) => void
@@ -57,8 +52,10 @@ export interface GovernanceCardProps {
 }
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
-const shorten = (address: string): string => `${address.slice(0, 6)}…${address.slice(-4)}`
 const isZero = (address: string): boolean => address.toLowerCase() === ZERO_ADDRESS
+/** Governance VP is 18-decimal WNat weight labelled `VP` by definition — a constant, not an option. */
+const VP_DECIMALS = 18
+const VP_ASSET = 'VP'
 
 /** isProposer/canPropose are reliable booleans; isMember reverts → `undefined` → `—`, never `No`. */
 function yesNoUnknown(value: boolean | undefined): string {
@@ -67,8 +64,6 @@ function yesNoUnknown(value: boolean | undefined): string {
 
 export function GovernanceCard(props: GovernanceCardProps) {
   const { operation: op, planResult, position, eligibility, theme } = props
-  const votesDecimals = props.votesDecimals ?? 18
-  const votesAsset = props.votesAsset ?? 'VP'
 
   const hasTarget = (props.targetText ?? '').trim() !== ''
   const state = governanceCardState({ operation: op, planResult, position })
@@ -77,11 +72,14 @@ export function GovernanceCard(props: GovernanceCardProps) {
 
   const inFlight = op ? IN_FLIGHT.has(op.state) : false
   const editable = !inFlight && !(op ? CONCLUDED.has(op.state) : false)
-  const unverified = Boolean(planResult && !planResult.ok && planResult.error.code === 'unverified')
+  // With NO plan the verified gate has not been evaluated at all, so the affordance must not
+  // present itself as live — the same stance the delegate CTA already takes. The hook still
+  // refuses either way; this keeps the two affordances from disagreeing on screen.
+  const notVerifiedHere = planResult === undefined || (!planResult.ok && planResult.error.code === 'unverified')
 
   // Undelegate is offered only when a current delegate exists (an observed non-zero delegate).
   const hasDelegate = position.status === 'observed' && !isZero(position.delegate)
-  const canUndelegate = editable && !unverified
+  const canUndelegate = editable && !notVerifiedHere
 
   const aside = (
     <div className="fk-gov-head">
@@ -105,10 +103,10 @@ export function GovernanceCard(props: GovernanceCardProps) {
       <Details aria-label="Governance vote power" className="fk-gov-vp">
         {position.status === 'observed' ? (
           <>
-            <DetailRow label="Vote power" value={amount(position.votes, votesDecimals, votesAsset)} />
+            <DetailRow label="Vote power" value={amount(position.votes, VP_DECIMALS, VP_ASSET)} />
             <DetailRow
               label="Delegate"
-              value={isZero(position.delegate) ? 'None' : <span className="fk-mono">{shorten(position.delegate)}</span>}
+              value={isZero(position.delegate) ? 'None' : <span className="fk-mono">{truncateAddress(position.delegate)}</span>}
             />
           </>
         ) : (
