@@ -81,8 +81,30 @@ describe('the plan carries the whole chain before approval', () => {
     expect(result.plan.sourceId).toBe('testXRP')
     expect(result.plan.proofWindowSeconds).toBe(86_400n)
     expect(result.plan.reference).toMatch(/^0x01/)
-    expect(result.plan.downstream).toContain('transfer')
-    expect(result.plan.warnings).toHaveLength(0)
+    // The full sentence, recipient included. This is the line telling a user where their
+    // FAsset is about to go; asserting only that it contains "transfer" passes even when
+    // the amount and the recipient are swapped.
+    expect(result.plan.downstream).toBe(
+      'The personal account will transfer 1000000 drops of the FAsset to 0xDddF991858311597bFD3D125cb342a0d4B56ea0a.',
+    )
+    expect(result.plan.warnings).toEqual([])
+  })
+
+  it('pins the amount the user actually signs, not the fee', () => {
+    // An over-payment is legal — the controller checks `receivedAmount >= fee`. Returning
+    // `feeDrops` here instead would silently sign a smaller payment than the user chose.
+    const result = plan({ intent: { ...TRANSFER, amountDrops: 5000n } })
+    expect(result.ok && result.plan.amountDrops).toBe(5000n)
+    expect(result.ok && result.plan.feeDrops).toBe(1000n)
+  })
+
+  it('names the vault in the downstream line for a deposit', () => {
+    const result = plan({
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x11, value: 500_000n, vaultId: 1 },
+    })
+    expect(result.ok && result.plan.downstream).toBe(
+      'The personal account will call deposit on firelight vault 1.',
+    )
   })
 
   it('takes the operator wallet from the live read, never a constant', () => {
@@ -103,6 +125,15 @@ describe('refusals — each one is a payment a user would otherwise have lost', 
   it('refuses when the deployment could not be read', () => {
     const result = plan({ settings: undefined })
     expect(!result.ok && result.refusal.code).toBe('deployment_unreadable')
+    expect(!result.ok && result.refusal.message).toMatch(/controller could not be read/)
+  })
+
+  it('refuses when the personal account could not be derived', () => {
+    // Shares a refusal code with the branch above, so the message is what tells them apart
+    // — and without this test the branch is simply unwalked.
+    const result = plan({ account: undefined })
+    expect(!result.ok && result.refusal.code).toBe('deployment_unreadable')
+    expect(!result.ok && result.refusal.message).toMatch(/personal account/)
   })
 
   it('refuses a payment smaller than the instruction fee', () => {
@@ -229,6 +260,16 @@ describe('warnings — things a user must see that are NOT grounds to refuse', (
     const result = plan({ account: { ...ACCOUNT, fassetBalance: undefined } })
     expect(result.ok).toBe(true)
     expect(result.ok && result.plan.warnings.map((w) => w.code)).toContain('balance_unknown')
+  })
+
+  it('says a lots-denominated instruction was not balance-checked, in its own words', () => {
+    // Silence would imply it WAS checked. And the code differs from `balance_not_read`:
+    // that one means nobody asked, this one means the units cannot be compared.
+    const result = plan({
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x02, value: 1n },
+    })
+    expect(result.ok).toBe(true)
+    expect(result.ok && result.plan.warnings.map((w) => w.code)).toContain('balance_not_comparable')
   })
 
   it('warns that an undeployed account will be created by this instruction', () => {

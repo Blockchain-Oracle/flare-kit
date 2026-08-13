@@ -38,6 +38,11 @@ export interface UseInstructionInput {
   readonly intent: InstructionIntent | undefined
   /** From `readTransactionIdUsed`. `undefined` means unread, and is never read as `false`. */
   readonly replayed?: boolean | undefined
+  /**
+   * From `useSmartAccount`. Distinguishes a balance that was never asked for from one whose
+   * read failed — without it the planner reports the first as a failure.
+   */
+  readonly balanceRequested?: boolean
   /** A persisted operation to resume reconciling on mount. */
   readonly operation?: OperationRecord<InstructionIntent>
   /** What the caller can currently see of the four legs. Absent legs stay `undefined`. */
@@ -84,15 +89,29 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
       personalAccount,
       intent,
       replayed: input.replayed,
+      balanceRequested: input.balanceRequested,
     })
-  }, [deployment, settings, catalogue, personalAccount, intent, input.replayed])
+  }, [
+    deployment,
+    settings,
+    catalogue,
+    personalAccount,
+    intent,
+    input.replayed,
+    input.balanceRequested,
+  ])
 
   useEffect(() => {
     setRecord(input.operation)
   }, [input.operation])
 
+  // Named, so the lint rule can see it. `record` itself must NOT be a dependency:
+  // `reconcileInstruction` returns a fresh object every poll, so listing it would restart
+  // the effect on each reconcile and re-enter `run()` immediately — an unbounded loop.
+  const active = record !== undefined
+
   useEffect(() => {
-    if (!record || !observe || !settings) return
+    if (!active || !observe || !settings) return
     // Per-effect, not a shared ref — see `use-smart-account.ts` for why a shared one leaks
     // a poll loop on every dependency change.
     let live = true
@@ -128,12 +147,12 @@ export function useInstruction(input: UseInstructionInput): UseInstructionResult
     }
     // `record` is intentionally not a dependency: reconciling would otherwise restart the
     // poll on every advance, resetting the cadence each time the record moves.
-  }, [observe, settings, pollMs, tick, Boolean(record)])
+  }, [observe, settings, pollMs, tick, active])
 
   return {
     plan,
     record,
-    reconciling: Boolean(record && observe && settings),
+    reconciling: Boolean(active && observe && settings),
     proofDeadline: settings
       ? proofDeadlineMs(observation, settings.proofValidityDurationSeconds)
       : undefined,

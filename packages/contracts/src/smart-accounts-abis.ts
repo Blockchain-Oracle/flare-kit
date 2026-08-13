@@ -233,8 +233,6 @@ const EVENTS = [
   },
 ] as const
 
-export const masterAccountControllerAbi = [...READS, ...WRITES, ...EVENTS] as const
-
 /**
  * The controller's named refusals, so a revert has a name instead of being an opaque blob
  * — the `direct-minting-errors.ts` precedent. Every one of these is reachable from a
@@ -297,3 +295,16 @@ export const smartAccountErrorsAbi = [
   // transaction back — no FAsset moved, and the XRP is still with the operator.
   { type: 'error', name: 'CallFailed', inputs: [{ name: 'returnData', type: 'bytes' }] },
 ] as const
+
+export const masterAccountControllerAbi = [
+  ...READS,
+  ...WRITES,
+  ...EVENTS,
+  // Spread IN, not merely exported beside. `direct-minting-errors.ts` is the precedent and
+  // it is spread into `assetManagerAbi` — that is what makes viem decode a revert by name.
+  // Exported alone, these fragments decode nothing and an `executeInstruction` revert
+  // reaches the caller as undecodable bytes: the exact outcome the file comment claims to
+  // prevent.
+  ...smartAccountErrorsAbi,
+] as const
+

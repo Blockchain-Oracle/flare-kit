@@ -68,15 +68,46 @@ describe('the only route to succeeded', () => {
   })
 
   it.each([
-    ['nothing observed yet', {} as InstructionObservation, 'xrpl'],
-    ['the payment validated', PAID, 'fdc'],
-    ['the proof was retrieved', { ...PAID, proofRetrieved: true }, 'flare'],
-    ['the dispatch was submitted', { ...PAID, proofRetrieved: true, submissionHash: '0xaa' }, 'flare'],
-  ])('waits on the right actor once %s', (_what, observation, actor) => {
+    ['nothing observed yet', {} as InstructionObservation, 'xrpl', ['active', 'pending', 'pending', 'pending']],
+    ['the payment validated', PAID, 'fdc', ['done', 'active', 'pending', 'pending']],
+    [
+      'the proof was retrieved',
+      { ...PAID, proofRetrieved: true },
+      'flare',
+      ['done', 'done', 'active', 'pending'],
+    ],
+    [
+      'the dispatch was submitted',
+      { ...PAID, proofRetrieved: true, submissionHash: '0xaa' },
+      'flare',
+      ['done', 'done', 'active', 'pending'],
+    ],
+  ])('waits on the right actor, with the right spine, once %s', (_what, observation, actor, spine) => {
     const record = reconcileInstruction(submittedInstructionRecord(), observation, clock())
     expect(record.state).toBe('awaiting_external')
     expect(record.awaiting?.actor).toBe(actor)
-    expect(record.state).not.toBe('succeeded')
+    // The spine matters as much as the state: passing `0` as `done` on every leg leaves the
+    // timeline drawing four `pending` rows — "outcome unknown" — for the whole operation,
+    // and every state-only assertion still passes.
+    expect(record.steps.map((step) => step.state)).toEqual(spine)
+  })
+
+  it('says something DIFFERENT while the dispatch is in flight than before it', () => {
+    // The two legs share an actor and a step count, so only the reason distinguishes them.
+    // Without this, deleting the submitted branch entirely changes nothing observable.
+    const retrieved = reconcileInstruction(
+      submittedInstructionRecord(),
+      { ...PAID, proofRetrieved: true },
+      clock(),
+    )
+    const submitted = reconcileInstruction(
+      submittedInstructionRecord(),
+      { ...PAID, proofRetrieved: true, submissionHash: '0xaa' },
+      clock(),
+    )
+    expect(submitted.awaiting?.reason).not.toBe(retrieved.awaiting?.reason)
+    expect(retrieved.awaiting?.reason).toMatch(/ready to dispatch/i)
+    expect(submitted.awaiting?.reason).toMatch(/submitting/i)
   })
 })
 
@@ -193,8 +224,14 @@ describe('the wait clock', () => {
 
   it('is idempotent — reconciling the same observation twice changes no state', () => {
     const once = reconcileInstruction(submittedInstructionRecord(), EXECUTED, clock())
+    // Anchored to expected values first. Comparing the output only to itself passes even
+    // when the reconciler does nothing at all.
+    expect(once.state).toBe('awaiting_external')
+    expect(once.awaiting?.actor).toBe('flare')
+
     const twice = reconcileInstruction(once, EXECUTED, clock())
-    expect(twice.state).toBe(once.state)
-    expect(twice.awaiting?.actor).toBe(once.awaiting?.actor)
+    expect(twice.state).toBe('awaiting_external')
+    expect(twice.awaiting?.since).toBe(once.awaiting?.since)
+    expect(twice.steps.map((s) => s.state)).toEqual(once.steps.map((s) => s.state))
   })
 })

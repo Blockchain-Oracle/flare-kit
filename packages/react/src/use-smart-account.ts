@@ -7,7 +7,7 @@ import {
   readDeploymentSettings,
   readPersonalAccount,
 } from '@flare-kit/core'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 /**
  * `useSmartAccount` — the identity read for one XRPL address, on one network.
@@ -46,6 +46,12 @@ export interface UseSmartAccountResult {
   readonly account: PersonalAccountState | undefined
   /** Always the full instruction vocabulary; availability says what is knowable. */
   readonly catalogue: readonly InstructionRow[]
+  /**
+   * Whether a FAsset balance was asked for at all. Without this, a planner cannot tell an
+   * unread balance from one that was never requested, and reports the second as a failed
+   * read — inventing a failure. Only this hook knows, because only it sees `fassetToken`.
+   */
+  readonly balanceRequested: boolean
   readonly loading: boolean
   /** True once a read cycle has completed, so "loading" and "unavailable" never blur. */
   readonly loaded: boolean
@@ -62,6 +68,22 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
 
   const refresh = useCallback(() => setTick((value) => value + 1), [])
 
+  // The catalogue is derived, not fetched. Memoised on `settings` so it is a stable
+  // reference: recomputing it every render makes any downstream `useMemo` that lists it as
+  // a dependency never hit, which is exactly what was happening in `useInstruction`.
+  const catalogue = useMemo(() => buildInstructionCatalogue(settings), [settings])
+
+  // A new SUBJECT means the old answers are about somebody else — holding them while the
+  // new read is in flight would show one XRPL owner's personal-account ADDRESS under
+  // another's name, an address a user can send funds to. Keyed on the subject alone: a
+  // manual `refresh()` or a poll-interval change must NOT blank the panel, which is what a
+  // reset inside the read effect did.
+  useEffect(() => {
+    setSettings(undefined)
+    setAccount(undefined)
+    setLoaded(false)
+  }, [deployment, xrplOwner])
+
   useEffect(() => {
     // PER-EFFECT, not a ref shared across runs. With a shared ref, React runs the old
     // cleanup and then the new effect body — which resets the flag — BEFORE the previous
@@ -72,12 +94,6 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
     let live = true
     let timer: ReturnType<typeof setTimeout> | undefined
 
-    // A new subject means the old answers are about somebody else. Holding them while the
-    // new read is in flight would show one XRPL owner's personal-account ADDRESS under
-    // another's name — an address a user can send funds to.
-    setSettings(undefined)
-    setAccount(undefined)
-    setLoaded(false)
 
     const read = async () => {
       setLoading(true)
@@ -105,7 +121,8 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
   return {
     settings,
     account,
-    catalogue: buildInstructionCatalogue(settings),
+    catalogue,
+    balanceRequested: fassetToken !== undefined,
     loading,
     loaded,
     refresh,

@@ -1,5 +1,5 @@
 import { type SmartAccountsDeployment, masterAccountControllerAbi } from '@flare-kit/contracts'
-import { type PublicClient, parseAbiItem } from 'viem'
+import { type PublicClient, getAbiItem } from 'viem'
 import { decodePaymentReference } from './payment-reference.js'
 
 /**
@@ -29,9 +29,12 @@ const CHUNK_BLOCKS = 25n
 /** A bound on the whole scan, so a slow node degrades to `unavailable` rather than hanging. */
 const DEFAULT_MAX_CHUNKS = 40
 
-const INSTRUCTION_EXECUTED = parseAbiItem(
-  'event InstructionExecuted(address indexed personalAccount, bytes32 indexed transactionId, bytes32 indexed paymentReference, string xrplOwner, uint256 instructionId)',
-)
+// Taken FROM the controller ABI rather than restated. Writing the signature out again
+// would be one protocol fact in two syntaxes across two packages, free to drift.
+const INSTRUCTION_EXECUTED = getAbiItem({
+  abi: masterAccountControllerAbi,
+  name: 'InstructionExecuted',
+})
 
 export interface ObservedInstruction {
   readonly personalAccount: `0x${string}`
@@ -132,6 +135,3 @@ export async function scanInstructionHistory(
 
   return found
 }
-
-/** The controller ABI, re-exported so a caller can decode a receipt with the same source. */
-export const instructionEventAbi = masterAccountControllerAbi

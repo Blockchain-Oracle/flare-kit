@@ -58,6 +58,7 @@ export interface PlanWarning {
     | 'replay_unknown'
     | 'balance_unknown'
     | 'balance_not_read'
+    | 'balance_not_comparable'
     | 'account_undeployed'
     | 'deployment_state_unknown'
   readonly message: string

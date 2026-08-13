@@ -45,24 +45,40 @@ interface FakeOptions {
   readonly tip?: bigint
 }
 
-function fakeClient(options: FakeOptions = {}): PublicClient {
-  let calls = 0
-  return {
-    async getBlockNumber() {
-      if (options.blockNumberThrows) throw new Error('RPC refused getBlockNumber')
-      return options.tip ?? 110n
-    },
-    async getLogs() {
-      calls += 1
-      if (options.getLogsThrowsOnCall === calls) throw new Error('RPC refused getLogs')
-      return calls === 1 ? (options.logs ?? []) : []
-    },
-  } as unknown as PublicClient
+/** Every getLogs call, so the filter and the chunk ranges can be asserted rather than
+ *  assumed. A fake that discards its arguments cannot catch a scan that drops the account
+ *  filter or asks for a range the node would refuse. */
+interface Recorded {
+  readonly address: string
+  readonly args: { personalAccount?: string } | undefined
+  readonly fromBlock: bigint
+  readonly toBlock: bigint
 }
 
-const scan = (client: PublicClient, extra: Record<string, unknown> = {}) =>
+function fakeClient(options: FakeOptions = {}): { client: PublicClient; calls: Recorded[] } {
+  const calls: Recorded[] = []
+  return {
+    calls,
+    client: {
+      async getBlockNumber() {
+        if (options.blockNumberThrows) throw new Error('RPC refused getBlockNumber')
+        return options.tip ?? 110n
+      },
+      async getLogs(request: Recorded) {
+        calls.push(request)
+        if (options.getLogsThrowsOnCall === calls.length) throw new Error('RPC refused getLogs')
+        return calls.length === 1 ? (options.logs ?? []) : []
+      },
+    } as unknown as PublicClient,
+  }
+}
+
+const scan = (
+  fake: { client: PublicClient; calls: Recorded[] },
+  extra: Record<string, unknown> = {},
+) =>
   scanInstructionHistory({
-    client,
+    client: fake.client,
     deployment: DEPLOYMENT,
     personalAccount: ACCOUNT,
     fromBlock: 100n,
@@ -132,5 +148,31 @@ describe('an incomplete scan is undefined, never an empty array', () => {
   it('does not truncate silently when the budget is sufficient', async () => {
     const found = await scan(fakeClient({ tip: 149n, logs: [log()] }), { maxChunks: 2 })
     expect(found).toHaveLength(1)
+  })
+})
+
+describe('what the scan actually asks the node for', () => {
+  it('filters on the personal account, and on the controller', async () => {
+    // Without asserting the filter, dropping `args: { personalAccount }` passes every test
+    // in this file while returning EVERY account's dispatches for every account — one
+    // user's history rendered as another's.
+    const fake = fakeClient({ logs: [log()] })
+    await scan(fake)
+    expect(fake.calls[0]?.args?.personalAccount).toBe(ACCOUNT)
+    expect(fake.calls[0]?.address).toBe(DEPLOYMENT.masterAccountController)
+  })
+
+  it('pages in ranges the node will actually serve', async () => {
+    // Coston2 caps eth_getLogs at roughly 30 blocks. A chunk size of 250 satisfies every
+    // other test here and is refused by the live node — the cap this file exists for.
+    const fake = fakeClient({ tip: 149n })
+    await scan(fake)
+    expect(fake.calls.map((call) => [call.fromBlock, call.toBlock])).toEqual([
+      [100n, 124n],
+      [125n, 149n],
+    ])
+    for (const call of fake.calls) {
+      expect(call.toBlock - call.fromBlock).toBeLessThan(30n)
+    }
   })
 })

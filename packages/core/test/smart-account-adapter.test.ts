@@ -131,6 +131,18 @@ describe('the personal account', () => {
     expect(account?.pinnedExecutor).toBe('0x0000000000000000000000000000000000000000')
   })
 
+  it('treats an empty-code answer as not deployed', async () => {
+    // viem can answer either `undefined` or `'0x'` for an address with no code. Dropping
+    // the `'0x'` check renders an undeployed account as deployed.
+    const account = await readPersonalAccount(
+      fakeClient({ code: '0x' }),
+      DEPLOYMENT,
+      XRPL_OWNER,
+      FTEST_XRP,
+    )
+    expect(account?.deployed).toBe(false)
+  })
+
   it('reports deployed for an account that has code', async () => {
     const account = await readPersonalAccount(
       fakeClient({ code: '0x6080' }),

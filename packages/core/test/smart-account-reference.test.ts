@@ -12,9 +12,9 @@ import {
  *
  * Two independent checks run on every fixture. The FIXTURES are hex strings assembled by
  * hand from the Solidity layout comment (byte 0 id, byte 1 wallet, bytes 2–11 a uint80
- * value, then the command's tail), and the CROSS-CHECK re-reads each fixture with the
- * parser's own shifts. A codec bug that moved a field would have to move it identically in
- * three places to pass.
+ * value, then the command's tail), and the CROSS-CHECK re-reads the ENCODER'S OUTPUT with
+ * the parser's own shifts. A codec bug that moved a field would have to move it identically
+ * in both places to pass.
  */
 
 const SHIFTS = {
@@ -68,9 +68,12 @@ const FIXTURES: readonly Fixture[] = [
 
 describe('the payment reference matches the Solidity layout', () => {
   it.each(FIXTURES)('$what', (fixture) => {
-    expect(encodePaymentReference(fixture.input)).toBe(fixture.hex)
+    const encoded = encodePaymentReference(fixture.input)
+    expect(encoded).toBe(fixture.hex)
 
-    const packed = BigInt(fixture.hex)
+    // Applied to the ENCODER'S OUTPUT, not to the fixture constant. Against the constant it
+    // only re-validated the fixture and could never catch a codec bug.
+    const packed = BigInt(encoded)
     expect(SHIFTS.instructionId(packed)).toBe(fixture.input.instructionId)
     expect(SHIFTS.value(packed)).toBe(fixture.input.value)
 

@@ -69,14 +69,6 @@ export type PaymentProof = AttestationProof<PaymentRequestBody, PaymentResponseB
 
 export type PaymentFdcClient = FdcClient<PaymentInput, PaymentRequestBody, PaymentResponseBody>
 
-/**
- * All the instruction path asks of an FDC client. By the time reconciliation runs the XRP
- * has moved and the request is already on chain, so depending on the whole client would
- * ask a caller for capabilities this path cannot use — the `XrpPaymentProofRetriever`
- * reasoning, unchanged.
- */
-export type PaymentProofRetriever = Pick<PaymentFdcClient, 'retrieveProof'>
-
 export const paymentFamily: AttestationFamily<
   PaymentInput,
   PaymentRequestBody,

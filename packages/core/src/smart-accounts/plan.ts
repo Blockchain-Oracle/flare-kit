@@ -88,14 +88,14 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
       `Instruction 0x${intent.instructionId.toString(16).padStart(2, '0')} is not one the kit can build.`,
     )
   }
+  // Split rather than a compound guard with a ternary that re-tests its own branch: this
+  // way each case says one thing, and `availability.reason` narrows properly.
   const row = instructionRow(catalogue, intent.instructionId)
-  if (!row || row.availability.kind !== 'available') {
-    return refuse(
-      'not_composable',
-      row && row.availability.kind !== 'available'
-        ? row.availability.reason
-        : 'This instruction is not in the catalogue for this deployment.',
-    )
+  if (!row) {
+    return refuse('not_composable', 'This instruction is not in the catalogue for this deployment.')
+  }
+  if (row.availability.kind !== 'available') {
+    return refuse('not_composable', row.availability.reason)
   }
 
   // 3. The destination must be a wallet the deployment registers RIGHT NOW.
@@ -229,7 +229,10 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
   // was checked.
   if (instruction.denomination === 'lots') {
     warnings.push({
-      code: 'balance_not_read',
+      // A DISTINCT code from `balance_not_read`: that one means nobody asked, this one
+      // means the units cannot be compared. A surface that cannot tell them apart cannot
+      // explain either.
+      code: 'balance_not_comparable',
       message:
         'This instruction is denominated in lots, so the kit cannot check the account’s ' +
         'balance covers it without the AssetManager lot size. If it does not, the ' +

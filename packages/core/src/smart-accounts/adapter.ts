@@ -6,6 +6,7 @@ import {
   masterAccountControllerAbi,
 } from '@flare-kit/contracts'
 import { type Abi, type PublicClient, hexToString } from 'viem'
+import type { toPaymentProofStruct } from '../fdc/families/payment.js'
 
 /**
  * The live reads M13 needs off `MasterAccountController`, and the pure `executeInstruction`
@@ -219,7 +220,7 @@ export async function readTransactionIdUsed(
  */
 export function buildExecuteInstructionCall(
   deployment: SmartAccountsDeployment,
-  proofStruct: unknown,
+  proofStruct: ReturnType<typeof toPaymentProofStruct>,
   xrplAddress: string,
   valueWei: bigint,
 ): SmartAccountCall {
