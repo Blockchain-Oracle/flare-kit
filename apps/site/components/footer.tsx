@@ -52,7 +52,9 @@ export function SiteFooter() {
           </div>
           {COLUMNS.map((column) => (
             <div key={column.heading}>
-              <h4>{column.heading}</h4>
+              {/* h3, not h4: the page outline runs h1 (hero) → h2 (section) →
+                  here, and skipping a level is a heading-order violation. */}
+              <h3>{column.heading}</h3>
               <ul>
                 {column.links.map((link) => (
                   <li key={`${column.heading}-${link.label}`}>
