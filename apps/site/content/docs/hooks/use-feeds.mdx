@@ -1,0 +1,149 @@
+---
+title: useFeeds
+description: Block-latency FTSO feed values as React state, where every reading carries the exponent and timestamp that came back with it and the batch's fee is quoted before anything is sent.
+breadcrumb: ['Docs', 'Hooks', 'useFeeds']
+importLine: "import { useFeeds } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-anchor-proof', label: 'useAnchorProof' }
+next: { href: '/docs/hooks/use-feed-history', label: 'useFeedHistory' }
+---
+
+`useFeeds` reads a batch of feeds at block latency through `FtsoV2.getFeedsById`
+and hands back what came out of that one call: a reading per feed, each with its
+**own** exponent, the batch's shared timestamp, and the fee the call was quoted
+at.
+
+The rule the hook exists to keep is that decimals belong to a reading, not to a
+feed. `FLR/USD` is 8 decimals through this path and 6 on the anchor path, on
+both networks — so a decimals value cached against a feed id is wrong by two
+orders of magnitude on the first feed anyone looks at, and wrong quietly,
+because the number still renders. There is no per-feed decimals cache here to
+reach for.
+
+The catalogue is a separate read — `useFeedCatalogue`, exported from the same
+module — because metadata costs nothing and changes rarely, while a value is
+payable and carries its own exponent.
+
+## Live
+
+The readout below is the hook's actual return value on this render, running the
+real `readFeeds` against `createMockFtsoReader()` — whose responses are what
+Coston2 returned on 2026-08-04. `FLR/USD` comes back at 8 decimals and
+`BTC/USD` at 2, in the same response, which is the whole argument for the
+per-reading exponent.
+
+<UseFeedsDemo />
+
+## Usage
+
+The reader is a parameter, not context: this hook consumes no provider. Mount it
+with the reader your host already has.
+
+```tsx
+import type { PayableReader } from '@flare-kit/core'
+import { FEED_CATEGORY, encodeFeedId, formatExact, isObserved } from '@flare-kit/core'
+import { useFeeds } from '@flare-kit/react'
+
+const FEED_IDS = [
+  encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD'),
+  encodeFeedId(FEED_CATEGORY.crypto, 'BTC/USD'),
+]
+
+export function Prices({ reader }: { reader: PayableReader }) {
+  const { data, loading, error } = useFeeds({ reader, chainId: 114, feedIds: FEED_IDS })
+
+  if (loading) return <p>Reading the feeds…</p>
+  if (error) return <p>The read failed: {error}</p>
+  if (!data || !isObserved(data)) return null
+
+  return (
+    <ul className="mono">
+      {data.value.readings.map((reading) => (
+        <li key={reading.feedId}>
+          {reading.name} {formatExact(reading.price)}
+        </li>
+      ))}
+    </ul>
+  )
+}
+```
+
+## Parameters
+
+One options object. The read re-runs when the chain id, the joined feed ids, the
+fee ceiling or the payer changes — the reader itself is held in a ref, so a host
+that rebuilds it inline every render still completes a read.
+
+<PropsTable rows={[
+  { name: 'reader', type: 'PayableReader', required: true, description: 'A reader with simulateContract. getFeedsById is payable and viem’s readContract silently drops a value, so the read goes out as a simulation carrying the fee — an eth_call with funds attached, which spends nothing and needs no signer.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment to read. Addresses come from @flare-kit/contracts; network is configuration.' },
+  { name: 'feedIds', type: 'readonly FeedId[]', required: true, description: 'The exact batch to read. The fee is quoted for this batch, because that is what getFeedsById charges for.' },
+  { name: 'maxFeeWei', type: 'bigint', required: false, description: 'Refuse rather than spend above this. The refusal happens before anything is sent, and it is the caller’s own policy rather than a chain fault.' },
+  { name: 'account', type: '0x${string}', required: false, description: 'Who pays. Required once the fee is non-zero: a call carrying value runs as 0x0 without one, and 0x0 has no balance. The fee is zero on Coston2 today, which hides this entirely, and it is governance-settable.' },
+]} />
+
+## Return type
+
+`ObservedRead<Observation<FeedReadResult>>` — the shape
+[useObservedRead](/docs/hooks/use-observed-read) gives every FTSO hook in this
+package.
+
+<PropsTable rows={[
+  { name: 'data', type: 'Observation<FeedReadResult> | undefined', description: 'undefined until a read lands. When present it carries readings and the fee quote, with the source (FtsoV2, named network, chain id) and the time it was observed.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no result has ever arrived. Not the same claim as "no feeds".' },
+  { name: 'error', type: 'string | undefined', description: 'The read that failed. Never a fabricated result, and it never overwrites readings already held — a node being unreachable says nothing about the values it last reported.' },
+  { name: 'refresh', type: '() => void', description: 'Ask for another read. What is on screen stays until the new one lands.' },
+]} />
+
+Inside `data.value`: `readings`, and `fee`. Each reading carries `feedId`,
+`name`, `category`, `price` as an exact `Amount`, the `rawValue` and `decimals`
+it was built from, `timestampSeconds`, and `path: 'block-latency'`. When the
+contract resolved a retired id to its current feed, the reading also carries
+`requestedFeedId` and `formerName`.
+
+## States
+
+- **loading** — no read has landed yet. No value is asserted.
+- **observed** — a real reading batch. `data.status` is `'observed'`;
+  `readFeeds` throws rather than manufacturing an `unavailable` observation, so
+  a failed read arrives as `error` instead.
+- **error, fee above ceiling** — `maxFeeWei` was lower than the quote. Nothing
+  was sent, and retrying refuses identically until the ceiling moves.
+- **error, no payer** — the fee is non-zero and no `account` was given. Refused
+  before the call, because attempting it returns an insufficient-funds error
+  that reads as "the chain is broken" rather than "you did not say who pays".
+- **a renamed feed** — one reading labelled with the feed the id resolves to
+  today, carrying the name it used to have. Never two rows, and never today's
+  price under yesterday's name.
+
+## Mock to live
+
+The hook takes its reader as a parameter, so the swap is the reader alone.
+
+```tsx
+import { chainFor } from '@flare-kit/contracts'
+import { createMockFtsoReader } from '@flare-kit/core'
+import { createPublicClient, http } from 'viem'
+
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. Nothing in the component changes.
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+The mock is a reader rather than a second implementation, so the same
+`readFeeds` runs against both — mock parity is structural instead of something a
+parallel copy has to be kept in step with. It is never a fallback: nothing
+reaches for it when a live call fails.
+
+## What it will not do
+
+It will not cache decimals per feed, and it will not merge a block-latency
+reading with an anchor one — those are two paths with two exponents for the same
+asset, and only naming which is which keeps both honest.
+
+It will not send a call carrying value with nobody to pay it, and it will not
+spend past `maxFeeWei`. It will not poll: the provider owns this package's one
+polling knob, and a second clock would mean two answers to "how often does this
+refresh". It will not read the catalogue for you, and it will not turn a failed
+read into an empty batch or a zero price.

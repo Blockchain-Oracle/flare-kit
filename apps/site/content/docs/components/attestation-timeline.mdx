@@ -1,0 +1,134 @@
+---
+title: AttestationTimeline
+description: Where an attestation stands on the operation spine — with finalization and proof retrieval kept as two steps, because a finalized round does not mean the proof is there yet.
+breadcrumb: ['Docs', 'Components', 'AttestationTimeline']
+importLine: "import { AttestationTimeline } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/attestation-request-builder', label: 'AttestationRequestBuilder' }
+next: { href: '/docs/components/proof-detail', label: 'ProofDetail' }
+---
+
+`AttestationTimeline` composes [`OperationTimeline`](/docs/components/operation-timeline)
+rather than restating it. The spine already knows how to render steps, actors,
+evidence and a stated wait. What an attestation adds is which evidence belongs
+beside which step, and the fact that *no proof* is an unknown rather than a
+failure.
+
+The step split that matters is `finalize` and `retrieve`. They are two steps
+because they are two moments: measured live on 2026-08-04, `Relay.isFinalized`
+returned true for a round whose proof the data availability layer had not yet
+published, and the gap ran to minutes. A timeline that treated finalization as
+proof-readiness would show a proof that is not there.
+
+## Live
+
+The preview runs the gallery's own states. Each one is a record the real
+reconciler produced from an observed chain state, so the switcher walks
+transitions the operation actually reaches.
+
+<AttestationTimelineDemo />
+
+## Usage
+
+Hand it the operation record. `useAttestation` reconciles that record against the
+chain on the provider's interval, so opening the page and receiving a tick are
+the same code path — there is no Resume button and nothing here blocks.
+
+```tsx
+import { useAttestation } from '@flare-kit/react'
+import { AttestationTimeline } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Attestation({ operationId }: { operationId: string }) {
+  const { operation } = useAttestation({ read: readChainState, operationId })
+  if (!operation) return null
+
+  return (
+    <AttestationTimeline
+      operation={operation}
+      reading={reading}
+      now={Date.now()}
+      unknownReason={unknownReason}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'AttestationOperation', required: true, description: 'The record to render, with its six steps — prepare, submit, finalize, retrieve, verify and consume. The sixth is absent for the families with no deployed consumer, because a step declared absent is honest and a step that silently never runs is not.' },
+  { name: 'reading', type: 'Observation<unknown>', description: 'Where this reading came from and how old it is. A timeline is a claim about what the protocol is doing right now, so a stale one must not hide who said so and when.' },
+  { name: 'now', type: 'number', defaultValue: 'Date.now()', description: 'The wall clock the provenance chip evaluates its own freshness against. Only read when a reading is given.' },
+  { name: 'unknownReason', type: 'string', description: 'Why there is no proof, when there is none. Rendered as an unknown with a diagnostic reason — never as a negative fact about the attested data.' },
+  { name: 'onAction', type: '(actionId: string) => void', description: 'Called when the reader takes a recovery action. An unknown outcome offers exactly one — make the request again — and it moves new value, because a second request pays a second fee.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the spine.' },
+]} />
+
+The package also exports `ATTESTATION_STEP_EVIDENCE`, the map this component
+passes to the spine: the request bytes sit beside `prepare`, the submission hash
+beside `submit`, the voting round beside `finalize`, and the proof beside
+`retrieve` and `verify`.
+
+## What it renders
+
+The operation spine, with each step's actor named — the verifier canonicalises,
+your wallet submits, the FDC finalizes, the data availability provider publishes,
+Flare verifies, and the host app consumes — and the evidence gathered so far
+beside the step that produced it.
+
+Under the spine sits at most one note. An unknown outcome renders as `info` with
+its diagnostic reason, because the underlying transaction is not in question,
+only whether the protocol produced a proof. A proof that `FdcVerification`
+returned false for renders as `bad`, and says plainly that this is a statement
+about the proof rather than about the transaction it describes.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **submitted, round open** — the request is in, the voting round has not
+  finalized. Waiting on the FDC, with the expected finality stated.
+- **finalized, proof not yet published** — the round is final on chain and the
+  data availability provider has not indexed it. The state a live Coston2 run
+  produced, and not a failure.
+- **consensus not reached** — the round finalized without this request reaching
+  consensus. Data providers did not agree on a single answer, most often because
+  the source moved between their fetches. It says nothing about the source.
+- **round timed out** — the round had not finalized within the wait. It may
+  still finalize.
+- **proof ready and verified** — the proof exists and the chain accepted it.
+  Rendered as partially succeeded, not succeeded: for a family with a consumer
+  the consumption has not happened yet.
+- **verifier-only, no consume step** — the family has no deployed consumer, so
+  the spine has five steps and says so, rather than showing a sixth that will
+  never run.
+- **proof did not verify** — the one genuinely terminal outcome, and a fact
+  about the proof.
+- **consumed** — the proof was consumed on chain and the operation is complete.
+
+The three unknowns each offer one action: make the request again. It is marked
+as moving new value, because a second request pays a second fee.
+
+## Mock to live
+
+The timeline renders a record, and the record comes from the same reconciler
+either way. Moving to a live network swaps what `read` observes, not the spine.
+
+```tsx
+// From this…
+useAttestation({ read: async () => mockChainState, operationId })
+
+// …to this. The component does not change.
+useAttestation({ read: (operation) => readAttestationState(client, operation), operationId })
+```
+
+## What it will not do
+
+It will not render `submitted` as succeeded, and it will not render an unknown
+outcome as failed. A round that has not finalized, a round that finalized
+without consensus and a proof the chain rejected are three different screens,
+and only the last one is a failure.
+

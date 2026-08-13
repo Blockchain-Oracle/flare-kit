@@ -1,0 +1,110 @@
+---
+title: useObservedRead
+description: The one async-read primitive every FTSO hook is built from — it holds what came back, keeps showing it while the next read is in flight, and never lets a failed read become an empty result.
+breadcrumb: ['Docs', 'Hooks', 'useObservedRead']
+importLine: "import { useObservedRead } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-activity', label: 'useActivity' }
+next: { href: '/docs/hooks/use-attestation-families', label: 'useAttestationFamilies' }
+---
+
+`useObservedRead` runs a read, holds what came back, and hands you the three
+facts that follow from it. Every FTSO hook in this package — `useFeeds`,
+`useFeedCatalogue`, `useFeedHistory`, `useAnchorProof`, `useSecureRandom`,
+`useCustomFeeds` and `useIncentiveOffer` — is this hook with a different
+reader. Writing that seven times would be seven chances for one copy to start
+rendering a failure as an absence, so it is written once.
+
+Two behaviours are the point, and they are the same two `usePortfolio` makes:
+`loading` is the *absence* of a result, never a result full of zeroes; and a
+re-read never clears what is already on screen. The previous value stays,
+carrying its own observation time, until a better one arrives.
+
+## Live
+
+The readout below is the hook's actual return value on this render, reading one
+FTSO feed through the real `readFeeds` against the mock reader. There is no
+`FlareProvider` here on purpose — this hook uses no context.
+
+<UseObservedReadDemo />
+
+## Usage
+
+The reader is yours; the hook only sequences it.
+
+```tsx
+import { readFeeds } from '@flare-kit/core'
+import { useObservedRead } from '@flare-kit/react'
+
+function Price({ reader, chainId, feedIds }) {
+  const { data, loading, error, refresh } = useObservedRead(
+    () => readFeeds({ reader, chainId, feedIds }),
+    [chainId, feedIds.join(',')],
+  )
+
+  if (loading) return <Skeleton />
+  return <Reading value={data} error={error} onRefresh={refresh} />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'read', type: '() => Promise<T>', required: true, description: 'The read itself. Held in a ref, so a caller that rebuilds it inline every render does not restart the effect every render and never finish a read — which also means it is not a dependency.' },
+  { name: 'deps', type: 'readonly unknown[]', required: true, description: 'What the read is a function of. Because the reader is not a dependency, this list is the only thing that re-reads: name a feed id here and a changed id re-reads, while a render does not.' },
+]} />
+
+`deps` are the caller's because only the caller knows them. Join arrays into a
+string rather than passing them directly — an array's identity changes every
+render even when its contents do not.
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'data', type: 'T | undefined', description: 'undefined until the first read lands. Never a placeholder, never a zero.' },
+  { name: 'loading', type: 'boolean', description: 'True until the first read settles, whether it succeeded or threw. A later re-read does not set it true again, because the values on screen have not gone away.' },
+  { name: 'error', type: 'string | undefined', description: 'The read that failed, in words. Cleared by the next read that succeeds, and never allowed to overwrite a value already held.' },
+  { name: 'refresh', type: '() => void', description: 'Ask for another read. What is on screen stays until the new one lands.' },
+]} />
+
+## States
+
+- **loading** — no result has settled yet. Distinct from a result that is
+  legitimately empty, which is a read that landed and found nothing.
+- **data with no error** — the last read succeeded and this is what it said.
+- **data with an error** — a later read failed, and the earlier value is still
+  there. Both are true and both are reported: a provider being unreachable says
+  nothing about the value it last reported.
+- **error with no data** — the first read failed. There is no fabricated result
+  to show alongside it.
+
+## Mock to live
+
+The reader is a parameter, so the swap is the reader alone. The hook, the read
+function and the decoding are the same either way:
+
+```tsx
+// Mock: the responses a live Coston2 call actually returned, replayed.
+const reader = createMockFtsoReader()
+
+// Live: your viem client over the configured network.
+const reader = publicClient
+```
+
+The mock is a *reader*, not a parallel implementation — the real `readFeeds`
+runs against it. It is never a fallback: nothing reaches for it when a network
+call fails, because a mock standing in for a failed read is a fabricated value
+wearing a real one's clothes.
+
+## What it will not do
+
+It will not poll. There is deliberately no interval here — the provider owns
+this package's one polling knob, and a second clock would mean two answers to
+"how often does this refresh".
+
+It will not retry, cache, deduplicate concurrent callers or share a result
+between two components. Each mount runs its own read; the hook is a sequencing
+primitive, not a query client.
+
+It will not cancel a read already in flight. When `deps` change or the
+component unmounts, the in-flight result is ignored rather than aborted — the
+underlying request still completes wherever it was sent.

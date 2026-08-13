@@ -1,0 +1,148 @@
+---
+title: AddLiquidityCard
+description: The supply composer — two legs paired at the live pool ratio, each approval named separately, and a refusal to quote on a venue whose addLiquidity signature has not been verified on chain.
+breadcrumb: ['Docs', 'Components', 'AddLiquidityCard']
+importLine: "import { AddLiquidityCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/token-selector', label: 'TokenSelector' }
+next: { href: '/docs/components/position-card', label: 'PositionCard' }
+---
+
+`AddLiquidityCard` supplies two assets to a V2 pool. You enter one amount; the
+other is read from the live reserves, because a supply that is not at the pool
+ratio leaves a silent excess. It is a position, not a deposit, and the card says
+so in those words — the split between the two assets changes as the price moves.
+
+## Live
+
+The preview runs the gallery's own states. Each record is built by walking the
+real add-liquidity state machine over fixture pool readings, so the switcher only
+offers states the card actually reaches.
+
+<AddLiquidityCardDemo />
+
+## Usage
+
+The card is prop-driven and holds no wallet client. You quote, read the two
+allowances, apply the result to the operation, and hand it the record;
+`onSubmit` hands the decision back to you.
+
+```tsx
+import {
+  applyAddQuote,
+  createAddLiquidity,
+  quoteAddLiquidity,
+  readAllowance,
+  startQuoting,
+} from '@flare-kit/core'
+import { AddLiquidityCard } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const CHAIN = 114 // Coston2
+
+export async function quoteSupply(reader, owner, now = Date.now()) {
+  const intent = {
+    tokenAKey: 'FXRP',
+    tokenBKey: 'USDT0',
+    amountADesired: 1_000000n,
+    slippageBips: 50,
+    recipient: owner,
+    deadline: Math.floor(now / 1000) + 1200,
+  }
+  const [result, allowanceA, allowanceB] = await Promise.all([
+    quoteAddLiquidity({ reader, chainId: CHAIN, tokenAKey: 'FXRP', tokenBKey: 'USDT0', amountADesired: intent.amountADesired, slippageBips: 50, now }),
+    readAllowance(reader, CHAIN, 'FXRP', owner),
+    readAllowance(reader, CHAIN, 'USDT0', owner),
+  ])
+  const quoting = startQuoting(createAddLiquidity({ chainId: CHAIN, intent, now }), now).record
+  return { operation: applyAddQuote(quoting, { result, allowanceA, allowanceB, now }).record, result }
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'AddLiquidityOperation', required: true, description: 'The add-liquidity record. Its state drives the CTA, the note and whether the spine appears; its quote drives the terms.' },
+  { name: 'tokenA', type: 'DexToken', required: true, description: 'The token whose amount you enter. Symbol, address and decimals, from `@flare-kit/contracts`.' },
+  { name: 'tokenB', type: 'DexToken', required: true, description: 'The paired token. Its amount is never entered — it comes from the quote, at the pool ratio.' },
+  { name: 'quoteResult', type: 'AddLiquidityQuoteResult', description: 'The raw quote outcome: a quote, `no_pool`, or `unavailable` with its reason. Passing it is what lets the card state why there is nothing to supply instead of showing an empty form.' },
+  { name: 'amountAText', type: 'string', description: 'The controlled text of the entry field, when the host owns the input. Left unset, the field shows the quoted amount for tokenA.' },
+  { name: 'balanceA', type: 'Amount', description: "The signer's tokenA balance. Supplied, it enables the insufficient-balance block; omitted, the card does not guess and does not warn." },
+  { name: 'balanceB', type: 'Amount', description: "The signer's tokenB balance, on the same terms as balanceA." },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the card, which renders a mock note at the top. Mock mode is explicit and labelled — never a fallback the card enters on its own.' },
+  { name: 'networkLabel', type: 'string', description: 'The network shown in the panel subtitle, e.g. `Coston2`.' },
+  { name: 'onAmountAChange', type: '(text: string) => void', description: 'Called as the tokenA amount is typed. The field is editable only before a plan exists.' },
+  { name: 'onSelectA', type: '() => void', description: 'Called when the reader opens token selection for the first leg.' },
+  { name: 'onSelectB', type: '() => void', description: 'Called when the reader opens token selection for the paired leg.' },
+  { name: 'onMax', type: '() => void', description: 'Called when the reader takes the max affordance on the tokenA leg.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader takes the CTA. The card signs nothing and broadcasts nothing — the host owns the transaction.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel: the two supply legs, then the terms — `Paired at pool ratio`,
+`Expected pool share`, `Expected LP` and `Minimum supplied`, each in the mono
+face with its asset and full precision. The minimums carry the slippage they are
+protected at, because the ratio can drift between quote and confirmation.
+
+Below the terms sits the note for the current state, and once a transaction is
+genuinely in flight, the `OperationTimeline` spine. The quote block disappears
+the moment the operation concludes: a pre-execution estimate is not the amount
+that moved, so it is never left on screen next to a result.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **quote** — the paired amount, the expected LP and the resulting pool share,
+  with the note that this is a position rather than a deposit.
+- **needs approval, token A short** — the approval is its own transaction, and it
+  is named for the token that actually needs it.
+- **needs approval, token B short** — the same, for the other leg. When both
+  allowances are short both tokens are named; one approval is never hidden inside
+  the other.
+- **approving** — the approval transaction is in flight, and the spine shows it
+  as the active step.
+- **adding** — the approval is done and the add transaction is submitted. The
+  approval hash is on the spine as evidence; the add is `submitted`, not
+  succeeded.
+- **success** — `Liquidity added`, with both the approval and the add transaction
+  as evidence.
+- **no pool** — the pair has no pool on this network. Stated with its reason,
+  never rendered as a pool holding zero.
+- **unverified venue** — the network's router uses an `addLiquidity` signature
+  this build has not verified on chain, so the card refuses to quote rather than
+  emit a plan that would revert after you had already approved real tokens.
+- **ratio exceeded** — the pool moved past your minimums before the add
+  confirmed. Nothing moved, so it is offered as re-quotable, and it is not
+  presented as a kit failure.
+- **insufficient balance** — the supply is blocked and the short asset is named.
+
+## Mock to live
+
+The card takes a record and a quote result; it never reaches for a network
+itself. Whatever produces them — a mock or a live reader — the component is the
+same, so moving to a live network swaps what feeds it, not the screen. Router,
+factory and token addresses come from `@flare-kit/contracts`; network is
+configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not quote on a venue whose `addLiquidity` signature has not been verified
+on chain — Coston2's BlazeSwap router takes non-standard `feeBipsA`/`feeBipsB`
+parameters, which the real-first run found before any mock copied the standard
+shape, and a router that expects the standard signature would revert against the
+calldata this kit builds. It will not present a submitted add as a completed one,
+it will not fold two approvals into one button, and it will not render a missing
+pool as a pool with nothing in it.

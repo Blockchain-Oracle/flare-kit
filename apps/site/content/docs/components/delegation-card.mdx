@@ -1,0 +1,150 @@
+---
+title: DelegationCard
+description: The delegation composer — wrap the native token into WNat, delegate that vote power to at most two FTSO providers, and read the position the chain actually returned.
+breadcrumb: ['Docs', 'Components', 'DelegationCard']
+importLine: "import { DelegationCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/x402-card', label: 'X402Card' }
+next: { href: '/docs/components/claim-card', label: 'ClaimCard' }
+---
+
+`DelegationCard` is the whole FTSO participation flow in one panel: the wrap leg
+between the native token and WNat, up to two provider rows with their shares in
+bips, and the position the last read observed. It plans through `useDelegation`
+and signs nothing itself.
+
+## Live
+
+The preview runs the gallery's own states, built from the delegation round trip
+observed on Coston2 on `2026-08-12`. The state switcher walks the cases the
+surface was verified against, so nothing here shows a state the composer never
+actually reaches.
+
+<DelegationCardDemo />
+
+## Usage
+
+Drive it from `useDelegation`: the hook's `position` is the state panel, its
+`buildPlan` is the refusal, and its `submit` hands the plan to your own wallet.
+`nativeToken` and `wrappedToken` are `DexToken`s — the WNat one comes from
+`@flare-kit/contracts` (`dexFor(chainId).tokens.WNAT`), never a literal in your
+screen.
+
+```tsx
+import { useDelegation } from '@flare-kit/react'
+import { DelegationCard } from '@flare-kit/react-ui'
+import { createMockDelegationAdapter } from '@flare-kit/core'
+import '@flare-kit/react-ui/styles.css'
+
+const adapter = createMockDelegationAdapter()
+
+export function Delegate({ account, nativeToken, wrappedToken }) {
+  const [providers, setProviders] = useState([{ to: '', bips: 10000 }])
+  const { position, operation, buildPlan, submit } = useDelegation({
+    account,
+    adapter,
+    operation: undefined,
+    reconcile: (owner) => adapter.read(owner),
+  })
+  const planResult = buildPlan({ kind: 'delegate', targets: providers })
+
+  return (
+    <DelegationCard
+      position={position}
+      operation={operation}
+      planResult={planResult}
+      providers={providers}
+      nativeToken={nativeToken}
+      wrappedToken={wrappedToken}
+      networkLabel="Coston2"
+      onProviderChange={(index, patch) =>
+        setProviders((rows) => rows.map((row, n) => (n === index ? { ...row, ...patch } : row)))
+      }
+      onSubmit={() => planResult?.kind === 'plan' && submit(planResult.plan)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'position', type: 'DelegationPositionView', required: true, description: "The observed wrap/delegate/mode position from `useDelegation`. It carries its own status: `observed` renders the values, `unavailable` renders `—`. There is no way to hand this component a confident zero it did not read." },
+  { name: 'nativeToken', type: 'DexToken', required: true, description: 'The gas token being wrapped — `C2FLR` on Coston2. Its symbol names the wrap leg and the wrap-first note.' },
+  { name: 'wrappedToken', type: 'DexToken', required: true, description: 'The WNat token vote power lives on — `WC2FLR` on Coston2. Its decimals set the precision every balance renders at.' },
+  { name: 'operation', type: 'DelegationOperation', description: 'The in-flight wrap or delegate. Its state owns the card: while it is in flight the composer locks and the lifecycle spine appears.' },
+  { name: 'planResult', type: 'DelegationPlanResult', description: 'The result of `buildPlan`. A plan enables the submit; an error is rendered as the refusal that names it, before any call is built.' },
+  { name: 'wrapDirection', type: "'wrap' | 'unwrap'", defaultValue: "'wrap'", description: 'Which leg the composer is on. `unwrap` shows the full wrapped balance and is not editable — the reconciler cannot confirm a partial unwrap without a baseline, so no partial affordance ships.' },
+  { name: 'amountText', type: 'string', description: 'The wrap amount as typed. Controlled by the host, so the field survives a re-render mid-entry.' },
+  { name: 'nativeBalance', type: 'Amount', description: "The payer's native balance, when the host knows it. Shown against the wrap leg." },
+  { name: 'providers', type: 'readonly DelegationProviderRow[]', defaultValue: '[]', description: 'The delegate rows — zero, one or two. Each is `{ to, bips? }` in percentage mode, or `{ to, amount? }` in amount mode. Rows present but all empty is never submittable: the card refuses to emit a no-op `batchDelegate([], [])`.' },
+  { name: 'delegateMode', type: "'percentage' | 'amount'", defaultValue: "'percentage'", description: 'Which per-provider entry the composer offers. Amount mode renders each share read-only — that path was never driven live, so it displays rather than accepts input.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip on the panel header. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network the position was read on, shown on the header. Network is configuration, so this is a label, not a switch.' },
+  { name: 'onDirectionChange', type: "(direction: 'wrap' | 'unwrap') => void", description: 'Called when the reader switches the wrap leg. Ignored while an operation is in flight.' },
+  { name: 'onAmountChange', type: '(text: string) => void', description: 'Called with the wrap amount as typed. Wired only on the wrap leg; unwrap has no partial amount to change.' },
+  { name: 'onProviderChange', type: '(index: number, patch: Partial<DelegationProviderRow>) => void', description: 'Called with the row index and the changed field. Omit it and the provider rows are read-only.' },
+  { name: 'onAddProvider', type: '() => void', description: 'Called when the reader adds a row. The add affordance disappears at two rows — the protocol cap, enforced in the UI rather than at submit.' },
+  { name: 'onSubmit', type: '() => void', description: "Called when the reader submits the current plan. The card holds no key and broadcasts nothing; signing is the host's job." },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel holding four things: the wrap/unwrap leg, the observed position
+(wrapped balance, vote power, and one row per delegate carrying its bips and
+percentage), the provider rows with the account's current on-chain delegation
+mode, and — once an operation is in flight — the shared `OperationTimeline`
+spine. Every exact value renders in the mono face carrying its asset at full
+precision.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **compose** — the real observed position: `5.000000000000000000 WC2FLR`
+  delegated `10000` bips (100%) to one provider, mode `PERCENTAGE`.
+- **no-balance** — a real observed-empty holding: nothing wrapped, no delegates.
+  A read that landed and returned nothing.
+- **needs-wrap** — a delegate is being composed with no wrapped balance behind
+  it. Vote power comes from WNat, so the wrap comes first.
+- **wrapping** — the wrap call is in flight.
+- **delegating** — the delegate call is in flight.
+- **submitted** — broadcast, with the transaction hash as evidence. The
+  `delegatesOf` read is still pending, so this is not success.
+- **awaiting** — waiting for Flare to record the delegation.
+- **succeeded** — reached only once `delegatesOf` reflects the target.
+- **unavailable** — the last read did not land. Every value renders `—`: the
+  position is unknown, not zero, and this is never collapsed into `no-balance`.
+- **too-many-delegates** — the two-provider cap, refused before a call is built.
+- **bips-over-100** — the shares sum past `10000` bips, refused before a call is
+  built.
+- **mode-conflict** — the account is already in the other delegation mode, so the
+  card reads "undelegate first" rather than submitting a call the chain ignores.
+- **not-verified** — the delegation path is declared unverified on this build and
+  the kit will not sign against it.
+
+## Mock to live
+
+The card is prop-driven, so moving from the mock to a live network swaps the
+adapter behind `useDelegation`, not the screen. The WNat address comes from
+`@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+const adapter = createMockDelegationAdapter()
+
+// …to this. The component does not change.
+const adapter = makeDelegationAdapter(publicClient, delegationFor('coston2'))
+```
+
+## What it will not do
+
+It will not render an unavailable read as zero delegation, and it will not
+submit a delegate with no provider filled in. It will not offer a partial
+unwrap, because the reconciler cannot confirm one. And it will not switch you
+between percentage and amount delegation behind your back — the two are
+exclusive on chain, so a conflict says undelegate first instead of quietly
+doing nothing.

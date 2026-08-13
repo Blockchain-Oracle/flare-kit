@@ -1,0 +1,55 @@
+---
+title: Agent tools
+description: One tool definition, shared by every agent surface. Planned, not built — scoped by the agent-surfaces decision, which ships in the repository.
+breadcrumb: ['Docs', 'Agent Kit', 'Agent tools']
+prev: { href: '/docs/contracts/verified-flags', label: 'Verified flags' }
+next: { href: '/docs/agent-kit/mcp-server', label: 'MCP server' }
+---
+
+Agents are meant to drive the same operations a person drives — read a
+portfolio, price an intent, mint, redeem, recover — from one tool definition
+rather than a re-implementation.
+
+**Planned.** This surface is scoped and not yet built. The decision that scoped
+it is `.thoughts/decisions/2026-08-03-agent-facing-surfaces.md`; decisions ship
+in the repository, so you can read the reasoning and its open questions before
+any of this exists. Nothing below is installable today.
+
+## What it will be
+
+One package holds every tool definition, and the MCP server, the framework
+adapters and the CLI all consume it. No surface defines a tool of its own.
+
+A tool carries `id`, `version`, `class`, `title`, `description`, an input
+schema, an output schema and `invoke`. `class` is exactly one of `read`, `plan`
+or `write`, and the description states that class and whether the tool moves
+value — so an agent host that renders only names and descriptions still shows
+which tools can spend.
+
+Two rules keep the surface honest. Every tool delegates to the same headless
+operation contract used by the React hooks and the widgets, so a tool may never
+reimplement protocol logic. And the exposed surface stays composed: a tool
+represents a user intent, not a single contract call, because an agent host
+loads every schema into its context at startup.
+
+## Keys
+
+`read` and `plan` tools require no key at all — discovery, quoting and planning
+work with no wallet configured. `write` tools require a configured signer.
+
+Agents may sign. Which signing mode applies is host configuration, not product
+law: an agent-owned wallet signing directly, a bounded and revocable session
+grant against the user's account, or per-action human approval. In every mode
+the enforcement class stays visible, `submitted` is never rendered as
+`succeeded`, and an agent-created operation lands on the same durable timeline
+and produces a receipt schema-compatible with the human path.
+
+## What exists today
+
+The headless operation contract and the React hooks these tools will wrap —
+that is the layer that already models the lifecycle, the evidence and the
+receipt. Start at the [quickstart](/docs/quickstart), and drive it without a
+chain using [mock mode](/docs/mock-mode).
+
+Package names, namespaces and public API names are deliberately undecided: the
+decision does not authorize them.

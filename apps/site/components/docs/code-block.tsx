@@ -36,7 +36,11 @@ export function CodeBlock({
           {copy && <CopyButton value={code} label="the code" className="win-copy" />}
         </div>
       )}
-      <div className="code">
+      {/* Focusable because it scrolls horizontally: a keyboard user must be
+          able to reach it to scroll it (axe: scrollable-region-focusable).
+          No landmark role — pages hold many code windows, and same-named
+          region landmarks are their own violation. */}
+      <div className="code" tabIndex={0}>
         <pre>
           <code>{highlight(code, language)}</code>
         </pre>

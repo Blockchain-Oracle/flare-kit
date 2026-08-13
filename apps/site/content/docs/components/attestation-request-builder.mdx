@@ -1,0 +1,140 @@
+---
+title: AttestationRequestBuilder
+description: Everything a person agrees to before an attestation request is submitted — the canonicalised bytes, their hash, the fee read for those exact bytes, the round, the wait and the bound proof owner.
+breadcrumb: ['Docs', 'Components', 'AttestationRequestBuilder']
+importLine: "import { AttestationRequestBuilder } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/attestation-catalogue', label: 'AttestationCatalogue' }
+next: { href: '/docs/components/attestation-timeline', label: 'AttestationTimeline' }
+---
+
+`AttestationRequestBuilder` shows the request before it is sent. The rule it
+keeps: nothing is offered that cannot be paid for or cannot produce a usable
+proof. A family this kit has no builder for, a body the verifier rejected, and a
+proof bound to an address that is not connected are all refusals shown here,
+rather than reverts discovered after gas.
+
+## Live
+
+The preview runs the gallery's own states. The submittable case and each refusal
+are distinct rendered states, not one blocked panel wearing several hats.
+
+<AttestationRequestBuilderDemo />
+
+## Usage
+
+The panel is presentational. The host canonicalises the body at the verifier and
+reads the fee for those exact bytes, then hands both over — the component
+neither fetches nor signs.
+
+```tsx
+import { createFdcClient, getRequestFee, xrpPaymentFamily } from '@flare-kit/core'
+import { AttestationRequestBuilder } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+// The verifier canonicalises the body; the chain prices those exact bytes.
+const client = createFdcClient({ services, family: xrpPaymentFamily, source })
+const prepared = await client.prepareRequest({ transactionId })
+const value = await getRequestFee(reader, chainId, prepared.abiEncodedRequest)
+
+export function Request({ row, account }) {
+  return (
+    <AttestationRequestBuilder
+      row={row}
+      sourceId={source.sourceId}
+      prepared={prepared}
+      fee={{ value, asset: 'C2FLR', decimals: 18 }}
+      dataAvailabilityBaseUrl={client.dataAvailabilityBaseUrl}
+      proofOwner={account}
+      sender={account}
+      onSubmit={submit}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'row', type: 'FamilyRow', required: true, description: "The catalogue row this request targets, carrying the family, its compared status and the deployment's note. The row decides whether a builder exists and whether the family is served at all." },
+  { name: 'sourceId', type: 'string', required: true, description: "Which of the family's sources the request attests against. Named on screen with its chain and verifier group." },
+  { name: 'prepared', type: 'PreparedRequest', description: "Core's own prepared request, present once the verifier has canonicalised the body. Carries the bytes, their keccak256 hash and the verifier that produced them. Without it the request is not submittable." },
+  { name: 'fee', type: '{ value: bigint; asset: string; decimals: number }', description: 'Read from getRequestFee for these exact bytes, and sent unchanged. Undefined until read, which renders as Not read rather than a placeholder number.' },
+  { name: 'feeUnavailableReason', type: 'string', description: 'Why the fee could not be read, when it could not. Distinct from an unread fee: a read still in flight and a deployment that refused to price the request are different facts.' },
+  { name: 'dataAvailabilityBaseUrl', type: 'string', description: 'Where the proof would be retrieved from once the round finalizes, so the wait names its endpoint.' },
+  { name: 'expectedRangeSeconds', type: '{ min: bigint; max: bigint }', description: 'The wait as a range. A single number would be wrong for almost every request — how long you wait depends on where in the collecting round you landed.' },
+  { name: 'expectedRound', type: 'bigint', description: 'The voting round this request would be collected in.' },
+  { name: 'proofOwner', type: 'string', description: 'The address the request would bind the proof to, when the family binds one. Only that address can present the resulting proof.' },
+  { name: 'sender', type: 'string', description: 'The connected account that would submit. Compared against the proof owner to catch a proof this account could not use.' },
+  { name: 'error', type: 'SerializedError', description: 'A rejected body or a refused precondition. Rendered as a state, never thrown at the component.' },
+  { name: 'submitting', type: 'boolean', defaultValue: 'false', description: 'True while the host is sending the request. Disables the button and says so on it.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader submits an unblocked request. Omit it and the panel is read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+One panel of terms: the attestation type, the source with its chain and verifier
+group, the canonicalised bytes with their byte count, the request hash to
+compare instead of the bytes, the fee, the verifier and proof provider hosts, the
+expected round, the expected wait as a range, the bound proof owner, and the
+contract that consumes the proof.
+
+The fee is always a read value carrying its asset and full precision, never a
+rounded or assumed one. Measured on 2026-08-04 it is `1000` wei on Coston2 and
+`20` FLR on Flare mainnet — `3` FLR there for `ConfirmedBlockHeightExists` — so a
+constant in this panel would be wrong on one of the two networks.
+
+Below the terms sits the reason the request cannot go, when it cannot. That
+reason is decided once, so the disabled button, the sentence under it and the
+`data-block` attribute a test reads cannot disagree.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **ready to submit** — canonicalised, priced, bound to the connected account.
+- **not canonicalised yet** — the verifier has not returned bytes, so there is
+  nothing to price and nothing to submit.
+- **fee unavailable** — the deployment declined to price the request. The
+  verifier may still serve the route; the on-chain type and source pair is what
+  refused. Nothing is submitted at a guessed price.
+- **builder planned** — the deployment serves the family and this kit ships no
+  request builder for it. Listed because it exists, not because it works.
+- **proof-owner mismatch** — the request would bind one address and another is
+  connected. Submitting would spend the fee for a proof this account cannot
+  present.
+- **invalid body** — the verifier rejected the request and said why. The message
+  is the verifier's, rendered as a state.
+- **submitting** — the request is being sent; the button says so and is
+  disabled.
+
+## Mock to live
+
+The panel reads nothing itself, so nothing about it changes between networks.
+What changes is where `createFdcClient` and `getRequestFee` point, and both take
+their hosts and addresses from `@flare-kit/contracts`.
+
+```tsx
+// Mock: the prepared request and the fee are values you hold.
+<AttestationRequestBuilder row={row} sourceId="testXRP" prepared={PREPARED} fee={FEE} />
+
+// Live: the same two values, read from the verifier and the chain.
+<AttestationRequestBuilder row={row} sourceId={source.sourceId} prepared={prepared} fee={fee} />
+```
+
+## What it will not do
+
+It will not offer a submit it knows cannot produce a usable proof, and it will
+not show a rounded or assumed fee — an unread fee reads `Not read`, never a
+placeholder number.
+
+It also has no `quota limited` state. A verifier refusing for rate or volume
+reasons is a defined outcome, but no quota response has ever been observed from
+either verifier across this project's live runs. Rendering one would mean
+inventing a provider response and showing a message no verifier has sent, so the
+state is declared unbuilt rather than faked. One captured quota response — its
+status, body and headers — is all it needs.
+

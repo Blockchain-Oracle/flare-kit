@@ -1,0 +1,158 @@
+---
+title: Networks and registries
+description: Every deployed address, ABI, RPC URL and explorer base flare-kit uses, as typed constants keyed by network — so switching from Coston2 to Flare mainnet is a chain id, not a source rewrite.
+breadcrumb: ['Docs', 'Contracts', 'Networks and registries']
+importLine: "import { FLARE_NETWORKS, registryFor } from '@flare-kit/contracts'"
+prev: { href: '/docs/headless/mock', label: 'The mock kit' }
+next: { href: '/docs/contracts/verified-flags', label: 'Verified flags' }
+---
+
+`@flare-kit/contracts` is the only place in flare-kit that knows an address. It
+carries no runtime, no client and no state — just typed constants, the ABIs that
+call them, and small accessors that pick the right set for a network. Everything
+above it (the headless kit, the hooks, the widgets, the agent tools) reads
+through those accessors, which is what makes network a configuration value
+rather than a branch in a component.
+
+## Two networks
+
+`FLARE_NETWORKS` is keyed by `FlareNetworkKey`, the union `'coston2' | 'flare'`.
+Each entry is a `FlareChain`: its `id`, `name`, `testnet` flag,
+`nativeCurrency`, `rpcUrl`, `explorerUrl` — and its `underlying` chain.
+
+```ts
+import { FLARE_NETWORKS, chainFor } from '@flare-kit/contracts'
+
+FLARE_NETWORKS.coston2.id       // the Coston2 chain id
+FLARE_NETWORKS.flare.rpcUrl     // the mainnet RPC, a constant
+chainFor(FLARE_NETWORKS.coston2.id).underlying.symbol // 'XRP'
+```
+
+`chainFor(chainId)` resolves a chain id to its `FlareChain`, and throws
+`UnsupportedNetworkError` — which names the chain ids the kit *does* serve —
+rather than returning `undefined` for a chain nobody configured. A caller that
+forgets to handle an unknown network gets an error that says what to do, not a
+silent absence.
+
+The `underlying` field is `UnderlyingChain`: the XRP Ledger endpoint, its
+decimals, its explorer base and, on testnet, a faucet URL. It is a separate
+object because a mint is two events on two chains. Flare and the XRPL each keep
+their own explorer, and the kit never collapses an XRPL payment and its Flare
+execution into one link.
+
+## What a registry is
+
+A registry is the typed set of addresses, and the ABIs that call them, that one
+capability needs on one network — behind one accessor. There is no global
+address bag: each capability owns its own shape, so a vault's non-standard
+withdraw call and a swap router's fee-tolerance parameters are described where
+they are used.
+
+- `registryFor(chainId)` returns the base `NetworkRegistry`: the
+  `contractRegistry`, `assetManagerController`, the FDC contracts (`fdcHub`,
+  `fdcVerification`, `fdcRequestFeeConfigurations`), `relay`,
+  `flareSystemsManager`, `wrappedNative`, the `fassets` map and the `services`
+  block. `fassetFor(chainId, 'XRP')` picks one `FAssetDeployment` out of it.
+- `dexFor(chainId)` and `dexTokens(chainId)` — the swap venue: `router`,
+  `factory`, the swappable tokens and the pair that was probed to hold liquidity.
+- `vaultsFor(network)`, `vaultsForChain(chainId)`, `vaultByKey(network, key)` —
+  the vault venue.
+- `routesFor(network)` and `routeByKey(network, key)` — cross-chain routes, each
+  pairing a source and a destination `ChainEndpoint`.
+- `gaslessFor(network)`, `x402For(network)`, `delegationFor(network)`,
+  `rewardsFor(network)`, `stakingFor(network)` — one deployment each, or
+  `undefined` where a network carries none.
+- `ftsoRegistryFor(chainId)` — the FTSO contracts; `ATTESTATION_FAMILIES` and
+  `familyFor(name)` — the FDC attestation families.
+
+ABIs travel with the addresses they belong to, in the same package:
+`assetManagerAbi`, `UNIV2_ROUTER_ABI`, `FIRELIGHT_VAULT_ABI`,
+`UPSHIFT_VAULT_ABI`, `OFT_ADAPTER_ABI`, `FORWARDER_ABI`, `FACILITATOR_ABI`,
+`IWNAT_ABI`, `REWARD_MANAGER_ABI`, `VALIDATOR_REWARD_MANAGER_ABI`, `ftsoV2Abi`,
+`fdcHubAbi`. An address without the shape of the call that reaches it is half a
+fact, and the two drifting apart is how a plan reverts after real approvals.
+
+Some accessors take a chain id and some take a network key, because some are
+called from a wagmi/viem context that has a chain id and some from configuration
+that has a name. Convert either way:
+`FLARE_NETWORKS[key].id` and `chainFor(chainId).key`.
+
+## Symbols come from the registry too
+
+`FAssetDeployment.symbol` is the symbol the chain actually deploys. On Coston2
+that is `FTestXRP`, not `FXRP`. Every surface renders whatever that field says,
+because relabelling a testnet asset as the mainnet one is faking protocol
+reality — the same class of error as rendering an unread balance as zero.
+
+## Addresses live here, and nowhere else
+
+No address is hardcoded anywhere else in flare-kit. That rule is what makes the
+package worth having: one place to audit, one place to update, and no chance of
+a component holding a stale copy of an address the registry has moved on from.
+
+It is enforced inside the package as well. The delegation registry takes its
+WNat address as `registryFor(chainId).wrappedNative` rather than declaring a
+second literal, and the rewards registry does the same for
+`flareSystemsManager`. Where an address is pinned as a literal, it was resolved
+by name from the on-chain `FlareContractRegistry` by a recorded probe, and a
+parity test re-resolves it against the live registry so drift fails a test
+rather than reaching a user.
+
+## Public constants, not environment variables
+
+RPC URLs, chain ids, contract addresses and explorer bases are exported
+constants. They are public values: putting them in environment variables buys
+nothing and costs you a deployment that behaves differently from your laptop for
+reasons no one can see.
+
+The only secret in this project is a signing key, and it is never committed,
+logged or included in a receipt. Even the FDC API key follows the rule —
+`registryFor(chainId).services.publicApiKey` holds the open key published in
+Flare's own documentation as an overridable default, and is empty on mainnet,
+where a caller passes their own.
+
+## Switching networks
+
+Changing network changes a value, not a file. The chain id selects the registry,
+and every address, ABI, RPC URL and explorer base follows from it.
+
+```ts
+import { FLARE_NETWORKS, registryFor } from '@flare-kit/contracts'
+import { createFlareKit } from '@flare-kit/core'
+
+// Testnet first…
+const chainId = FLARE_NETWORKS.coston2.id
+// …mainnet-capable: this is the whole diff.
+// const chainId = FLARE_NETWORKS.flare.id
+
+const registry = registryFor(chainId)
+
+// `client` is your own viem public client, pointed at registry-supplied
+// `FLARE_NETWORKS[key].rpcUrl`. The kit reads its addresses from the chain id.
+const kit = await createFlareKit({ client, chainId })
+```
+
+Widgets follow the same rule from the other direction: they read through the kit
+on the provider, so the network they are pointed at is the provider's business
+and never the screen's.
+
+## Links come from the registry
+
+Explorer URLs are built by the package, never templated in a component:
+`explorerTxUrl(chainId, hash)`, `explorerAddressUrl`, `explorerBlockUrl` for
+Flare, and `underlyingExplorerTxUrl`, `underlyingExplorerAccountUrl`,
+`underlyingExplorerLedgerUrl` for the XRP Ledger. Two chains, two link builders,
+deliberately not merged.
+
+## What the registry will not carry
+
+An unverified address is simply absent. Where a network has no proven deployment
+for a capability, its accessor returns `undefined` and the surface says so,
+rather than the package inventing a plausible mainnet address. The same
+discipline covers services: `FUNDING_SERVICE.deployed` is `false` and
+`fundingBaseUrl()` returns `undefined` until it is answering, so a hostname that
+has never been pointed anywhere cannot be rendered as a working link.
+
+A configured address is not, on its own, a proven capability. Which paths have
+actually been driven live is a separate, explicit fact — see
+[Verified flags](/docs/contracts/verified-flags).

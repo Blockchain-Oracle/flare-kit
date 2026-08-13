@@ -1,0 +1,111 @@
+---
+title: FlareProvider
+description: The one piece of wiring every hook needs — a kit, an operation registry, the session's accounts and the single reconciliation clock, handed down through context.
+breadcrumb: ['Docs', 'Hooks', 'FlareProvider']
+importLine: "import { FlareProvider } from '@flare-kit/react'"
+prev: { href: '/docs/components/primitives', label: 'Primitives' }
+next: { href: '/docs/hooks/use-direct-mint', label: 'useDirectMint' }
+---
+
+`FlareProvider` takes a kit and asks nothing else of it. `DirectMintKit` is the
+whole contract, which is what lets the same component tree run against the mock
+or against a live kit with no branch anywhere in the UI — components cannot
+special-case the mock, because they cannot tell. Everything else the provider
+supplies is derived: the operation registry, the session's accounts, and the
+one interval that reconciles open work.
+
+## Live
+
+The readout below is the context this page's provider actually handed its
+child, read back through `useFlareContext` and `useAccounts` on this render.
+`isMock` is `true` and `chainId` is `0` because a mock kit is not on a network
+at all — an operation it creates records `network: 0` too, so the two never
+disagree about where the work happened. Both identities read `disconnected`,
+because the kit does not connect wallets and nothing here pretends otherwise.
+
+<FlareProviderDemo />
+
+## Usage
+
+Create the kit once, outside render, and wrap the tree that uses it. A hook that
+needs the context reads it through `useFlareContext`, which throws a named error
+telling you to wrap the app — and to pass `createMockKit()` to run without a
+wallet or network — rather than returning `undefined` for a caller to trip over.
+
+```tsx
+import { createMockKit } from '@flare-kit/core'
+import { FlareProvider } from '@flare-kit/react'
+import '@flare-kit/react-ui/styles.css'
+
+const kit = createMockKit({ seed: 'demo' })
+
+export function App({ children }: { children: React.ReactNode }) {
+  return (
+    <FlareProvider kit={kit} pollMs={2_000}>
+      {children}
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'kit', type: 'DirectMintKit', required: true, description: 'The mock kit or a live one. The provider reads nothing from it but this interface, so swapping it swaps the network and nothing else.' },
+  { name: 'store', type: 'OperationStore', required: false, description: 'A durable store. Supply one and operations survive reload; leave it out and the registry is in-memory for this session. Writes never block the render path.' },
+  { name: 'pollMs', type: 'number', required: false, description: 'Reconciliation interval in milliseconds. Defaults to 2000. Operations are non-blocking and self-reconciling, so this is the only clock in the system.' },
+  { name: 'initialAccounts', type: 'Partial<AccountContext>', required: false, description: 'Identities already known at mount — a restored session, or a read-only address the host supplied. Read once; the account store owns them afterwards.' },
+  { name: 'children', type: 'ReactNode', required: true, description: 'The tree that may use the hooks.' },
+]} />
+
+## What it provides
+
+`useFlareContext` returns all four values; most code reaches them through the
+capability hooks instead.
+
+<PropsTable rows={[
+  { name: 'kit', type: 'DirectMintKit', description: 'Exactly the kit that was passed in. Also available on its own as useFlareKit(), for a surface that needs to label its mode.' },
+  { name: 'registry', type: 'OperationRegistry', description: 'The synchronous snapshot React renders from. Reads through useOperation; written by the capability hooks as they start and reconcile work.' },
+  { name: 'accounts', type: 'AccountStore', description: "Simultaneous EVM and XRPL identity for this session. Read it through useAccounts rather than touching the store." },
+  { name: 'pollMs', type: 'number', description: 'The interval the capability hooks reconcile on.' },
+]} />
+
+## One kit, one session
+
+The operation registry is keyed to the kit, weakly, not to the provider. One
+kit is one session, so a widget mounted in two places shows one operation in
+one state rather than two copies drifting apart — and nothing is retained once
+the kit is gone.
+
+Accounts work the other way round: they belong to the mounted provider, because
+two apps sharing a mock kit are still two people with two wallets. The store is
+created once per provider, so a re-render never drops a connection.
+
+## Mock to live
+
+The provider is the seam. Nothing below it changes:
+
+```tsx
+// Mock mode: no wallet, no key, no network. Explicit, and labelled as such.
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// Live: the same tree, a different kit.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+Network is configuration. Addresses come from `@flare-kit/contracts` and are
+never hardcoded anywhere else.
+
+## What it will not do
+
+It will not connect a wallet. A host owns its wallet adapters and hands the
+resulting identity in through `useAccounts` — pretending to own a connection we
+do not own is how a kit ends up lying about custody.
+
+It will not fall back to the mock when a live kit fails. Mock mode is chosen by
+the code that constructs the kit, always labelled, and never the consequence of
+an error.
+
+It will not give you a second clock. `pollMs` is the only one, so there is one
+answer to how often open work reconciles — and no Resume button, because
+reconciliation is not something a person has to ask for.

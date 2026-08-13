@@ -1,0 +1,150 @@
+---
+title: X402Card
+description: The x402 payment card — review the HTTP 402 challenge, sign an EIP-3009 authorization, and read the on-chain settlement and the delivered resource as two separate facts.
+breadcrumb: ['Docs', 'Components', 'X402Card']
+importLine: "import { X402Card } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/gasless-card', label: 'GaslessCard' }
+next: { href: '/docs/components/delegation-card', label: 'DelegationCard' }
+---
+
+`X402Card` runs the x402 loop on screen: a server answers with HTTP 402, you
+review the challenge, you sign an EIP-3009 authorization, a facilitator settles
+it on-chain, and the resource is served. It exists to keep two facts apart. The
+settlement landing on-chain and the resource being delivered are independent, and
+a payment that settled while the resource failed reads `partially_succeeded` —
+never delivered, and never a reason to pay twice.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the card never actually reaches.
+
+<X402CardDemo />
+
+## Usage
+
+The card is prop-driven: the host parses the challenge with `parseChallenge`,
+signs the authorization through its own wallet, and hands the record back.
+`useX402` owns only the reconcile poll, which re-reads both legs while the
+payment is in flight.
+
+```tsx
+import type { X402Challenge, X402Operation } from '@flare-kit/core'
+import { useX402 } from '@flare-kit/react'
+import { X402Card } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Paywall({ op, challenge, reconcile }: {
+  op: X402Operation
+  challenge: X402Challenge
+  reconcile: (op: X402Operation) => Promise<X402Operation>
+}) {
+  const { operation } = useX402({ operation: op, reconcile })
+  if (!operation) return null
+
+  return (
+    <X402Card
+      operation={operation}
+      challenge={challenge}
+      amountText="0.1 mUSDT0"
+      networkLabel="Coston2"
+      onSubmit={() => console.log('sign the EIP-3009 authorization')}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'OperationRecord', required: true, description: 'The record the card is projected from — the state chip, the CTA, the spine and the two outcome legs all read off it.' },
+  { name: 'challenge', type: 'X402Challenge', description: 'The parsed 402 challenge. Renders the review: resource, amount, payee, facilitator, network and expiry. Absent, there is nothing to review and the CTA reads Awaiting challenge.' },
+  { name: 'unavailable', type: 'string', description: 'A live read failed — the facilitator or the resource server could not be reached. Renders its own note ahead of every other one, so a failed read is never dressed as a rejection or a settlement.' },
+  { name: 'amountText', type: 'string', description: 'The amount, pre-formatted with its asset by the host, e.g. 0.1 mUSDT0. The card appends the demo suffix itself when the challenge is demo-token.' },
+  { name: 'settlementTx', type: 'string', description: 'The settlement transaction hash, shown once the payment settled. It is the real hash from the chain, never a placeholder.' },
+  { name: 'settlementExplorerUrl', type: 'string', description: 'Makes the hash a link out to the explorer. Omit it and the hash still renders, as mono text.' },
+  { name: 'paymentId', type: 'string', description: "The facilitator's payment id, shown beside the settlement hash." },
+  { name: 'resourceStatus', type: 'number', description: 'Accepted on the props type for the HTTP status of a failed resource fetch. The card does not currently render it — the resource-failed fact is carried by the partially succeeded state, its note and the failed resource leg.' },
+  { name: 'expired', type: 'boolean', description: 'The challenge window has passed. Renders the expiry as expired rather than valid and disables the CTA — an expired challenge has nothing to sign.' },
+  { name: 'duplicate', type: 'boolean', description: 'This authorization was already settled. Shown as an idempotent replay, explicitly not a second charge.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode chip. Explicit and host-supplied — the card never infers mock mode from a failure.' },
+  { name: 'networkLabel', type: 'string', description: 'The network name in the header, e.g. Coston2.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader signs and pays. The card holds no key and settles nothing; the host owns signing and the facilitator call.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+The challenge review first: the resource path, the amount, the payee, the
+facilitator, the network and the unix expiry. Payee and facilitator stay distinct
+host labels rather than collapsing into one party, and the expiry is evaluated
+rather than assumed live.
+
+The asset is labelled where it is read, not in a footnote. On Coston2 the paid
+token is MockUSDT0, a demo stand-in that exists because neither FXRP nor the real
+USD₮0 implements EIP-3009 on testnet. The card carries a `demo token` chip in the
+header and a `· demo` suffix on the amount, so the asset can never be mistaken
+for a real stablecoin. The flow around it — the 402, the facilitator, the
+settlement transaction — is real.
+
+The outcome is two legs, tracked separately: facilitator settlement, and resource
+delivered. When the payment settles, the settlement transaction hash and the
+payment id appear, with the hash linking out to the explorer when a URL is given.
+The resource leg can be `failed` while the settlement leg is `done`, which is the
+whole reason they are drawn apart.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **challenge** — the full review before anything is signed, with the demo-token
+  label already attached to the amount.
+- **expired** — the window passed. The expiry renders `expired`, the CTA is
+  disabled, and the card asks for a fresh challenge rather than signing a stale
+  one.
+- **signing** — the EIP-3009 authorization, signed off-chain.
+- **settling** — the facilitator is settling; the awaited actor is the provider,
+  named as itself.
+- **settled + delivered** — `succeeded`, reached only from settled *and*
+  delivered, carrying the real settlement hash and payment id.
+- **settled + resource-failed** — `partially_succeeded`. It leads with what
+  moved: the settlement landed on-chain and the resource did not arrive. Paying
+  again would be a second real payment, so the card says outright not to re-pay
+  to retry the resource.
+- **rejected** — the facilitator rejected the authorization, from a used nonce,
+  a closed window or an unsupported token. Nothing was charged.
+- **duplicate** — the authorization was already settled. The payment id is a
+  replay, not a second charge.
+- **facilitator-unavailable** — the facilitator could not be reached. Distinct
+  from a rejection, because nothing was signed or settled either way.
+
+## Mock to live
+
+The card takes props; it never reaches for a network itself. What changes between
+mock and live is where the challenge comes from — the mock challenge copies an
+observed live run, and the live one is parsed out of a real 402 response. The
+payee, token and facilitator addresses come from `@flare-kit/contracts`, so
+network is configuration.
+
+```tsx
+// From this…
+const challenge = mockX402Challenge(Date.now())
+
+// …to this. The component does not change.
+const challenge = parseChallenge(await response.json(), Date.now())
+```
+
+## What it will not do
+
+It will not merge settlement and delivery into a single verdict. A settled
+payment whose resource failed is shown as exactly that, and it will never render
+as delivered. It will not present the demo token as a real stablecoin — the label
+rides every rendering of the amount. It will not treat an expired challenge as
+signable, it will not count an idempotent replay as a second charge, and it will
+not read an unreachable facilitator as a rejection, because an outcome nobody
+could read is not confirmed yet. It signs nothing and settles nothing itself;
+`onSubmit` hands the decision back to you.

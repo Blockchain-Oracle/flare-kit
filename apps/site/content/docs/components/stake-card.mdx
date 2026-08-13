@@ -1,0 +1,151 @@
+---
+title: StakeCard
+description: The staking composer — live-read validators and bounds, the irreversible stake lock stated in full before you sign, and a position that says "not read" rather than zero.
+breadcrumb: ['Docs', 'Components', 'StakeCard']
+importLine: "import { StakeCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/claim-card', label: 'ClaimCard' }
+next: { href: '/docs/components/primitives', label: 'Primitives' }
+---
+
+`StakeCard` composes a P-chain stake: pick a validator, enter an amount and a
+lock duration, and see the exact commitment before anything is signed. Staking
+value-locks the amount for at least `14` days with no early exit, so the card
+states the amount, the period and the unlock instant as data *above* the sign
+affordance — not in a tooltip, and not after.
+
+## Live
+
+The preview runs the gallery's own states. The state switcher walks the eleven
+cases the card was verified against, so nothing here shows a state the composer
+never actually reaches.
+
+<StakeCardDemo />
+
+## Usage
+
+`StakeCard` is prop-driven: it reads nothing itself. `useStaking` does the
+keyless reads — the validator set, the bounds, the position — and the card
+renders them.
+
+```tsx
+import { useStaking } from '@flare-kit/react'
+import { StakeCard } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Stake({ input }) {
+  const staking = useStaking(input)
+
+  return (
+    <StakeCard
+      nativeToken={{ symbol: 'C2FLR', address: '0x…', decimals: 18 }}
+      position={staking.position}
+      validators={staking.validators}
+      limits={staking.limits}
+      networkLabel="Coston2"
+      onSubmit={() => {}}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'position', type: 'StakePositionView', required: true, description: 'The observed stake position — `observed` with its stakes and mirrored vote power, or `unavailable`. The two are rendered differently on purpose; an unavailable read is never drawn as a zero position.' },
+  { name: 'nativeToken', type: 'DexToken', required: true, description: 'The native token stakes are denominated in — on Coston2, `C2FLR` at 18 decimals. Every amount renders at full stored precision against it.' },
+  { name: 'validators', type: 'readonly ValidatorInfo[]', description: 'The validator set, live-read. No NodeID literal lives in the card, so with no validators passed it says none have been read rather than offering one. Each entry shows its NodeID and the end of its active window — the ceiling a stake may not cross.' },
+  { name: 'limits', type: 'StakeLimits', description: 'The live-read bounds: minimum and maximum stake, minimum and maximum duration. Shown as soon as they land, so the constraints are visible before an amount is refused against them.' },
+  { name: 'planResult', type: 'StakePlanResult', description: "The result of `planStake` / `useStaking().buildPlan`. An `ok` plan carries the value lock the card discloses and is the only state whose submit button is enabled; a refusal carries the invariant that stopped it, rendered as the note and the button's label." },
+  { name: 'operation', type: 'StakeOperation', description: 'The in-flight or settled stake operation. While it is in flight the composer is read-only and the round-trip legs plus the wallet-signed spine appear beneath it.' },
+  { name: 'selectedNodeId', type: 'string', description: 'The NodeID currently picked, matched against `validators`. Uncontrolled selection is not a thing here — the host owns the choice.' },
+  { name: 'amountText', type: 'string', description: 'The amount field, as typed. A string, not a number, so the digits a person entered are the digits that are planned against.' },
+  { name: 'durationDays', type: 'number', description: 'The lock duration in whole days.' },
+  { name: 'nativeBalance', type: 'Amount', description: "The signer's native balance, when the host knows it. Rendered beside the amount field." },
+  { name: 'networkLabel', type: 'string', description: 'The network spelled out, e.g. `Coston2`. A testnet is a proper noun on screen, never a colour.' },
+  { name: 'mockLabel', type: 'string', description: 'Labels the card as running on mock reads. Explicit and host-supplied — mock mode is never entered by falling back.' },
+  { name: 'onValidatorChange', type: '(nodeId: string) => void', description: 'Called with the picked NodeID. Omitted or in flight, the picker is inert.' },
+  { name: 'onAmountChange', type: '(text: string) => void', description: 'Called with the raw text of the amount field.' },
+  { name: 'onDurationChange', type: '(days: number) => void', description: 'Called with the lock duration in days.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when a reader submits a plan the invariants accepted. The card holds no key and signs nothing — submitting is the host’s job.' },
+  { name: 'onAction', type: '(actionId: string) => void', description: 'Recovery actions from the operation spine, including the return leg once the lock matures.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the card follows `data-theme`.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel holding four things in order: the live-read validator picker, the
+amount and duration composer with the live bounds beneath it, the value lock
+once a plan exists, and the observed position. While an operation is in flight
+it also renders the four conceptual legs of the round trip — export C→P, import
+onto P, delegate to validator, return P→C after unlock — above the wallet-signed
+`OperationTimeline` spine.
+
+The staking reward is not here. It is the fourth kind on `ClaimCard`, and it is
+the one claim kind that does not expire.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **discovery** — the validator set and the bounds have landed, nothing composed
+  yet. The bounds shown are the ones read on Coston2: `50,000` C2FLR minimum,
+  `200,000,000` maximum, a `14`–`365` day window.
+- **compose** — a valid plan, so the value lock appears: the exact amount
+  committed, the period, and the instant it unlocks. This preview runs under an
+  explicit verified override, because the shipped build cannot produce it.
+- **not-verified** — the shipped state. `stakeVerified` is `false`, so
+  `planStake` refuses to emit anything signable and the card shows the configured
+  path with the submit disabled. `false` here means *not proven on this build* —
+  no live stake round trip has been confirmed — not *broken*.
+- **amount-below-min** — under the live minimum, refused before a plan is built.
+- **duration-below-min** — under the live `14`-day floor, refused.
+- **ends-after-validator** — the stake would outlive the chosen validator's
+  registration window, refused. The window is the ceiling, and it comes from the
+  read.
+- **signing** — the export leg is active, pre-broadcast. There is no transaction
+  hash yet, so none is shown, and the position is unchanged.
+- **awaiting** — Flare is recording the stake on the P-chain. A submitted
+  delegate is `submitted`, never `succeeded`; `succeeded` is entered only when
+  `readStakesOf` shows the matching position.
+- **position blank-slate** — `0` staked and `0` mirrored vote power, both real
+  reads.
+- **mirror-unavailable** — `0` staked, mirrored vote power `—`. The two are
+  separate reads, and the mirror reverting is an unknown, not a zero.
+- **position-unavailable** — the whole position read did not land, so both rows
+  are `—` with a note saying the position is unknown rather than zero.
+
+Those last three are three distinct renderings of what a naive surface would
+collapse into one. The card also refuses an amount above the maximum and a
+duration above the maximum; neither has a gallery case, because the live read
+pass never produced one.
+
+## Mock to live
+
+Nothing changes in the card. `StakeCard` renders whatever `useStaking` hands it,
+and `useStaking` reads through the kit — so a mock read pass and a Coston2 read
+pass differ in the input, not the screen. Addresses come from
+`@flare-kit/contracts`; network is configuration.
+
+```tsx
+// The mock: the reads observed on Coston2, replayed through the real read
+// functions against fakes. Explicit, never a fallback.
+const reads = await createMockStakeReads()
+
+// Live: the same functions against a real client and P-chain RPC.
+const staking = useStaking({ deployment, account, publicClient, rpcBase, executor })
+```
+
+The mock carries the same `stakeVerified: false` the shipped deployment does. It
+cannot be configured to hold an active stake position, because no live run
+observed one.
+
+## What it will not do
+
+It will not offer a signable stake while the staking path is unverified, and it
+will not reach `succeeded` from a submission — only from the position read. It
+will not render an unavailable read as `0`, invent a NodeID, or hide the lock
+period behind the button that commits to it. It holds no key: signing happens
+through the executor your host injects.

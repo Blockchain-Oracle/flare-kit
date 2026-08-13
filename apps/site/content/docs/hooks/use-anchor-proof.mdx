@@ -1,0 +1,172 @@
+---
+title: useAnchorProof
+description: Retrieve anchor-feed leaves with their merkle proofs from the data availability host and check each one on chain, keeping "proven", "not proven" and "we could not check" as three separate answers.
+breadcrumb: ['Docs', 'Hooks', 'useAnchorProof']
+importLine: "import { useAnchorProof } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-attestation', label: 'useAttestation' }
+next: { href: '/docs/hooks/use-feeds', label: 'useFeeds' }
+---
+
+`useAnchorProof` does two things in one read: it fetches the anchor-feed leaves
+for a voting round from the data availability host, then asks `FtsoV2` to verify
+each one against the root the Relay published. Both halves land in `data`, and
+neither is collapsed into the other — the leaves are a provider's claim until
+the chain accepts them, so the retrieval carries its own source and observation
+time, and the verdicts are a separate list.
+
+The verification is three-valued and stays that way. `verifyFeedData` **reverts**
+on a bad proof rather than returning `false`, so a revert means *we could not
+check this*, never *this is not proven*. Collapsing those two would render an
+unknown as a negative fact.
+
+It is built on [useObservedRead](/docs/hooks/use-observed-read), so it inherits
+that hook's two rules: `loading` is the absence of a result rather than a result
+full of zeroes, and a refresh never clears what is already on screen.
+
+## Live
+
+This page does not run `useAnchorProof`, and the reason is worth stating plainly
+rather than hiding behind a fixture. The retrieval goes to a data availability
+host over the network, and the host comes from the network registry rather than
+from a parameter — there is no seam a documentation page can put a mock behind,
+and these pages do not make network calls from your browser. A fabricated
+response rendered as a captured return value would be exactly the thing this kit
+refuses to do.
+
+So the pane below shows the hook's return **type**. To see a retrieved proof
+actually rendered — with its provenance, its own `decimals`, and each of the
+three verification outcomes — the
+[ScalingProofDetail](/docs/components/scaling-proof-detail) page drives them all
+from the leaves the live Coston2 run of 2026-08-04 returned.
+
+<UseAnchorProofDemo />
+
+## Usage
+
+Give it a reader for the chain half and the feed ids for the host half. Omit the
+round for the latest available one.
+
+```tsx
+import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flare-kit/core'
+import type { RoundReader } from '@flare-kit/core'
+import { useAnchorProof } from '@flare-kit/react'
+import { ScalingProofDetail } from '@flare-kit/react-ui'
+
+const FLR_USD = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
+
+function Proof({ reader, votingRoundId }: { reader: RoundReader; votingRoundId: bigint }) {
+  const { data, loading, refresh } = useAnchorProof({
+    reader,
+    chainId: 114,
+    feedIds: [FLR_USD],
+    votingRoundId,
+  })
+
+  // The leaves are reachable only through the observation, so a host that
+  // could not be asked never reads as a round with no feeds in it.
+  const retrieved = data && isObserved(data.retrieved) ? data.retrieved : undefined
+
+  return (
+    <ScalingProofDetail
+      feedName="FLR/USD"
+      votingRoundId={votingRoundId}
+      loading={loading}
+      now={Date.now()}
+      onRetry={refresh}
+      {...(retrieved?.value.found[0]
+        ? {
+            availability: 'retrieved' as const,
+            anchor: observe(retrieved.value.found[0], retrieved.source, retrieved.observedAt),
+          }
+        : {})}
+      {...(data?.verifications[0] ? { verification: data.verifications[0] } : {})}
+    />
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'reader', type: 'RoundReader', required: true, description: 'Reads contracts. Used for the on-chain half only — FtsoV2.verifyFeedData against the root the Relay published.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Selects the registry: which data availability host is asked, and which FtsoV2 is verified against. Network is configuration, so this is the only thing that changes between testnet and mainnet.' },
+  { name: 'feedIds', type: 'readonly FeedId[]', required: true, description: 'The 21-byte feed ids to retrieve. Entries come back matched by body.id, never zipped positionally against this list.' },
+  { name: 'votingRoundId', type: 'bigint | undefined', required: false, description: 'Omit for the latest available round. When given, the round the host actually served is compared against it and a mismatch is refused rather than displayed.' },
+  { name: 'apiKey', type: 'string | undefined', required: false, description: "A transport credential for the host, not an identity. The registry's public key is used when this is absent." },
+]} />
+
+## Return type
+
+`ObservedRead<AnchorProofState>`:
+
+<PropsTable rows={[
+  { name: 'data', type: 'AnchorProofState | undefined', description: 'undefined until the first read lands. Never a placeholder object.' },
+  { name: 'data.retrieved', type: 'Observation<AnchorFeedsResult>', description: 'The leaves as they arrived, carrying who served them and when — provider class, because the host serves the leaves and only the Relay publishes the root they hash to.' },
+  { name: 'data.retrieved.value.found', type: 'readonly AnchorFeedWithProof[]', description: 'Each leaf with its merkle proof and decoded name. The body carries the round, the signed int32 value, turnoutBIPS and this reading\'s own decimals.' },
+  { name: 'data.retrieved.value.missing', type: 'readonly FeedId[]', description: 'Ids the host served nothing for. A first-class outcome, not an error: the caller asked about feeds this deployment does not anchor.' },
+  { name: 'data.verifications', type: 'readonly VerificationResult[]', description: 'One verdict per retrieved leaf: outcome, feedId, name, votingRoundId, the verbatim revert or transport reason, and when the chain was asked. Empty when nothing was retrieved.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no result has ever arrived.' },
+  { name: 'error', type: 'string | undefined', description: 'The read that failed. Never a fabricated result, and it never overwrites values already held.' },
+  { name: 'refresh', type: '() => void', description: 'Ask again. What is on screen stays until the new read lands.' },
+]} />
+
+## States
+
+- **loading** — no result yet. Distinct from a round that anchored none of the
+  feeds you asked for, which is a real answer with `missing` filled in.
+- **retrieved** — `data.retrieved.status` is `observed`. The leaves are the
+  host's claim, stamped with the host and the time, and are not yet proven.
+- **missing** — the host answered and served nothing for some ids. An unknown
+  feed id comes back as HTTP 200 with an empty list, so this is the only thing
+  standing between you and a screen that renders nothing and says nothing.
+- **proven** — `verifyFeedData` returned true. The value is committed in that
+  round's root.
+- **not_proven** — the contract returned false. A definite negative, and rare on
+  this path.
+- **could_not_check** — the check itself did not complete: a revert, an
+  unreachable node, a malformed input. It carries the reason verbatim, because
+  `merkle proof invalid` tells you your proof is wrong while `HTTP 502` tells
+  you to try again, and "could not check" alone tells you nothing.
+- **error** — the retrieval threw. `FTSO_ANCHOR_UNAVAILABLE` means the host
+  answered with a status, which says nothing about whether the round finalized
+  on chain; `FTSO_ANCHOR_ROUND_MISMATCH` means it served a different round from
+  the one asked for, so the value is real but unused.
+
+## Mock to live
+
+There is no mock swap for this hook. The chain half takes a `RoundReader` you
+supply, so `createMockFtsoReader()` fits there, but the retrieval resolves its
+host from the registry and issues the request itself. Running it means running
+it against a real data availability host:
+
+```tsx
+// Coston2's host, with the registry's public transport credential.
+useAnchorProof({ reader, chainId: 114, feedIds: [FLR_USD] })
+
+// Flare mainnet's, same component. Network is configuration.
+useAnchorProof({ reader, chainId: 14, feedIds: [FLR_USD] })
+```
+
+## What it will not do
+
+It will not zip the response positionally against your `feedIds`. Asking for
+`[FLR/USD, BTC/USD]` returned `BTC/USD` first on 2026-08-04, and matching by
+position would swap every feed's price with another feed's — both numbers real,
+both wrong.
+
+It will not accept a round it did not ask for. The host ignores a misspelled
+round parameter and serves the latest with a 200, which would hand you today's
+price believing it is the historical one.
+
+It will not turn a revert into `not_proven`, and it will not turn a host that
+answered 502 into a round with no proof. A finalized round does not mean a
+fetchable proof either — the data availability layer indexes minutes later, and
+one absence is not evidence of absence.
+
+It will not normalise `decimals` across paths. `FLR/USD` was six decimals on the
+anchor path and eight at block latency in the same measurement; the two are not
+comparable as integers, and each reading carries its own exponent.
+
+It will not poll. The read re-runs when the chain id, the feed ids, the round or
+the key change; swapping the reader alone does not re-run it, and `refresh` is
+how you ask again.

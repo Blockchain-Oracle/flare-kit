@@ -1,0 +1,125 @@
+---
+title: PortfolioTable
+description: Balances across a Flare account and an XRP Ledger account, each value carrying the source it came from and how old it is — and a balance that could not be read rendered as "Not read", never as zero.
+breadcrumb: ['Docs', 'Components', 'PortfolioTable']
+importLine: "import { PortfolioTable } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/network-resolution-sheet', label: 'NetworkResolutionSheet' }
+next: { href: '/docs/components/activity-table', label: 'ActivityTable' }
+---
+
+`PortfolioTable` shows what two identities hold, on Flare and on the XRP Ledger,
+with the source and freshness of every number beside it. The rule it exists to
+keep: a value that could not be read renders as `Not read`. It never becomes a
+zero and never becomes a dash, because both of those are quantities to a person
+scanning a column.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the table never actually reaches.
+
+<PortfolioTableDemo />
+
+## Usage
+
+Mount it under a `FlareProvider` and hand it a portfolio. `usePortfolio` takes
+the reader, so the same table serves a mock read and a live one.
+
+```tsx
+import { createMockKit, mockPortfolio } from '@flare-kit/core'
+import { FlareProvider, usePortfolio } from '@flare-kit/react'
+import { PortfolioTable } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+function Balances() {
+  const { portfolio, loading, conflicts } = usePortfolio({
+    read: async ({ now }) => mockPortfolio('ready', now),
+  })
+
+  return (
+    <PortfolioTable
+      portfolio={portfolio}
+      loading={loading}
+      now={Date.now()}
+      hasConflict={conflicts.length > 0}
+      onOpenSources={() => console.log('open the source drawer')}
+    />
+  )
+}
+
+export function Holdings() {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <Balances />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'portfolio', type: 'Portfolio', description: 'The assembled portfolio. Leave it undefined and the table is either loading or has no connected accounts — an absent portfolio is not an empty one, and the two never share a representation.' },
+  { name: 'loading', type: 'boolean', description: 'True while the first read is in flight. Only rendered as skeleton rows when there is no portfolio yet; a refresh never replaces values already on screen.' },
+  { name: 'now', type: 'number', required: true, description: "The clock every source chip ages against. Required, because a freshness claim with no reference time is a guess." },
+  { name: 'hasConflict', type: 'boolean', description: 'True when a direct chain read and an index report different balances for the same position. Surfaces the disagreement instead of resolving it.' },
+  { name: 'onOpenSources', type: '() => void', description: 'Opens the source drawer from the conflict note. Without it the conflict is still stated, just without a way through to the comparison.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+A four-column table — Asset, Account, Balance, Source — where the balance is the
+full stored precision with its asset, never abbreviated, and the source chip
+names the provider and the age of the reading. Below it sit the notes that
+change what the numbers mean: which sources went silent and in their own words,
+whether coverage is partial, and whether two sources disagree.
+
+Last comes `Not covered by this build`, the position types this build does not
+read, listed with no value column at all. An empty vault row would imply a vault
+you do not have.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — no portfolio yet, so skeleton rows. This is the absence of a
+  read, not a read that returned nothing.
+- **ready** — both chains answered; every position carries its source and age.
+- **no-assets** — every source answered and these accounts hold nothing. Said
+  outright, so it cannot be confused with a failed read.
+- **read-only** — balances for an address supplied to watch. Everything is real
+  and nothing can be signed.
+- **partial-coverage** — one chain has no account connected, so the table says
+  what is missing rather than presenting a half view as the whole.
+- **stale** — values past their freshness budget stay on screen with their age.
+  A stale value is the last thing actually seen, not a guess at the current one.
+- **source-conflict** — a chain read and an index disagree. The chain read is
+  shown, the disagreement is stated, and the drawer is one click away.
+- **provider-unavailable** — the endpoint's own reason, and `Not read` in the
+  balance cell.
+
+## Mock to live
+
+`PortfolioTable` renders whatever `usePortfolio` read, so moving from the mock to
+a live network swaps the reader and the kit, not the screen. Addresses come from
+`@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not render an unavailable balance as `0`, as a dash, or as a blank cell.
+It will not resolve a source conflict on your behalf — both claims survive to the
+drawer. And it will not list a position type this build cannot read as though it
+were a position worth zero.

@@ -1,0 +1,162 @@
+---
+title: useRewards
+description: The four Flare reward kinds tracked as four independent claims, each with its own operation, its own confirmation and its own reason for being empty.
+breadcrumb: ['Docs', 'Hooks', 'useRewards']
+importLine: "import { useRewards } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-delegation', label: 'useDelegation' }
+next: { href: '/docs/hooks/use-staking', label: 'useStaking' }
+---
+
+Flare pays four different rewards, and they are not variants of one thing. An
+FTSO delegation reward needs a Merkle proof and expires; an rNat claim belongs to
+a project and its withdrawal burns half of what is still locked; FlareDrop
+concluded on 2026-01-30; the staking reward never expires at all. `useRewards`
+keeps them apart — three independent operations plus one shared claimable
+position — so a settled FTSO claim can never move the rNat one, and an empty read
+always says *which* emptiness it is.
+
+Each kind decides "did this land" differently, so each kind's `reconcile` closure
+belongs to the host. The claimable position is polled separately, because a
+`no-entitlement`, `proof-unavailable` or `concluded` read has no operation to
+advance.
+
+## Live
+
+The readout below is the hook's actual return value, running against the mock
+rewards adapter on this render. Every empty value in it is a real observation
+from the live Coston2 keyless read pass of 2026-08-12: the FTSO list is empty
+because the account earned nothing, `rnat` reports no project because
+`getBalancesOf` reverted with "no RNat account", `flaredrop` is concluded because
+`getClaimableMonths` reverted with "already finished", and the staking reward is
+a genuine on-chain `(0, 0)`. None of those is a zero typed into a fixture.
+
+`buildPlan` refuses with `not-verified`, which is also true rather than staged:
+no reward claim has ever settled live on this deployment, so `rewardsVerified`
+is still `false` and the kit will not emit a signable claim. `fetchProof` asks
+the unofficial mirror for the one epoch the live pass captured and gets
+`proof-unavailable` back — that epoch's proof belongs to a different
+beneficiary, and this account has no claim in it.
+
+<UseRewardsDemo />
+
+## Usage
+
+```tsx
+import { makeRewardsAdapter, type ClaimIntent } from '@flare-kit/core'
+import { rewardsFor } from '@flare-kit/contracts'
+import { useRewards } from '@flare-kit/react'
+import { ClaimCard } from '@flare-kit/react-ui'
+
+const adapter = makeRewardsAdapter(publicClient, rewardsFor('coston2'), fetch)
+const reconcile = (owner: `0x${string}`) => adapter.read(owner)
+
+function Rewards({ account }: { account: `0x${string}` }) {
+  const { reads, ftso, rnat, flaredrop, buildPlan, submit } = useRewards({
+    account,
+    adapter,
+    reconcile,
+    onSubmit: sendWithWallet,
+    // Each kind's own confirmation check, owned by the host.
+    ftso: { operation: ftsoOp, reconcile: confirmFtsoClaim },
+  })
+
+  const intent: ClaimIntent = { kind: 'ftso-delegation', recipient: account, wrap: false }
+  const planResult = buildPlan(intent)
+
+  return (
+    <ClaimCard
+      kind="ftso-delegation"
+      reads={reads}
+      operation={ftso.operation}
+      planResult={planResult}
+      onSubmit={() => planResult?.kind === 'plan' && submit(planResult.plan)}
+    />
+  )
+}
+```
+
+`reconcile` and `adapter` are effect dependencies, so hold them steady — a
+closure rebuilt on every render restarts the poll on every render.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'account', type: '0x${string} | undefined', required: true, description: 'The account read and planned for. Without it the hook does not poll.' },
+  { name: 'adapter', type: 'RewardsAdapter | undefined', required: true, description: 'The reads, proof-fetch and call-builder seam. Carries the deployment, whose rewardsVerified flag is the first gate buildPlan runs.' },
+  { name: 'reconcile', type: '(account: 0x${string}) => Promise<RewardsReads>', required: false, description: 'Re-reads the claimable position across all four kinds. Read-only and keyless.' },
+  { name: 'onSubmit', type: '(plan: RewardsClaimPlan) => Promise<RewardsOperation>', required: false, description: 'Executes the plan through the host’s own wallet. Absent means submit is a no-op returning undefined.' },
+  { name: 'pollMs', type: 'number', defaultValue: '15_000', required: false, description: 'Poll cadence in milliseconds, shared by the position read and all three kind polls. The host owns the clock.' },
+  { name: 'ftso', type: '{ operation?: RewardsOperation; reconcile?: (op) => Promise<RewardsOperation> }', required: false, description: 'The FTSO claim’s own operation and its own confirmation closure.' },
+  { name: 'rnat', type: '{ operation?: RewardsOperation; reconcile?: (op) => Promise<RewardsOperation> }', required: false, description: 'The rNat claim’s own operation and confirmation — a decreased locked balance, not a claimed reward.' },
+  { name: 'flaredrop', type: '{ operation?: RewardsOperation; reconcile?: (op) => Promise<RewardsOperation> }', required: false, description: 'The FlareDrop claim’s own operation and confirmation — a month leaving claimableMonths.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'reads', type: 'RewardsReads | undefined', description: 'The claimable position: currentRewardEpoch, claimableEpochs, expireNextEpoch, ftso, rnat, flaredrop and staking. undefined until the first read lands.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed position READING. It never fabricates an empty read, and it clears once a later poll succeeds.' },
+  { name: 'ftso', type: 'ClaimKindResult', description: 'The FTSO claim: its operation, isSettled, and its own read error.' },
+  { name: 'rnat', type: 'ClaimKindResult', description: 'The rNat claim, tracked independently of the other three.' },
+  { name: 'flaredrop', type: 'ClaimKindResult', description: 'The FlareDrop claim, tracked independently of the other three.' },
+  { name: 'buildPlan', type: '(intent: ClaimIntent) => ClaimPlanResult | undefined', description: 'Pure and synchronous once a read has landed; undefined before that.' },
+  { name: 'submit', type: '(plan: RewardsClaimPlan) => Promise<RewardsOperation | undefined>', description: 'Forwards the plan to onSubmit. Returns undefined when no onSubmit was given or the wallet threw.' },
+  { name: 'fetchProof', type: '(epoch: number) => Promise<FtsoProofResult>', description: 'Asks the configured mirror for one epoch’s Merkle proof. Returns { status: available, amount, claimType, proof } or the declared { status: proof-unavailable } — never an amount conjured from an absent proof.' },
+]} />
+
+## States
+
+- **the four kinds** — `ftso-delegation`, `rnat`, `flaredrop` and `staking` are
+  distinct and never collapsed into a generic "claim". Each carries its own
+  facts and its own reason for refusing.
+- **`not-verified`** — the deployment has no live claim behind it yet, so no
+  signable plan is produced for any kind. This gate runs before every other
+  check.
+- **`no-entitlement`** — a real read that found nothing owed: an empty FTSO
+  list, an account with no rNat project, or a staking reward whose `total`
+  equals its `claimed`.
+- **`proof-unavailable`** — an FTSO epoch is entitled but its Merkle proof is not
+  available from the mirror. The claim is refused rather than submitted without
+  a proof, and the epoch is named.
+- **`concluded`** — FlareDrop ended on 2026-01-30. It is a finished programme,
+  not a temporary emptiness, and it reads differently from `no-entitlement`.
+- **expiry** — FTSO rewards expire. `reads.expireNextEpoch` is the next epoch to
+  fall out of `reads.claimableEpochs`; on the read behind the demo above, 28
+  epochs were claimable and epoch 5902 was next to expire. The staking reward is
+  the one kind that does not expire — `expires` is `false` on it, always.
+- **in flight** — each kind's operation reaches `succeeded` only when that kind's
+  own `reconcile` asserts a confirmation. A read error on one kind never moves
+  another.
+
+## Mock to live
+
+The hook takes the adapter as a parameter, so the swap is the adapter alone:
+
+```tsx
+// Mock: the observed Coston2 keyless read pass, no network.
+const adapter = createMockRewardsAdapter()
+
+// Live: the real adapter over your own viem client and fetch.
+const adapter = makeRewardsAdapter(publicClient, rewardsFor('coston2'), fetch)
+```
+
+Both drive the same `buildRewardsClaimPlan`, `reconcileClaim` and `fetchFtsoProof`.
+The mock reproduces the two observed contract reverts as real thrown errors, so
+the adapter's own revert handling runs rather than being bypassed, and it
+refuses accounts and networks the live pass never drove.
+
+## What it will not do
+
+It will not collapse the kinds. There is no combined "claim everything" call
+here, because the four claims settle on different contracts, confirm in
+different ways, and fail for different reasons.
+
+It will not claim an FTSO reward without a proof, and it will not present the
+mirror as official. The proof source is an unofficial mirror
+(`official: false`), and a surface rendering these values is expected to say so.
+
+It will not hide the rNat burn. `withdrawAll` destroys 50% of the still-locked
+balance; that is disclosed as part of the plan, before anything is signed.
+
+It will not sign, and it will not mark a claim `succeeded` on submission. Only
+the host's per-kind confirmation does that.

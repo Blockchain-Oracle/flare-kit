@@ -1,0 +1,164 @@
+---
+title: GaslessCard
+description: The gasless FXRP payment composer — you sign an authorization off-chain, an operated relayer submits it and pays the gas, and the payment reads as paid only from the on-chain transfer.
+breadcrumb: ['Docs', 'Components', 'GaslessCard']
+importLine: "import { GaslessCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/bridge-card', label: 'BridgeCard' }
+next: { href: '/docs/components/x402-card', label: 'X402Card' }
+---
+
+`GaslessCard` composes an FXRP payment you never pay native gas for. You sign an
+EIP-712 payment request off-chain; an operated relayer submits it on-chain and
+covers the gas. Gasless is not free, and the card says so: the first payment
+needs a one-time approval that is an ordinary, gas-costing transaction, and it is
+rendered loudly rather than buried. The relayer accepting the job is `submitted`.
+`Paid` comes only from reading the transfer on-chain.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the card never actually reaches.
+
+<GaslessCardDemo />
+
+## Usage
+
+The card is prop-driven: the host builds the plan with `buildGaslessPlan`, signs
+through its own wallet, and hands the record back. `useGasless` owns only the
+reconcile poll that re-reads the chain while the payment is in flight.
+
+```tsx
+import type { GaslessOperation, GaslessPlanResult } from '@flare-kit/core'
+import { useGasless } from '@flare-kit/react'
+import { GaslessCard } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const FXRP = { symbol: 'FTestXRP', address: '0x0b6A…3dc7', decimals: 6 } as const
+
+export function Pay({ op, plan, reconcile }: {
+  op: GaslessOperation
+  plan: GaslessPlanResult
+  reconcile: (op: GaslessOperation) => Promise<GaslessOperation>
+}) {
+  const { operation } = useGasless({ operation: op, reconcile })
+  if (!operation) return null
+
+  return (
+    <GaslessCard
+      operation={operation}
+      sendToken={FXRP}
+      planResult={plan}
+      amountText="1"
+      recipientText="0xA4b0…1Bd9"
+      relayerUrl="http://localhost:8788"
+      networkLabel="Coston2"
+      onSubmit={() => console.log('sign the payment request')}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'OperationRecord', required: true, description: 'The record the whole card is projected from — the state chip, the CTA, the spine and the relay timeline all read off it. Fields stop being editable once the operation is in flight or concluded.' },
+  { name: 'sendToken', type: 'DexToken', required: true, description: 'The token being sent, for the pay leg and the asset row. FXRP on the networks the forwarder was verified on.' },
+  { name: 'planResult', type: 'GaslessPlanResult', description: "The unsigned plan, or the reason there isn't one. A plan shows the authorization review; an error becomes the note and disables the CTA. Absent, the composer stays in its pre-plan state." },
+  { name: 'unavailable', type: 'string', description: 'A live read failed. Renders its own note rather than a confident no-balance — a forwarder the host could not read is not the same fact as a balance that is too low.' },
+  { name: 'amountText', type: 'string', description: 'The amount in the pay leg, as text the host owns.' },
+  { name: 'recipientText', type: 'string', description: 'The recipient address in the recipient field.' },
+  { name: 'fromBalance', type: 'Amount', description: "The payer's FXRP balance, shown on the pay leg when the host knows it." },
+  { name: 'relayerUrl', type: 'string', description: 'The relayer endpoint, shown as a proper host label. Omit it and the relayer row is not rendered at all, because there is no relayer identity to name.' },
+  { name: 'relayerReachable', type: 'boolean', defaultValue: 'true', description: 'Whether the last reach of that endpoint succeeded. Only an explicit false reads as unreachable.' },
+  { name: 'nonce', type: 'bigint', description: "The signed request's nonce, shown in the authorization review once a plan exists." },
+  { name: 'deadline', type: 'bigint', description: 'The unix deadline the signature is valid until, shown beside the nonce.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode chip. Explicit and host-supplied — the card never infers mock mode from a failure.' },
+  { name: 'networkLabel', type: 'string', description: 'The network name in the header, e.g. Coston2.' },
+  { name: 'onAmountChange', type: '(text: string) => void', description: 'Called as the amount is typed. Omit it and the amount is display-only.' },
+  { name: 'onRecipientChange', type: '(text: string) => void', description: 'Called as the recipient is typed.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader takes the CTA — approve, or sign the payment request. The card holds no key and broadcasts nothing; the host owns signing.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel: the pay leg with the FXRP amount and balance, an asset row, the
+recipient field, the relayer identity, and a CTA that names the exact next act
+(`Approve FXRP (one-time)`, `Review payment`, `Relaying…`, `Paid`).
+
+The asset row carries a declared gap rather than a silent omission. USD₮0 sits
+beside FXRP marked `unavailable on testnet`, because the real USD₮0 does not
+implement EIP-3009 there, so a gasless USD₮0 payment has no substrate to run on.
+It is shown and explained instead of quietly dropped from the list.
+
+Once a plan exists, the authorization review shows the `nonce` and the unix
+`deadline` you are actually signing over, with the replay rule stated in the same
+place: each payment uses the next nonce, so an old signature cannot be replayed.
+
+From the moment the payment starts moving through to its final state, the card
+renders both the operation spine and the relay timeline — relayer accepted,
+relayer submitting on-chain, FXRP transfer confirmed on-chain. The third leg is
+the load-bearing one. It completes only when
+the operation reaches `succeeded` from an on-chain transfer read, never from the
+relayer's HTTP response.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **compose** — the editable composer, with the relayer-covers-gas fact and the
+  unavailable-on-testnet asset both on screen before anything is signed.
+- **needs-approval** — the loud one-time approval. It costs gas, once; every
+  payment after it is gasless. This is the state that keeps `gasless` from being
+  read as `free`.
+- **ready** — already approved, so there is nothing to approve and only the
+  payment request left to sign.
+- **approving** — the one-time approval in flight.
+- **signing** — the payment request signature, off-chain and gasless.
+- **submitted** — the relayer accepted the job. The confirmed leg is still
+  pending, and the card does not say paid. An acceptance over HTTP is not a
+  transfer on-chain.
+- **awaiting-relay** — the relayer is submitting on-chain; the awaited actor is
+  named as the relayer, not folded into Flare.
+- **succeeded** — `Paid`, entered only from the on-chain transfer read.
+- **insufficient-balance** — the FXRP balance is below the amount.
+- **expired** — the signing window closed; start again for a fresh deadline.
+- **relayer-unreachable** — the relayer did not accept the request. Your
+  signature is off-chain and nothing moved, so the outcome is not confirmed yet
+  rather than failed.
+- **not-verified** — a declared gap. No live run has confirmed a gasless FXRP
+  transfer against this forwarder in this build, so the kit refuses to sign an
+  approval against it and the CTA reads `Not available`.
+- **unavailable** — a read failed. Kept distinct from a no-balance answer,
+  because the host does not know the balance either.
+
+## Mock to live
+
+The card takes props; it never reaches for a network itself. What changes between
+mock and live is the adapter behind `buildGaslessPlan` — the forwarder deployment
+and the relayer endpoint come from `@flare-kit/contracts`, so network is
+configuration and the screen does not change.
+
+```tsx
+// From this…
+const adapter = createMockGaslessAdapter()
+
+// …to this. The component does not change.
+const adapter = makeGaslessAdapter(publicClient, gaslessFor('coston2')!)
+```
+
+## What it will not do
+
+It will not call a relay acceptance a payment. `submitted` renders as submitted,
+the confirmed leg stays pending, and `Paid` is reachable only from the on-chain
+transfer read. It will not present gasless as free — the one-time approval is
+shown as the gas-costing transaction it is, before you sign anything. It will not
+turn an unreachable relayer into a failure, because a signature that never left
+your machine moved nothing. It will not offer a signable payment against a
+forwarder no live run has confirmed, and it will not read a failed RPC call as an
+empty balance. It signs nothing and broadcasts nothing itself; `onSubmit` hands
+the decision back to you.

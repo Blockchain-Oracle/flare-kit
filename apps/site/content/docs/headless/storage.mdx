@@ -1,0 +1,163 @@
+---
+title: Storage and reconcile
+description: How an operation record persists — versioned, bigint-safe, secret-refusing — and how reconciliation walks it back into agreement with the chain when the app opens.
+breadcrumb: ['Docs', 'Headless', 'Storage and reconcile']
+importLine: "import { createMemoryStore, reconcileTo } from '@flare-kit/core'"
+prev: { href: '/docs/headless/adapters', label: 'Adapters' }
+next: { href: '/docs/headless/mock', label: 'The mock kit' }
+---
+
+An operation outlives the tab it was started in. Persisting it is half of that;
+the other half is agreeing with the chain again the next time the app opens.
+Neither half needs a Resume button.
+
+## The store
+
+Durable storage is pluggable and versioned. The interface is four methods:
+
+```ts
+import type { OperationStore, ListFilter } from '@flare-kit/core'
+
+interface OperationStore {
+  get(id: string): Promise<OperationRecord | undefined>
+  put(record: OperationRecord): Promise<void>
+  list(filter?: ListFilter): Promise<OperationRecord[]>
+  delete(id: string): Promise<void>
+}
+```
+
+`ListFilter` has one field, `open`, which selects the operations that have not
+reached a value-final state — `isTerminal` decides, so `expired` counts as
+open, because an expired quote is re-quotable.
+
+`createMemoryStore()` is the default implementation and the reference one. It
+holds encoded strings rather than object references, so a caller can never
+reach in and mutate persisted state, and every read exercises the same codec a
+browser or server store would. `list` returns newest-updated first.
+
+## The codec
+
+JSON cannot carry a `bigint`, and degrading a base-unit amount to a number to
+make it fit is not an option — that is precision loss on somebody's money.
+`encodeRecord` tags them instead, and `decodeRecord` reads the tag back:
+
+```ts
+import { encodeRecord, decodeRecord } from '@flare-kit/core'
+
+const text = encodeRecord(record) // bigints become { "$bigint": "…" }
+const restored = decodeRecord(text) // and come back as bigints
+```
+
+`decodeRecord` refuses rather than guesses in two cases. Text that is not valid
+JSON, or a record missing its `id` or `state`, throws
+`PERSISTED_RECORD_MALFORMED`. A record whose `schemaVersion` is not
+`OPERATION_SCHEMA_VERSION` throws `PERSISTED_SCHEMA_UNSUPPORTED` — an
+unrecognised version is surfaced, never coerced, because a record written by a
+newer build may hold evidence this build cannot interpret, and guessing at it
+is how a paid mint gets re-paid.
+
+## Secrets are refused at the boundary
+
+`put` runs `assertNoSecrets` over the record's `intent`, `quote` and `plan`
+before writing anything, and throws `SECRET_IN_PERSISTED_RECORD` on a match.
+
+```ts
+import { assertNoSecrets } from '@flare-kit/core'
+
+// Exported so every export path — a durable store, an activity export,
+// a support bundle — runs the same check rather than growing its own.
+assertNoSecrets(payload, 'intent')
+```
+
+Key names are matched as substrings rather than whole words, so `seedPhrase`,
+`walletSeed`, `privateKeyHex` and `mnemonicPhrase` are all caught. A false
+positive costs a caller one rename; a false negative writes a seed to disk.
+
+## Reconcile on open
+
+Reconciliation is the only thing that advances an operation, and it is safe to
+call at any time from any state. Opening the app and receiving a protocol event
+are therefore the same code path.
+
+```ts
+const open = await store.list({ open: true })
+
+for (const record of open) {
+  await store.put(await kit.reconcile(record))
+}
+```
+
+For the direct mint, `kit.reconcile` reads the chain — the AssetManager, the
+XRPL and the FDC — and hands the reading to `reconcileDirectMint`, which
+derives the target state from what is observed rather than from what happened
+last. Calling it twice with the same reading changes nothing.
+
+Two details make that honest rather than merely idempotent:
+
+**Stale waits are cleared, not left behind.** The reconcile patch always
+includes the `awaiting` key, set to `undefined` when the recovery plan names no
+actor. Because `OperationPatch` distinguishes an absent key ("leave alone")
+from an explicit `undefined` ("clear"), a settled operation stops claiming it
+is waiting on somebody. The same applies to `recovery`.
+
+**Steps advance from evidence.** `directMintStepProgress` computes how far the
+spine has actually reached from the chain reading — a payment seen, finality,
+a proof, settlement — not from the operation's state, and `advanceSteps` never
+walks a step backwards.
+
+## The shared walk
+
+Every durable reconcile faces the same hazard, described in
+[States and transitions](/docs/headless/states): `applyTransition` drops its
+patch when the transition table has no edge for the hop, with no throw and no
+failing test. A reconcile that jumped straight to the observed state would
+strand every step and awaiting update it carried.
+
+`reconcile.ts` homes the answer once, so it is enforced in one place across
+every capability:
+
+```ts
+import { reconcileTo, waitSince, advance } from '@flare-kit/core'
+
+// Walk the legal table breadth-first, applying the patch at every hop —
+// including a same-state hop, which is what makes a repeat reconcile idempotent.
+reconcileTo(record, 'succeeded', now, {
+  steps: advance(record, now, record.steps.length, 'done'),
+  awaiting: undefined,
+})
+```
+
+`waitSince(record, now, actor)` answers when *this* leg's wait began. It is
+preserved across re-reconciles of the same leg, so `since` is not reset on
+every read, and reset when the awaited actor changes — a new leg is a
+genuinely new wait, and each leg's duration should read independently.
+
+`advance(record, now, done, current)` is the spine update for a leg: `done`
+leading steps finished, the next one `'active'`, `'done'` or `'failed'`.
+
+The bridge, gasless, x402, delegation, rewards and staking reconcilers are all
+written on these three. Reading any one of them shows the same shape:
+
+```ts
+// x402: settled and delivered is the ONLY path to succeeded.
+reconcileX402(record, settlement, resource, now)
+```
+
+A settled payment whose resource has not arrived is `awaiting_external` on the
+`provider`. A settled payment whose resource failed is `partially_succeeded` —
+the payment took and the resource did not, and both halves are stated. A
+pending settlement is never success.
+
+Vault withdrawals reconcile through `reconcileWithdraw`, which maps the pending
+reading onto the same states: waiting to `awaiting_external` with the claimable
+time, claimable to `action_required` via `escalate` with one safe claim action
+that moves no new value, claimed to `succeeded`.
+
+## What it will not do
+
+The store will not migrate a record it does not understand, and it will not
+persist a secret because the caller insisted. Reconcile will not invent an
+outcome: an absent read is a wait, not a failure, and no reconciler in this
+package reaches `succeeded` from anything other than an observed settlement.
+There is no `resume()`, because there is nothing for it to do that
+`reconcile` does not already do correctly on every open.

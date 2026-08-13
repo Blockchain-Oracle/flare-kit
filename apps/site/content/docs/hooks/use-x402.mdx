@@ -1,0 +1,122 @@
+---
+title: useX402
+description: The delivery poll for an x402 payment — it reconciles the on-chain settlement and the HTTP resource as two independent facts, so a payment that took while the resource did not reads partially_succeeded rather than done.
+breadcrumb: ['Docs', 'Hooks', 'useX402']
+importLine: "import { useX402 } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-gasless', label: 'useGasless' }
+next: { href: '/docs/hooks/use-delegation', label: 'useDelegation' }
+---
+
+x402 is the first capability whose outcome has two legs on two transports: the
+facilitator's settlement lands on chain, and the resource comes back over HTTP.
+They are read separately and either one can go wrong on its own, so `useX402`
+never collapses them into a single "did it work". It is the same durable poll as
+[useBridge](/docs/hooks/use-bridge) and [useGasless](/docs/hooks/use-gasless),
+reconciling with `reconcileX402` on an 8-second cadence — the host has usually
+already driven parse → sign → settle-and-fetch, and this is what re-reads it
+when the card is reopened before the settlement was seen.
+
+## Live
+
+Both readouts below are the hook's actual return value, on this render, over the
+same signed request — and both read the *same settled payment*. Only the
+resource differs. One reaches `succeeded`; the other reaches
+`partially_succeeded`, because the payment took and the resource did not. That
+is the whole argument for keeping the two legs apart.
+
+The settlement is the one the live run observed. The failing resource is a state
+the caller selects: the live fixture delivers atomically, so that split is
+covered by unit tests rather than by a live run, and it is labelled here rather
+than passed off as observed.
+
+<UseX402Demo />
+
+## Usage
+
+The hook is driven by props, not by context. The host parses the `402`
+challenge, signs the EIP-3009 authorization with its own wallet and calls
+settle-and-fetch; `reconcile` re-reads both legs and applies `reconcileX402`.
+Memoise it with `useCallback`, or the interval is torn down on every render.
+
+```tsx
+import { type X402Operation, reconcileX402 } from '@flare-kit/core'
+import { useX402 } from '@flare-kit/react'
+import { useCallback } from 'react'
+
+function Paywall({ operation, readSettlement, readResource, challenge }) {
+  const reconcile = useCallback(
+    async (op: X402Operation) =>
+      reconcileX402(op, await readSettlement(), await readResource(), Date.now()),
+    [readSettlement, readResource],
+  )
+
+  const { operation: live, error } = useX402({ operation, reconcile })
+  return <X402Card operation={live ?? operation} challenge={challenge} networkLabel="Coston2" />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', required: true, description: 'The current operation. The host creates, challenges, signs and settles it with the core functions; the hook only reconciles it. A new operation is adopted by `id`, so re-creating the same record each render never clobbers the poll.' },
+  { name: 'reconcile', type: '(op: T) => Promise<T>', required: false, description: 'Re-read the settlement and the resource, and return the advanced operation. Read-only — it holds no key. Without it the hook polls nothing and returns what it was handed.' },
+  { name: 'pollMs', type: 'number', required: false, description: 'Poll cadence in milliseconds. Defaults to `8000` — a facilitator settlement lands in seconds.' },
+]} />
+
+`UseX402Input` and `UseX402Result` are the bridge poll's types: the three
+capabilities differ in what they read, not in how they reconcile.
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', description: 'The operation as the last successful read left it. `undefined` only when none was passed in.' },
+  { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state (`succeeded`, `failed`, `cancelled`). `partially_succeeded` is not terminal — the resource can still be retried — so it reads false there.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last reconcile that threw — a failed READING, never a failed payment. A later successful poll clears it.' },
+]} />
+
+## States
+
+- **`awaiting_external`** — the facilitator is settling, or the payment settled
+  and the resource has not arrived. The operation carries
+  `awaiting.actor: 'provider'` and a reason that says which of the two it is.
+- **`succeeded`** — settled *and* delivered. Both legs, or neither claim.
+- **`partially_succeeded`** — settled, resource failed. The copy leads with what
+  moved: the payment took, the resource did not.
+- **`failed`** — the facilitator rejected the settlement. Nothing was charged,
+  and this is never dressed as a partial success.
+- **`error`** — the read itself failed. The outcome is not confirmed yet; the
+  operation stays where the last reads put it.
+
+## Mock to live
+
+The hook and the reconciler are unchanged between the two. What swaps is where
+the two legs are read from:
+
+```tsx
+// Mock: the observed challenge and outcome from the live run.
+const outcome = mockX402Outcome('settled-delivered')
+reconcileX402(op, outcome.settlement, outcome.resource, now)
+
+// Live: fact 1 is the settlement header (confirm the tx on chain before trusting
+// it); fact 2 is the status of the very same HTTP response.
+const settled = readXPaymentResponse(res.headers.get('X-Payment-Response') ?? '')
+reconcileX402(
+  op,
+  settled ? { kind: 'settled', ...settled } : { kind: 'pending' },
+  res.status === 200 ? { kind: 'delivered', body } : { kind: 'failed', status: res.status },
+  Date.now(),
+)
+```
+
+The mock's default outcome is `pending` with the resource `undelivered` — it
+never fabricates a settlement, and the demo token label rides every challenge it
+returns.
+
+## What it will not do
+
+It will not report a settlement as a delivered resource, or a delivered resource
+as proof the payment settled. It will not move an operation to `failed` because
+a read failed, and it will not present a rejected settlement as partial success.
+It signs and settles nothing — it holds no key. It will not keep polling a
+terminal operation, and it will not adopt a re-created operation object whose
+`id` has not changed.

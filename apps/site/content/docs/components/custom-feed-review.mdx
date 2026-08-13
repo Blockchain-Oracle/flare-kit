@@ -1,0 +1,144 @@
+---
+title: CustomFeedReview
+description: Custom feeds read through FtsoV2, with their trust class named, entries that are listed but unreadable shown as such, and creation declared blocked.
+breadcrumb: ['Docs', 'Components', 'CustomFeedReview']
+importLine: "import { CustomFeedReview } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/incentive-effect-panel', label: 'IncentiveEffectPanel' }
+next: { href: '/docs/components/swap-card', label: 'SwapCard' }
+---
+
+`CustomFeedReview` shows the custom feeds registered on a network and what they
+currently read through `FtsoV2`. The trust claim is the whole surface: a
+protocol feed's value is what the FTSO providers voted on, while a custom feed's
+comes from a contract someone else deployed and Flare Foundation governance
+approved. Both are real, they are not the same claim, and this panel will not
+present them as equivalent.
+
+Two facts it keeps apart throughout: a feed being **listed** by an enumeration
+source and a feed being **readable** are different things, and a network with no
+custom feeds is an observation rather than an error.
+
+## Live
+
+The preview mounts the gallery's own `ftso-06` cases. Their feed sets are driven
+through the real `readCustomFeeds` against `createMockFtsoReader()` rather than
+hand-written as observations, so a change to the read shows up here. The
+excluded entries are the real artifacts `FtsoV2.getCustomFeeds()` reports on
+mainnet, carried with the source that reported them.
+
+<CustomFeedReviewDemo />
+
+## Usage
+
+Read the set, then read the values for the ids it returned. They are two reads
+because they are two claims: the set is metadata, a value is payable and carries
+its own decimals and timestamp.
+
+```tsx
+import { createMockFtsoReader } from '@flare-kit/core'
+import { useCustomFeeds, useFeeds } from '@flare-kit/react'
+import { CustomFeedReview } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const reader = createMockFtsoReader({ customFeedNames: ['sFLR/USD'] })
+
+export function CustomFeeds({ payer }) {
+  const feeds = useCustomFeeds(reader, 114)
+  const ids = feeds.data?.status === 'observed'
+    ? feeds.data.value.entries.map((entry) => entry.feedId)
+    : []
+  const readings = useFeeds({ reader, chainId: 114, feedIds: ids, account: payer })
+
+  return (
+    <CustomFeedReview
+      feeds={feeds.data}
+      readings={readings.data}
+      loading={feeds.loading}
+      now={Date.now()}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'now', type: 'number', required: true, description: 'The clock the provenance chips measure their observation age against.' },
+  { name: 'feeds', type: 'Observation<CustomFeedSet>', description: 'The supported set, carrying the network and chain id it was read on and the dated prior observation. An unavailable observation renders as a named failure, never as an empty set.' },
+  { name: 'readings', type: 'Observation<FeedReadResult>', description: 'Values read through FtsoV2 — the only path that reaches these feeds. Omit it and every row reads "not read", which is a different statement from "no value came back".' },
+  { name: 'excluded', type: 'readonly ExcludedCustomFeed[]', defaultValue: '[]', description: 'Entries an enumeration source reported that this kit refuses to render as feeds. Each carries its condition, the source that reported it, and the detail.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the supported set is still being read. Shows skeleton rows rather than an empty table.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer panel, so a host layout can place it.' },
+]} />
+
+The `ExcludedCustomFeed` shape is `{ feedId, condition, reportedBy, detail }`,
+where `condition` is one of `'invalid_metadata'`, `'activation_pending'` or
+`'reverts_on_read'`.
+
+## What it renders
+
+A panel headed with the network and chain id the set was read on, a trust chip,
+and a three-column table: the feed and its truncated id, its value through
+`FtsoV2` with decimals and timestamp, and its availability. Beneath it: the
+reason the updater contracts are not reachable from a feed id, any reported
+entries that are not rendered as feeds, the blocked-creation note with its
+evidence, and provenance chips for the set and the values separately.
+
+The table is three columns rather than four on purpose. "The updater contract is
+not reachable from the feed id" is true of every row — `IICustomFeed` maps a
+contract to its id and nothing maps an id back to an address — so it is a
+property of the class, stated once beneath the table instead of repeated in a
+narrow cell.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the supported set is still being read.
+- **empty set on this network** — Coston2 genuinely carries no custom feeds. The
+  panel says the set was read and held none, and carries the dated prior
+  observation so a reader can tell an empty answer from a failed one.
+- **BASE** — three registered feeds read through `FtsoV2`. Only `sFLR/USD` was
+  ever measured live, so it carries a value and the other two read `no value
+  came back` — the honest shape, and the degraded availability state this screen
+  has to render anyway.
+- **AVAIL, no readings at all** — the same set with the values omitted. Every
+  row reads `not read`, which is a different claim from `no value came back`,
+  and the rows stay because being listed is a fact an absent read does not undo.
+- **reported, and not rendered as feeds** — three real mainnet artifacts:
+  metadata that does not decode, an id not yet in the supported set, and an id
+  that reverts when read. Each names the source that reported it, because
+  silently dropping them would hide a disagreement between two enumeration
+  sources.
+- **typed error** — the set could not be read. Nothing is shown above the
+  message, since an unread set is not an empty one and the two must not look the
+  same.
+
+## Mock to live
+
+The panel takes observations, not a chain, so going live swaps the reader that
+produced them. `FtsoV2`'s address comes from `@flare-kit/contracts` by chain id;
+network is configuration.
+
+```tsx
+// From this…
+const feeds = useCustomFeeds(createMockFtsoReader({ customFeedNames: ['sFLR/USD'] }), 114)
+
+// …to this. The component does not change.
+const feeds = useCustomFeeds(publicClient, 114)
+```
+
+## What it will not do
+
+It will not create a custom feed. `addCustomFeeds(address[])` is
+governance-gated, and the documented route is a request the Flare Foundation
+reviews off chain — deploying an `IICustomFeed` yields a contract its deployer
+can read and does not yield a feed readable through `FtsoV2`. The panel says
+blocked and names the evidence rather than offering a button that cannot work.
+
+It will not call each feed's own contract, because a feed id does not resolve to
+an updater address; that read ships declared rather than faked. And it will not
+present a custom feed's value as carrying a protocol feed's trust.

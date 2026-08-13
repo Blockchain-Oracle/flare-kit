@@ -1,0 +1,157 @@
+---
+title: useStaking
+description: The cross-substrate stake lifecycle as React state — live bounds and validators read keylessly, the value lock disclosed before signing, and succeeded only from the P-chain position read.
+breadcrumb: ['Docs', 'Hooks', 'useStaking']
+importLine: "import { useStaking } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-rewards', label: 'useRewards' }
+next: { href: '/docs/hooks/operation-store', label: 'Operation store' }
+---
+
+A Flare stake is a round trip between two substrates: FLR is exported from the
+C-chain, imported onto the P-chain, delegated to a validator, and much later
+comes back the same way. The outcome lives on the P-chain, not in a transaction
+receipt — so a submitted stake is `submitted`, and nothing else, until
+`readStakesOf` shows the position. `useStaking` re-reads on an interval and
+advances the operation from that read. There is no Resume button.
+
+Reading and planning are keyless. The bounds a stake must satisfy — the minimum
+and maximum amount, the minimum and maximum duration — are read from
+`PChainStakeMirrorVerifier` and the live validator set, never typed into the
+kit. Signing happens only through the `PChainStakeExecutor` you inject; the hook
+receives it as an argument and never holds a key itself.
+
+## Live
+
+The readout below is the hook's actual return value on this render. This page
+has no network, so the hook is handed no viem client, no P-chain RPC base and no
+executor — and what it reports is the point. The position is `unavailable`
+rather than a confident zero stake. `limits` and `validators` are `null` rather
+than the numbers this page quotes below. `buildPlan` returns nothing rather than
+validate an intent against bounds it has not read. Absence of a reader is never
+absence of a stake.
+
+<UseStakingDemo />
+
+The keyless read pass on Coston2 on 2026-08-12 returned a minimum stake of
+`50,000 FLR`, a maximum of `200,000,000 FLR`, and a duration window of `14` to
+`365` days. Those are values that were read on that day, on that network — the
+hook reads them again every poll, and a surface built on this kit should render
+what it read, not what is written here.
+
+## Usage
+
+```tsx
+import { stakingFor } from '@flare-kit/contracts'
+import { useStaking } from '@flare-kit/react'
+import { StakeCard } from '@flare-kit/react-ui'
+
+const deployment = stakingFor('coston2')
+
+function Stake({ account, executor, intent }) {
+  const { position, limits, validators, reward, operation, buildPlan, submit } = useStaking({
+    deployment,
+    account,
+    publicClient,                      // keyless: bounds, mirrored vote power, reward
+    rpcBase: deployment.pChainRpcBase, // keyless: the validator set
+    executor,                          // the only signing seam; omit for read and plan only
+  })
+
+  const planResult = buildPlan(intent) // undefined until limits and validators land
+
+  return (
+    <StakeCard
+      position={position}
+      limits={limits}
+      validators={validators}
+      operation={operation}
+      planResult={planResult}
+      onSubmit={() => planResult?.ok && submit(planResult.plan)}
+    />
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'deployment', type: 'StakingDeployment | undefined', required: true, description: 'The staking deployment. Carries the EVM addresses, the P-chain RPC base and stakeVerified — the gate planStake runs before any bound.' },
+  { name: 'account', type: '0x${string} | undefined', required: true, description: 'The C-chain account rewards accrue to and mirrored vote power is read for.' },
+  { name: 'publicClient', type: 'StakeEvmClient | undefined', required: true, description: 'A keyless viem client for the EVM reads: the verifier bounds, the mirrored vote power and the staking reward.' },
+  { name: 'rpcBase', type: 'string | undefined', required: true, description: 'The P-chain JSON-RPC base for the keyless validator-set and stake-position reads.' },
+  { name: 'executor', type: 'PChainStakeExecutor', required: false, description: 'The P-chain signing seam — a wallet or an agent key. Without it the hook reads and plans, but cannot sign and cannot read the position (which needs the executor’s P-address).' },
+  { name: 'operation', type: 'StakeOperation', required: false, description: 'The current stake-in (staking) or delayed return (staking-return) operation. Only a genuinely new id replaces what the hook is tracking.' },
+  { name: 'pollMs', type: 'number', defaultValue: '15_000', required: false, description: 'Poll cadence in milliseconds. The host owns the clock.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'operation', type: 'StakeOperation | undefined', description: 'The tracked operation, advanced only by a successful position read.' },
+  { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state. False when there is no operation at all.' },
+  { name: 'position', type: 'StakePositionView', description: 'observed (stakes, mirroredVotePower) or unavailable. An absent P-chain read is never a confident zero stake.' },
+  { name: 'limits', type: 'StakeLimits | undefined', description: 'The live bounds read from PChainStakeMirrorVerifier: minAmount and maxAmount in wei, minDuration and maxDuration in seconds. undefined before the read lands.' },
+  { name: 'validators', type: 'ValidatorInfo[] | undefined', description: 'The live validator set, each with its node id, active window and weight. undefined before the read lands.' },
+  { name: 'reward', type: 'StakingRewardState | undefined', description: 'The NON-EXPIRING staking reward (total, claimed, claimable). undefined before the read lands or when the read was unavailable — never a fabricated zero.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed READING. It never moves the operation to failed.' },
+  { name: 'buildPlan', type: '(intent: StakeIntent) => StakePlanResult | undefined', description: 'Keyless, pure and synchronous once limits and validators have landed; undefined before that. Returns { ok: true, plan } or { ok: false, error }.' },
+  { name: 'submit', type: '(plan: StakePlan) => Promise<StakeOperation | undefined>', description: 'Signs the two P-chain legs through the injected executor and adopts a SUBMITTED operation. Returns undefined without an executor.' },
+]} />
+
+## States
+
+- **`position.status: 'unavailable'`** — no P-chain read has landed, or the read
+  threw. It renders as an unknown, never as "staked 0".
+- **`position.status: 'observed'`** — a real read, including one that observes no
+  stakes. Inside an observed position, `mirroredVotePower` may still be
+  `undefined`: the `PChainStakeMirror` read reverts on Coston2, and that stays
+  `undefined` rather than collapsing to zero.
+- **the value lock** — a successful plan carries `valueLock` with the amount, the
+  unlock time, the lock duration and `irreversible: true`. The stake cannot be
+  exited before it unlocks, and that is stated as data so a surface can disclose
+  it before anything is signed.
+- **refusals** — `buildPlan` returns `{ ok: false }` for `unverified` (checked
+  first, before any bound), `amount_below_min`, `amount_above_max`,
+  `duration_below_min`, `duration_above_max` — each carrying the live-read bound
+  it failed — and `ends_after_validator`, which carries the validator's own end
+  time. A stake that would outlive its validator is refused rather than stranded.
+- **the two legs** — the stake-in operation (`staking`) reaches `succeeded` only
+  once `readStakesOf` shows the matching position. The delayed P→C return is its
+  own operation (`staking-return`), and its terminal `succeeded` requires a
+  *successful* read showing the stake is gone.
+- **`unavailable` on the return leg** — a thrown read is `unavailable`, never
+  `absent`. Silence from the P-chain leaves the operation where it was, because
+  treating a transport fault as "the stake is gone" would report `succeeded`
+  with funds still on the P-chain.
+
+## Mock to live
+
+The mock is read-shaped rather than adapter-shaped, so the swap is the readers:
+
+```tsx
+// Mock: run every M11 read against the observed Coston2 snapshot, no network.
+const { deployment, limits, validators, positions, stakingReward } = await createMockStakeReads()
+
+// Live: the shipped deployment plus your own keyless clients.
+useStaking({ deployment: stakingFor('coston2'), publicClient, rpcBase: deployment.pChainRpcBase, account, executor })
+```
+
+`mockStakingDeployment()` returns the shipped deployment unchanged, with
+`stakeVerified` still `false` — no broadcast ever landed, because the signer held
+far less than the read minimum. The mock does not simulate the resulting
+refusal; it simply exposes no verified deployment, and the real `planStake` gate
+does the rest.
+
+## What it will not do
+
+It will not sign, and it will not hold a key. Both signed legs go through the
+executor you inject: the C→P transfer and the `AddPermissionlessDelegator`
+delegate. Everything else — bounds, validators, reward, position, plan — is
+keyless.
+
+It will not report `succeeded` from a submission. Only the confirmed position
+read does that, on either leg, and an unavailable read is never read as an
+absent stake.
+
+It will not plan against typed-in bounds. Until the limits and validator reads
+land, `buildPlan` returns `undefined` rather than validate an amount or a
+duration against a constant that may no longer be what the network enforces.

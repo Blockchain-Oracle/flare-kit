@@ -1,0 +1,75 @@
+---
+title: PoolCatalogue
+description: A declared-unbuilt surface — present, disabled and carrying its reason, because one live Coston2 pool cannot honestly be presented as a discovery catalogue.
+breadcrumb: ['Docs', 'Components', 'PoolCatalogue']
+importLine: "import { PoolCatalogue } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/position-card', label: 'PositionCard' }
+next: { href: '/docs/components/vault-catalogue', label: 'VaultCatalogue' }
+---
+
+`PoolCatalogue` is not built yet, and it renders exactly that. Pool discovery
+across venues is planned; what exists today is one live pool on Coston2, and a
+catalogue over one row would be a screen pretending to be a feature. So the
+surface ships present, disabled and reasoned rather than faked, and rather than
+quietly left out of the package — a component that cannot honestly act is
+declared, not hidden.
+
+## Live
+
+There is one case, because the surface has one state.
+
+<PoolCatalogueDemo />
+
+## Usage
+
+It takes no data, because it reads none. Mount it where the catalogue will go and
+the space stays honest until the catalogue exists.
+
+```tsx
+import { PoolCatalogue } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Pools() {
+  return <PoolCatalogue networkLabel="Coston2" />
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'networkLabel', type: 'string', description: 'The network shown in the panel subtitle, e.g. `Coston2`. The panel names the network it would be cataloguing, so the declaration is not read as universal.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+The standard panel, titled `Pool catalogue` and subtitled with the network, over
+a disabled region carrying two lines: `Not built yet`, and the reason — one live
+Coston2 pool today, with a multi-pool, multi-venue catalogue a later milestone
+once mainnet or additional pools qualify. The region is marked `aria-disabled`,
+so it reads as unavailable to assistive technology as well as visually, and it
+holds no controls to press.
+
+## States
+
+One, and it is the whole surface:
+
+- **declared unbuilt** — present, disabled, and stated with its reason. There is
+  no loading state, no empty state and no error state, because nothing is being
+  fetched to be in one.
+
+## Mock to live
+
+Nothing to swap. The panel reads no chain data, so there is no mock behind it and
+no kit to exchange for a live one. When the catalogue is built, this page changes
+with it; until then, the absence of a data path is the honest thing about the
+component.
+
+## What it will not do
+
+It will not list pools, and it will not render the single live Coston2 pool as a
+catalogue of one to look complete. It will not present itself as loading, and it
+will not offer a disabled control that suggests the feature is one connection
+away. To supply to the pool that does exist, use
+[AddLiquidityCard](/docs/components/add-liquidity-card).

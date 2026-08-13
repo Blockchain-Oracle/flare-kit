@@ -1,0 +1,55 @@
+---
+title: CLI
+description: The same operations at a terminal, for humans and shell-driven agents — including writes. Planned, not built — scoped by the agent-surfaces decision, which ships in the repository.
+breadcrumb: ['Docs', 'Agent Kit', 'CLI']
+prev: { href: '/docs/agent-kit/mcp-server', label: 'MCP server' }
+next: { href: '/docs/agent-kit/skills', label: 'Skills' }
+---
+
+One core, three deliveries: the MCP server connects an agent to the actions, the
+skills carry the procedural knowledge, and the CLI gives a human or a
+shell-driven agent the same surface deterministically.
+
+**Planned.** This surface is scoped and not yet built. The decision that scoped
+it is `.thoughts/decisions/2026-08-03-agent-facing-surfaces.md`; decisions ship
+in the repository, so you can read the reasoning before any of this exists.
+There is no command to install or run today.
+
+## What it will be
+
+A first-class operator of the same tools, not a read-only helper — it performs
+transactions. Every tool in the catalogue gets a corresponding command: read and
+plan commands run with no key, write commands require a configured signer.
+
+Three globals shape every invocation. A JSON mode emits machine-readable output
+for scripting and for shell-driven agents, with errors on the same contract. A
+network flag selects the environment, and there is no implicit mainnet default.
+A write command prints the exact effect — amounts, fees, provider and the
+irreversible boundary — before it executes, with a non-interactive confirmation
+flag for automation.
+
+Long-running operations stream their stage, the expected range, the actor being
+awaited and the safe action, and they can be detached and resumed by operation
+ID. The CLI can also serve the [MCP server](/docs/agent-kit/mcp-server) as a
+subcommand, install the [skill bundle](/docs/agent-kit/skills), and report
+environment, network reachability, wallet status, funding and version
+compatibility from one doctor command.
+
+## The agent wallet
+
+The CLI is where an agent-owned key is generated and stored, under the user's
+configuration directory with restrictive permissions, overridable by an
+environment variable. A key is never committed, logged, printed in JSON output,
+or included in receipts, support bundles or analytics. Key export exists only
+here, requires explicit confirmation, and is never exposed as a tool or over
+MCP.
+
+Before a first write, the agent account's balance and configured limits are
+reported, so an operator can see the blast radius. Requiring a person's
+unrestricted private key stays prohibited.
+
+## What exists today
+
+The headless operation contract the commands would drive. Start at the
+[quickstart](/docs/quickstart), or read [mock mode](/docs/mock-mode) for the
+seeded state machine that runs the whole lifecycle with no key.

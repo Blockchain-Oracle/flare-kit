@@ -1,0 +1,155 @@
+---
+title: FeedDetail
+description: One FTSO feed shown as two claims side by side — the block-latency read with no proof attached, and the anchor value committed in a voting round — with neither resolved into a single price.
+breadcrumb: ['Docs', 'Components', 'FeedDetail']
+importLine: "import { FeedDetail } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/feed-catalogue', label: 'FeedCatalogue' }
+next: { href: '/docs/components/feed-history-table', label: 'FeedHistoryTable' }
+---
+
+`FeedDetail` exists to hold one line: a direct block-latency read and a proven
+anchor value are not the same fact. One is the current consensus value with no
+proof attached; the other is a value committed in a voting round's merkle root,
+retrievable, verifiable and older. A screen that showed a single price would be
+picking one of them and hiding the choice.
+
+They are not even comparable as integers. `FLR/USD` is `8` decimals at block
+latency and `6` on the anchor path, on both networks — so each claim renders
+with the exponent that arrived in its own response, and the two sit side by side
+as a pair.
+
+## Live
+
+The preview runs the gallery's own states. The block-latency readings are
+driven through the real `readFeeds` against `createMockFtsoReader()`. The anchor
+claims and the verification outcomes are conditions of the network rather than
+of the read — a reader cannot produce a proof that reverts — so those cases
+carry the figures the live Coston2 probes returned.
+
+<FeedDetailDemo />
+
+## Usage
+
+The feed itself comes from the catalogue; the two claims come from two reads.
+The anchor prop is one feed out of the round's result, re-wrapped with the source
+and time that batch arrived with, so the panel can still say who served it and
+when.
+
+```tsx
+import { FLARE_NETWORKS } from '@flare-kit/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId, isObserved, observe } from '@flare-kit/core'
+import { useAnchorProof, useFeedCatalogue, useFeeds } from '@flare-kit/react'
+import { FeedDetail } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const reader = createMockFtsoReader()
+const chainId = FLARE_NETWORKS.coston2.id
+const feedId = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
+
+export function Feed() {
+  const catalogue = useFeedCatalogue(reader, chainId)
+  const reading = useFeeds({ reader, chainId, feedIds: [feedId] })
+  const proof = useAnchorProof({ reader, chainId, feedIds: [feedId] })
+
+  const entries =
+    catalogue.data && isObserved(catalogue.data) ? catalogue.data.value.entries : []
+  const feed = entries.find((entry) => entry.feedId === feedId)
+  if (!feed) return null
+
+  // One feed out of the round's result, carrying the batch's own provenance.
+  const retrieved = proof.data && isObserved(proof.data.retrieved) ? proof.data.retrieved : undefined
+  const found = retrieved?.value.found[0]
+  const anchor = retrieved && found ? observe(found, retrieved.source, retrieved.observedAt) : undefined
+
+  return (
+    <FeedDetail
+      feed={feed}
+      reading={reading.data}
+      anchor={anchor}
+      verification={proof.data?.verifications[0]}
+      loading={reading.loading}
+      now={Date.now()}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'feed', type: 'CatalogueEntry', required: true, description: 'The feed being inspected — its id, name, trust class and former name if it has one. Taken from the catalogue, so the panel never has to infer what it is looking at.' },
+  { name: 'now', type: 'number', required: true, description: 'The clock in milliseconds, used to age each observation. Passed in rather than read.' },
+  { name: 'reading', type: 'Observation<FeedReadResult>', description: 'The block-latency read. Payable, and it carries its own fee quote. The reading inside it is matched by feed id after rename resolution, never by position.' },
+  { name: 'anchor', type: 'Observation<AnchorFeedWithProof>', description: "The anchor claim for one voting round, with its merkle proof and the provenance of the data-availability host that served it." },
+  { name: 'verification', type: 'VerificationResult', description: 'What the chain said about that proof. Three-valued and never a boolean: a revert from the verifier means the proof could not be checked, which is not the same as it not being proven. Omit it and the anchor reads "not checked on chain".' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the reads are in flight. Skeletons appear only when neither claim has arrived yet.' },
+  { name: 'stale', type: 'boolean', defaultValue: 'false', description: 'True when the reading is past its freshness budget. The value stays on screen carrying the time it was taken — replacing a good value with a spinner is how a price stops being trusted.' },
+  { name: 'onRefresh', type: '() => void', description: 'Offers a re-read on the stale note. Omit it and the note states the situation without a control.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the panel follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel titled with the feed name, its full `bytes21` id as the subtitle, and
+its trust class as a chip. Under that, two claims side by side. **Block
+latency** shows the exact value, the decimals it arrived with, the fact that it
+came from `getFeedsById` with no proof attached, and its timestamp. **Anchor,
+voting round** shows the exact value at its own decimals, the round it was
+committed in, the turnout in BIPS, the number of proof nodes, and the
+verification outcome.
+
+The pair is deliberately not painted as a conflict. Two paths differing is the
+expected state here, so a difference is explained in an informational note
+rather than tinted as something wrong. Below the claims sits provenance — a
+source chip per read and, when the verifier said something, exactly what it
+said — then the fee the payable read cost.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — neither claim has arrived; the panel shows its frame and two
+  skeletons.
+- **BASE** — both paths, `6` decimals against `8`, with the proof verified on
+  chain and the note explaining why the two numbers are not the same claim.
+- **block latency only** — a current value with no anchor retrieved. The anchor
+  side says so rather than being hidden.
+- **anchor only** — a committed, proven value with nothing read at block
+  latency.
+- **the two paths differ widely** — a visibly divergent pair. Still not a
+  computed conflict: the surface shows both and resolves neither.
+- **renamed feed** — one feed carrying a former name. The old id still resolves
+  here, so this is one feed, not two.
+- **proof could not be checked** — the verifier reverted, with its reason
+  quoted. An unknown outcome, never rendered as "not proven".
+- **typed error** — the current value could not be read, with the reason.
+- **stale, still rendered** — past the freshness budget and still on screen,
+  carrying the time it was taken.
+
+## Mock to live
+
+`createMockFtsoReader()` is a reader, not a second implementation: the same
+`readFeeds` and `verifyAnchorFeed` run against it. Swapping in a viem public
+client for the network you want is the whole change, and addresses come from
+`@flare-kit/contracts`. The reader covers the chain reads only — anchor leaves
+and their proofs are fetched from the data-availability host over HTTP, so
+`useAnchorProof` reaches the real host either way.
+
+```tsx
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. The component does not change.
+const reader = createPublicClient({ transport: http(FLARE_NETWORKS.coston2.rpcUrl) })
+```
+
+## What it will not do
+
+It will not reconcile the two claims into one price, average them, or label
+either as canonical. It will not treat a verifier revert as a failed proof, and
+it will not render a value at a decimal count it did not arrive with. If a claim
+is missing, the panel says which one and why rather than presenting the other as
+the answer.

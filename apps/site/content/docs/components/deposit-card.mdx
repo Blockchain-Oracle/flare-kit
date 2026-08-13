@@ -1,0 +1,119 @@
+---
+title: DepositCard
+description: The vault deposit composer — assets in, expected shares at the live rate, the exact minimum, and the approve and deposit steps as the two transactions they really are.
+breadcrumb: ['Docs', 'Components', 'DepositCard']
+importLine: "import { DepositCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/vault-catalogue', label: 'VaultCatalogue' }
+next: { href: '/docs/components/withdraw-card', label: 'WithdrawCard' }
+---
+
+`DepositCard` deposits an asset into an ERC-4626-family vault. It shows what you
+pay and what you receive at the live rate, the exact minimum shares at your
+slippage, and — this is the point — it says plainly that shares are a claim on
+the vault whose value moves, not a fixed deposit balance.
+
+## Live
+
+The preview runs the gallery's own states, each produced by walking the real
+deposit state machine with the M7 Coston2 reads. The state switcher walks the
+cases the surface was verified against, so nothing here shows a state the card
+never actually reaches.
+
+<DepositCardDemo />
+
+## Usage
+
+The card is prop-driven: you own the operation record and the quote, it renders
+them and calls `onSubmit`. It holds no wallet client and no key.
+
+```tsx
+import { createDeposit, quoteDeposit, createMockVaultAdapter } from '@flare-kit/core'
+import { DepositCard } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const adapter = createMockVaultAdapter('upshift-fxrp')
+
+export function Deposit({ operation, quoteResult, onSubmit }) {
+  return (
+    <DepositCard
+      operation={operation}
+      config={adapter.config}
+      quoteResult={quoteResult}
+      networkLabel="Coston2"
+      onSubmit={onSubmit}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'DepositOperation', required: true, description: 'The deposit record from `createDeposit`. Its state drives the whole card — the editable amount, the spine, the CTA — so every state is reachable from props.' },
+  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flare-kit/contracts`: its address, deposit asset and share model. No vault address is ever hardcoded in a surface.' },
+  { name: 'quoteResult', type: 'DepositQuoteResult', description: 'The quote, or `unavailable` with a reason. Without a quote the receive leg is `—` rather than a guessed number.' },
+  { name: 'planResult', type: 'DepositPlanResult', description: 'The unsigned plan, or the gate that refused it — cap exceeded, insufficient balance, paused, expired. The refusal reason is read from here, never inferred.' },
+  { name: 'amountInText', type: 'string', description: "The controlled text of the amount field. Omit it and the field shows the operation intent's own amount." },
+  { name: 'balance', type: 'Amount', description: "The depositor's balance of the vault asset, shown on the pay leg and used by the Max affordance." },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the card, which renders an explicit Mock note. Set it only when the data really is mock; it is never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network named in the panel subtitle — `Coston2`, `Flare`.' },
+  { name: 'onAmountInChange', type: '(text: string) => void', description: 'Called as the reader types. Omit it and the amount field is read-only.' },
+  { name: 'onMax', type: '() => void', description: 'Called when the reader takes the whole balance. Omit it and no Max affordance renders.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader takes the CTA. Signing and broadcasting are the host\'s job; the card never holds a key.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+A pay leg for the asset and a receive leg for the expected shares, then the
+quote's terms: the rate as assets per share, the shares you expect, and the
+minimum shares protected at your slippage — at full precision, in the mono face.
+Once a plan is executing, the approve and deposit steps render on the shared
+operation spine as the two real transactions they are, and any transaction hash
+gathered along the way appears as evidence beside the card.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **quote** — expected shares at the live rate, with the exact minimum and the
+  note that shares are a claim on the vault, not a fixed balance.
+- **needs approval** — the asset allowance is short, so the approval is its own
+  step: two transactions, never one hidden inside the other.
+- **approving** — the approval transaction is in flight. The CTA reads
+  `Approving…`, and the spine shows which step is active.
+- **depositing** — the approval is done and the deposit transaction is in
+  flight. `submitted` is rendered as still moving, never as a success.
+- **success** — `Deposited`, with the deposit transaction as evidence. The exact
+  shares minted are on the transaction, and the card repeats that their value
+  moves as the vault earns or loses.
+- **cap exceeded** — the vault's own global limit, caught before any signature.
+  It names the exact room left, so you lower the amount instead of discovering a
+  revert after an approval.
+- **insufficient balance** — the deposit is blocked and the asset is named, with
+  nothing to sign.
+
+## Mock to live
+
+The card takes a `VaultConfig` and prop-driven results, so moving from the mock
+to a live network swaps the adapter behind the quote, not the screen. Addresses
+come from `@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+const adapter = createMockVaultAdapter('upshift-fxrp')
+
+// …to this. The component does not change.
+const adapter = makeVaultAdapter(publicClient, vaultByKey('coston2', 'upshift-fxrp')!)
+```
+
+## What it will not do
+
+It will not invent a receive amount: until there is a quote, and after the
+operation concludes, the receive leg is `—`. It will not present a submitted
+deposit as a completed one, and it will not offer a signable deposit over the
+vault's cap or beyond your balance — it states the gate and stays disabled
+rather than sign an approval against a deposit that will revert.

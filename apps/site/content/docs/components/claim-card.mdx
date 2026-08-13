@@ -1,0 +1,144 @@
+---
+title: ClaimCard
+description: One card for four distinct reward kinds — FTSO delegation rewards, RNat, FlareDrop and staking — each carrying its own facts rather than collapsing into a generic claim.
+breadcrumb: ['Docs', 'Components', 'ClaimCard']
+importLine: "import { ClaimCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/delegation-card', label: 'DelegationCard' }
+next: { href: '/docs/components/stake-card', label: 'StakeCard' }
+---
+
+`ClaimCard` renders one reward kind, chosen by `kind`. The four kinds are not
+interchangeable — an FTSO delegation reward expires after 25 epochs and needs a
+Merkle proof, an early rNat withdrawal burns half your locked balance, the
+FlareDrop concluded on `2026-01-30`, and a staking reward never expires — so the
+card renders each with its own facts rather than one generic claim screen.
+
+## Live
+
+The preview runs the gallery's own states, built from the keyless reward read
+pass observed on Coston2 on `2026-08-12`. All four kinds are reachable from the
+one switcher, and no reward claim has settled live on this build, so the
+in-flight states carry no transaction hash: there is no real one to show.
+
+<ClaimCardDemo />
+
+## Usage
+
+Drive it from `useRewards`, which polls the claimable position once and tracks
+each kind's operation independently. One card per kind; `kind` picks which slice
+of `reads` is rendered.
+
+```tsx
+import { useRewards } from '@flare-kit/react'
+import { ClaimCard } from '@flare-kit/react-ui'
+import { createMockRewardsAdapter } from '@flare-kit/core'
+import '@flare-kit/react-ui/styles.css'
+
+const adapter = createMockRewardsAdapter()
+
+export function Rewards({ account, nativeToken }) {
+  const { reads, ftso, buildPlan, submit } = useRewards({
+    account,
+    adapter,
+    reconcile: (owner) => adapter.read(owner),
+  })
+  const planResult = buildPlan({ kind: 'ftso-delegation', recipient: account, wrap: false })
+
+  return (
+    <ClaimCard
+      kind="ftso-delegation"
+      reads={reads}
+      operation={ftso.operation}
+      planResult={planResult}
+      recipient={account}
+      nativeToken={nativeToken}
+      networkLabel="Coston2"
+      onSubmit={() => planResult?.kind === 'plan' && submit(planResult.plan)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'kind', type: "'ftso-delegation' | 'rnat' | 'flaredrop' | 'staking'", required: true, description: 'Which reward this card is. It selects the body, the note copy and the submit label — the four kinds never share a generic render.' },
+  { name: 'operation', type: 'RewardsClaimOperation', description: "The in-flight claim for this kind, held by the host. Each kind tracks its own, so one kind reaching a confirmed claim cannot move another." },
+  { name: 'planResult', type: 'ClaimPlanResult', description: 'The result of `buildPlan`. A claimable state is only signable with a real plan; an error renders as the refusal that names it.' },
+  { name: 'reads', type: 'RewardsReads', description: 'The claimable position, sliced per kind. Omit it — a read that never landed — and the card renders `unavailable` with `—` rows, never a per-kind empty.' },
+  { name: 'proofSource', type: 'ProofSourceView', description: 'Where the FTSO Merkle proof came from, as `{ url, official }`. On Coston2 this is an unofficial mirror, and the card labels it as one.' },
+  { name: 'recipient', type: 'string', description: 'The reward recipient, shown shortened in the mono face. Used by the FTSO, FlareDrop and staking kinds.' },
+  { name: 'wrap', type: 'boolean', defaultValue: 'false', description: 'Whether the staking payout is wrapped to WNat rather than paid native. Display context — the card states which, it does not choose.' },
+  { name: 'withdrawAll', type: 'boolean', defaultValue: 'false', description: 'The rNat withdraw intent is selected instead of the claim. With a locked balance, this is what surfaces the 50% burn before signing.' },
+  { name: 'onWithdrawChange', type: '(withdraw: boolean) => void', description: 'Called when the reader switches the rNat action between claim and withdraw. Omit it and the switch is read-only.' },
+  { name: 'nativeToken', type: 'DexToken', description: 'The token rewards are paid in. Its decimals and symbol set how every amount renders; without it the card falls back to 18 decimals and `FLR`.' },
+  { name: 'expiryEpochs', type: 'number', defaultValue: '25', description: 'The documented delegation-reward expiry window, shown beside the on-chain expire-next epoch. Display context only — the boundary itself is read from the chain.' },
+  { name: 'flareDropEndedAt', type: 'string', defaultValue: "'2026-01-30'", description: 'The date the FlareDrop distribution concluded, stated on the archive.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip on the panel header. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network the rewards were read on, shown on the header.' },
+  { name: 'onSubmit', type: '() => void', description: "Called when the reader submits the claim. The card holds no key and broadcasts nothing; signing is the host's job." },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+A panel whose body is chosen by `kind`: the FTSO one lists the proof source with
+its official-or-mirror label, the expire-next epoch and one row per reward
+(epoch, exact amount, reward type); the rNat one holds the claim/withdraw switch
+and the total, locked, unlocked and wrapped balances; the FlareDrop one is a
+read-only archive stating the conclusion date and any month still claimable; the
+staking one carries the claimable delta, the wrap target and the words "Does not
+expire". An in-flight claim adds the shared `OperationTimeline` spine.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **ftso-claimable** — a reward whose Merkle proof is present on the mirror.
+- **ftso-proof-unavailable** — an on-chain reward the mirror never proved. The
+  epoch is named and the claim is declared unavailable, not shown as zero.
+- **ftso-empty** — the real observed no-entitlement read.
+- **ftso-expiring** — a reward at the on-chain expire-next boundary, inside the
+  25-epoch window.
+- **rnat-claimable** — a funded RNat project account.
+- **rnat-locked-burn-warning** — `withdrawAll` with a locked balance. The exact
+  amount that would be destroyed is on screen before anything is signed.
+- **rnat-empty** — the real observed "no RNat account" read. An account with no
+  RNat project is an honest empty, not an error.
+- **flaredrop-month** — a historical month still claimable.
+- **flaredrop-concluded** — the real observed read. The archive states the
+  conclusion date and offers no new drop.
+- **claiming** — a claim has been submitted and is in flight. Not success.
+- **awaiting** — waiting for Flare to confirm the claim.
+- **succeeded** — reached only from a confirmed on-chain read.
+- **not-verified** — the claim path is declared unverified on this build and the
+  kit will not sign one.
+- **staking-empty** — the observed reality for this account: earned equals
+  claimed. Staking rewards are paid as a delayed leg, and they do not expire.
+- **staking-claimable** — a claimable staking delta, marked "Does not expire".
+  This kind never carries the 25-epoch line.
+
+## Mock to live
+
+The card is prop-driven, so moving from the mock to a live network swaps the
+adapter behind `useRewards`, not the screen. Addresses come from
+`@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+const adapter = createMockRewardsAdapter()
+
+// …to this. The component does not change.
+const adapter = makeRewardsAdapter(publicClient, rewardsFor('coston2'))
+```
+
+## What it will not do
+
+It will not turn an absent Merkle proof into a claimable amount, and it will not
+render a read that never landed as nothing earned — unknown and empty are
+different states with different copy. It will not hide the rNat burn behind the
+signature, and it will not put an expiry on a staking reward or offer a new
+FlareDrop that does not exist.

@@ -1,0 +1,149 @@
+---
+title: useAccounts
+description: Simultaneous Flare and XRP Ledger identity as React state, each carrying its own connection status and custody class, and a binding that snapshots the accounts an action was made for.
+breadcrumb: ['Docs', 'Hooks', 'useAccounts']
+importLine: "import { useAccounts } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-redeem', label: 'useRedeem' }
+next: { href: '/docs/hooks/use-portfolio', label: 'usePortfolio' }
+---
+
+`useAccounts` holds two identities at once, because a mint pays from the XRP
+Ledger and receives on Flare and neither side is a precondition for the other.
+Each identity carries its own connection status *and* its own custody class,
+because who holds the keys is a different question from whether a wallet is
+currently answering.
+
+The kit does not connect wallets. A host owns its wallet adapters and hands the
+resulting identity in through `setIdentity` — pretending to own a connection we
+do not own is how a kit ends up lying about custody. What the kit owns is the
+shape of the identity, the custody class, and the rule that a supplied
+read-only address is validated before it is accepted rather than after it fails
+a network call.
+
+## Live
+
+The readout below is the hook's actual return value on this render. The
+provider was given two identities at mount: a watched Flare address, and an XRP
+Ledger session restored from storage. `bothReady` is `false`, and `bind`
+snapshots only the Flare side — a restored session has not been re-authorized
+by the wallet, so there is nothing settled to bind to. Binding is not signing
+authority either: the Flare identity here is `read-only` and holds no key.
+
+<UseAccountsDemo />
+
+## Usage
+
+The host connects; the hook stores. Every M1 surface takes an `onConnect`
+callback rather than a connector for the same reason.
+
+```tsx
+import { walletConnected } from '@flare-kit/core'
+import { useAccounts } from '@flare-kit/react'
+import { AccountSheet } from '@flare-kit/react-ui'
+
+// The networks this app watches on, one per family.
+const NETWORKS = { evm: coston2, xrpl: xrplTestnet }
+
+function Accounts() {
+  const { context, setIdentity, supplyReadOnly } = useAccounts()
+
+  return (
+    <AccountSheet
+      context={context}
+      onConnectEvm={async () => {
+        // Your adapter, your wallet. The kit is handed the result.
+        const { address, network } = await myWalletAdapter.connect('evm')
+        setIdentity(walletConnected('evm', address, network))
+      }}
+      onSupplyReadOnly={(family, input) =>
+        // Returns the identity it accepted, or the refusal it did not store.
+        supplyReadOnly(family, input, NETWORKS[family])
+      }
+    />
+  )
+}
+```
+
+## Parameters
+
+`useAccounts()` takes none. It reads the account store the `FlareProvider`
+created, so every surface in the tree sees one session. Identities known at
+mount — a restored session, or a read-only address supplied by the host — are
+passed to the provider as `initialAccounts` and read once; the store owns them
+afterwards.
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'context', type: 'AccountContext', description: 'Both identities as one frozen object: { evm, xrpl }. What bind and every binding check are computed from.' },
+  { name: 'evm', type: 'ChainIdentity', description: 'The Flare-side identity. Same object as context.evm.' },
+  { name: 'xrpl', type: 'ChainIdentity', description: 'The XRP Ledger identity. Same object as context.xrpl.' },
+  { name: 'bothReady', type: 'boolean', description: 'True only when both statuses are ready. A read-only identity counts — watching is a mode; a restored session does not, because the wallet has not re-authorized it.' },
+  { name: 'setIdentity', type: '(identity: ChainIdentity) => void', description: 'Hand in an identity a host wallet adapter produced. Replaces that family only.' },
+  { name: 'disconnect', type: '(family: ChainFamily) => void', description: 'Return one family to disconnected. The other side is untouched.' },
+  { name: 'supplyReadOnly', type: '(family, input: string, network: NetworkRef) => ChainIdentity', description: 'The read-only path. Returns the identity it accepted, or the invalid-identity it refused — the refusal is returned, never stored.' },
+  { name: 'bind', type: '(at: number) => OperationBinding', description: 'Snapshot the accounts an action is being made for. Only a settled identity binds; anything unsettled is left out rather than recorded as a claim.' },
+  { name: 'isBindingValid', type: '(binding: OperationBinding) => boolean', description: 'Whether a previously bound action still applies to what is connected now.' },
+]} />
+
+## States
+
+Each identity carries one `status`, and they are not ranked — they are
+different facts:
+
+- **`disconnected`** — nothing has been handed in for this family.
+- **`unavailable`** — no wallet is available to sign with, with a `reason`.
+- **`connecting`** — the wallet has not answered yet.
+- **`rejected`** — the wallet declined. Neutral: a request rejected in a wallet
+  is not a protocol failure, and it is never turned into a read-only identity.
+- **`invalid-identity`** — a supplied address did not parse. The `reason` says
+  what a valid one looks like.
+- **`wrong-network`** — connected, on a different network from the one the
+  operation needs. `requiredNetwork` names the one it needs.
+- **`account-changed`** — the wallet switched account under an approved plan.
+  `previousAddress` keeps what it was.
+- **`restored`** — rebuilt from storage, carrying `restoredAt`. Connected, but
+  not re-authorized by the wallet, so it cannot sign and it does not bind.
+- **`ready`** — settled and answering.
+
+Custody is separate: `external-wallet` is a wallet the person controls,
+`read-only` is an address supplied for watching with no key anywhere, and
+`agent-key` is a key this process holds and can sign with unattended.
+`read-only` is a chosen mode and never the outcome of a failed connection —
+`rejected` and `unavailable` produce no custody class at all.
+
+## Mock to live
+
+Nothing about the hook changes. What changes is who produces the identity:
+
+```tsx
+// Mock, or any keyless surface: hand in what the host already knows.
+<FlareProvider kit={createMockKit()} initialAccounts={{
+  evm: parseReadOnlyIdentity('evm', watchedAddress, coston2),
+}} />
+
+// Live: your adapter connects, and its result is handed in.
+setIdentity(walletConnected('evm', address, network))
+```
+
+`createMockKit()` supplies protocol state and operations, not accounts —
+accounts belong to the mounted session, so two apps sharing one mock kit are
+still two people with two wallets.
+
+## What it will not do
+
+It will not connect a wallet, and it will not sign. Whether an identity *can*
+sign is answered by `canSign` and `cannotSignReason` in `@flare-kit/core`, not
+here — a read-only identity is `ready` and holds no key, and a restored session
+is connected and has not been re-authorized.
+
+It will not store an identity it could not read: `supplyReadOnly` returns the
+`invalid-identity` so a surface can render the refusal, rather than leaving the
+store claiming an account that does not exist. A validated address is a shape
+check, not proof the account exists — the ledger is the authority on that, and
+reports an unreachable account as an unavailable observation rather than as a
+zero balance.
+
+There is deliberately no rebinding verb. When the wallet has moved under an
+approved action, the only response is to invalidate and re-quote against the
+account you want to use.

@@ -1,0 +1,146 @@
+---
+title: useIncentiveOffer
+description: A price for the exact Fast Update incentive you are about to offer, computed from the contract's own rate — a quote and nothing more, because a read hook that could spend is a hook a component could spend from by rendering.
+breadcrumb: ['Docs', 'Hooks', 'useIncentiveOffer']
+importLine: "import { useIncentiveOffer } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-secure-random', label: 'useSecureRandom' }
+next: { href: '/docs/hooks/use-bridge', label: 'useBridge' }
+---
+
+`useIncentiveOffer` quotes one offer to the `FastUpdateIncentiveManager`: what a
+given widening of the update range would cost, alongside the range and sample
+size the contract reports right now.
+
+The price is a function of the offer. Bisected live on Coston2, a
+`rangeIncrease` of `getRange() / 100` is rejected at `366210937499999998` wei
+and accepted at `366210937499999999` — about `0.3662 C2FLR`, the same minimum on
+mainnet. So changing the increase changes the price, and this re-reads rather
+than scaling a cached number.
+
+This hook only quotes. Submitting is a signed, value-moving action and belongs
+to the caller's own wallet flow.
+
+## Live
+
+The readout is the hook's actual return value, running the real `quoteIncentive`
+over the six incentive-manager values recorded on Coston2 on 2026-08-05.
+`createMockFtsoReader` answers no incentive-manager call — it mocks what was
+observed on the feed contracts and refuses everything else — so the demo replays
+that recording rather than inventing one.
+
+The number to look at is `offerAmountWei`. It is computed here from
+`rangeIncreasePrice` and `getPrecision`, not carried in the recording, and it
+lands on `366210937499999999` — the amount the live contract accepted in a dry
+run and rejected one wei below.
+
+<UseIncentiveOfferDemo />
+
+## Usage
+
+```tsx
+import { useIncentiveOffer } from '@flare-kit/react'
+import { IncentiveComposer } from '@flare-kit/react-ui'
+
+export function Incentive({ reader, payer, onOffer }) {
+  const { data, loading, error, refresh } = useIncentiveOffer({
+    reader,
+    chainId: 114,
+    rangeIncrease: 2433889152438200450873670154321n,
+  })
+
+  if (error) return <p>The incentive manager could not be quoted: {error}</p>
+
+  return (
+    <IncentiveComposer
+      quote={data}
+      loading={loading}
+      payer={payer}
+      nativeAsset="C2FLR"
+      now={Date.now()}
+      onRequote={refresh}
+      onSubmit={onOffer}
+    />
+  )
+}
+```
+
+Before anything is signed, dry-run the offer with `verifyOfferAmount` from
+`@flare-kit/core`. The price formula is fitted to four live measurements rather
+than derived from Solidity this project does not vendor, which makes it exactly
+the kind of number that stays right until a contract upgrade makes it quietly
+wrong. Simulating the real call turns that risk into a caught refusal: the node
+executes `offerIncentive` with the quoted value and no signature, spending
+nothing. A failure there is a refusal to offer — nothing was submitted, so
+nothing failed.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the FastUpdateIncentiveManager: getRange, getExpectedSampleSize, getIncentiveDuration, rangeIncreasePrice, rangeIncreaseLimit and getPrecision, in one batch.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The manager address comes from @flare-kit/contracts.' },
+  { name: 'rangeIncrease', type: 'bigint', required: true, description: 'The exact widening being priced. The quote is meaningless without it, and a different increase is a different read.' },
+  { name: 'rangeLimit', type: 'bigint', required: false, description: 'Defaults to the contract’s own rangeIncreaseLimit. It travels into the offer, so it is quoted rather than assumed.' },
+]} />
+
+## Return type
+
+`ObservedRead<IncentiveQuote>` — the
+[useObservedRead](/docs/hooks/use-observed-read) shape over a plain quote rather
+than an `Observation`, because a quote is arithmetic over six contract reads
+rather than a single claim about a value.
+
+<PropsTable rows={[
+  { name: 'data', type: 'IncentiveQuote | undefined', description: 'undefined until the quote lands. Never a partial quote: all six reads resolve together or the read fails.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no quote has ever arrived.' },
+  { name: 'error', type: 'string | undefined', description: 'The manager could not be quoted. Never a fabricated price, and it does not clear a quote already held.' },
+  { name: 'refresh', type: '() => void', description: 'Re-quote. The range moves under a quote, which is what makes a quote go stale rather than wrong.' },
+]} />
+
+`IncentiveQuote` carries `rangeIncrease` and `rangeLimit` — the exact offer this
+price is for — `offerAmountWei`, what must be sent as `value` for this offer and
+no other, plus `currentRange`, `expectedSampleSize`, `durationSeconds` and the
+fixed-point `precision` the price divides by, so a surface can show its own
+arithmetic instead of asking to be trusted.
+
+## States
+
+- **loading** — no quote yet.
+- **quoted** — a price for this exact offer, valid until the range moves.
+- **stale** — nothing here marks it; a quote ages against the chain, and
+  `refresh` is how a surface re-asks before someone signs.
+- **error** — the manager could not be read, or `precision` came back zero, in
+  which case the offer cannot be priced and nothing is sent.
+- **above the limit** — `assertOfferWithinLimit` refuses an increase larger than
+  the contract's own `rangeIncreaseLimit`, before a wallet asks anyone to sign
+  something that would revert.
+
+## Mock to live
+
+```tsx
+import { chainFor } from '@flare-kit/contracts'
+import { createPublicClient, http } from 'viem'
+
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+There is no FTSO mock for the incentive manager, and that is deliberate: the
+mock answers what was measured on the feed contracts and refuses the rest, so an
+unobserved call is an error rather than a plausible number.
+
+## What it will not do
+
+It will not submit anything, hold a key, or take a signer. Quoting is a read;
+offering moves value and stays in the caller's wallet flow.
+
+It will not price against `getRange()` — the obvious reading, which overstates
+the amount by about 5,500x and would ask somebody on mainnet to sign away
+roughly 2000 FLR for a 0.37 FLR purchase. It will not scale a cached price to a
+different offer, and it will not report a widening as bought in both dimensions:
+`sampleSizeIncrease` was `0` in the real mainnet offer this was measured
+against.
+
+Confirming what an offer did is a separate read, and it is pinned to the offer's
+own block, because the widening decays — a later read showing no effect is a
+decayed incentive, never a failed one. When that read reports `confirmed: false`
+it means the measured change could not be attributed to this offer, which is an
+unknown rather than a failure.

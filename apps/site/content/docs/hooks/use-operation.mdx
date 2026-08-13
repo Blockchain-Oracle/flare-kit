@@ -1,0 +1,119 @@
+---
+title: useOperation
+description: One operation from the registry, by id, subscribed — the read half of the lifecycle, with no clock of its own and nothing to resume.
+breadcrumb: ['Docs', 'Hooks', 'useOperation']
+importLine: "import { useOperation } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-direct-mint', label: 'useDirectMint' }
+next: { href: '/docs/hooks/use-redeem', label: 'useRedeem' }
+---
+
+`useOperation` reads one record out of the provider's registry and subscribes to
+it. That is all it does. It advances nothing, requests nothing and owns no
+timer: the capability hooks reconcile on the provider's interval, and this hook
+shows whatever the registry holds at the moment React renders. Built on
+`useSyncExternalStore`, so a record that changes mid-render is never torn across
+two elements of the same screen.
+
+## Live
+
+The demo needs a record before there is anything to read, so it starts one
+against the mock kit — which needs no wallet and no key — and then reads it back
+through `useOperation`. Everything in the readout came through this hook,
+including the states the operation passes through while you watch as the mock's
+simulated clock advances it: `ready`, then the spine's steps completing one at a
+time, each with the actor that owns it.
+
+The evidence entries and the `MOCK…` transaction id are the mock kit's
+simulation, labelled as such. Nothing here happened on a ledger.
+
+<UseOperationDemo />
+
+## Usage
+
+Give it an id you already have — from `start`, from a durable store, or from a
+route parameter. `undefined` is a legitimate argument and returns `undefined`.
+
+```tsx
+import { useOperation } from '@flare-kit/react'
+import { OperationTimeline } from '@flare-kit/react-ui'
+
+function Operation({ id }: { id: string }) {
+  const operation = useOperation(id)
+
+  if (!operation) return <p>No operation with that id on this device.</p>
+  return <OperationTimeline operation={operation} />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'id', type: 'string | undefined', required: true, description: 'The operation id. Pass undefined while you do not have one yet — the hook returns undefined rather than asking you to branch before calling it.' },
+]} />
+
+## Return type
+
+The record itself, or `undefined` when the registry has nothing under that id.
+An `OperationRecord` carries:
+
+<PropsTable rows={[
+  { name: 'id', type: 'string', description: 'Independent of any transaction hash, because one operation correlates several across XRPL, FDC and Flare.' },
+  { name: 'capability', type: 'string', description: "What kind of work this is — 'fassets.directMint', 'fassets.redeem'. The registry is capability-agnostic; check this before reading capability-specific fields." },
+  { name: 'network', type: 'number', description: 'The chain the operation belongs to. 0 for the mock kit, which is not on a network at all.' },
+  { name: 'state', type: 'OperationState', description: 'The canonical lifecycle state. Every surface — widget, hook, headless client and agent — reports exactly these identifiers.' },
+  { name: 'steps', type: 'readonly OperationStep[]', description: 'The spine, in order, each naming the actor that owns it: your wallet, the XRP Ledger, the FDC, an executor, Flare.' },
+  { name: 'evidence', type: 'readonly EvidenceItem[]', description: 'What was observed, and when. A step is only done because something recorded here says it happened.' },
+  { name: 'intent', type: 'TIntent', description: 'What was asked for, frozen at creation.' },
+  { name: 'quote', type: 'TQuote | undefined', description: 'The approved terms.' },
+  { name: 'quoteHistory', type: 'readonly TQuote[]', description: 'Re-quoting links a revision; it never rewrites approved terms.' },
+  { name: 'attempts', type: 'readonly OperationAttempt[]', description: 'Every execution attempt, kept rather than collapsed into the last one.' },
+  { name: 'recovery', type: 'readonly RecoveryAction[] | undefined', description: 'The real actions available from here, when the operation needs one — never a generic retry.' },
+  { name: 'awaiting', type: 'AwaitingDescriptor | undefined', description: 'Who is being waited on, and for what. Present while an external actor owns the next move.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class and whether value moved.' },
+  { name: 'createdAt', type: 'number', description: 'When the operation was created.' },
+  { name: 'updatedAt', type: 'number', description: 'When it last changed. The registry ignores a write older than this, so a late reading never overwrites a newer one.' },
+]} />
+
+The result is typed as `DirectMintOperation`. The registry holds any
+capability's record, so read `operation.capability` before touching fields that
+only one capability has.
+
+## States
+
+There are only two states in this hook, and they are not the operation's:
+
+- **found** — the registry has the record and the hook is subscribed to it. It
+  re-renders when reconciliation, a restore or another surface updates it.
+- **not found** — `undefined`. That means this device has no record under that
+  id, which is different from an operation that does not exist. An operation
+  started in another browser was never in reach, and the surfaces that render
+  coverage say so rather than implying it by absence.
+
+The operation's own states live on `operation.state`, and `submitted` is never
+rendered as `succeeded`.
+
+## Mock to live
+
+Nothing changes. The hook reads the registry, and the registry is filled by
+whichever kit the provider was given:
+
+```tsx
+// Mock: the operation the mock kit created, reconciling on a simulated clock.
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// Live: a real record, reconciling against the chain. Same hook, same id.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not fetch. If the id is not in the registry, the hook says so instead of
+going to look — hydrating from a durable store is the provider's job, and one
+component quietly triggering a read would make the registry's contents depend on
+what happened to be mounted.
+
+It will not advance the operation, and it will not offer a Resume. Reconciliation
+belongs to the provider's single interval.
+
+It will not report an unconfirmed outcome as a failure, because it reports
+nothing of its own: what you get is the record, exactly as it stands.

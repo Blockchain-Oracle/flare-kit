@@ -1,0 +1,116 @@
+---
+title: RecoveryPanel
+description: The recovery surface — what you can still safely do about an operation, with any action that would move new value labelled as a new payment rather than a retry.
+breadcrumb: ['Docs', 'Components', 'RecoveryPanel']
+importLine: "import { RecoveryPanel } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/redeem-fxrp', label: 'RedeemFXRP' }
+next: { href: '/docs/components/account-sheet', label: 'AccountSheet' }
+---
+
+`RecoveryPanel` answers one question: what can you safely do about this operation
+right now. It exists to enforce a single rule — an action that would move new
+value is never presented like an ordinary button, so `Retry` can never quietly
+mean `Pay again`. Availability is computed from the action's own window rather
+than assumed, so a button that would revert is not offered at all.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the panel never actually reaches.
+
+<RecoveryPanelDemo />
+
+## Usage
+
+Hand it an operation record and a clock. It holds no state and fetches nothing.
+`OperationTimeline` already mounts one inside the spine, so reach for the panel
+directly only when the actions belong somewhere the timeline is not.
+
+```tsx
+import { useOperation } from '@flare-kit/react'
+import { RecoveryPanel } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+export function Recovery({ id }: { id: string }) {
+  const operation = useOperation(id)
+  if (!operation) return null
+
+  return (
+    <RecoveryPanel
+      operation={operation}
+      nowMs={Date.now()}
+      onAction={(actionId) => console.log('recover', actionId)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'OperationRecord', required: true, description: 'The record to read. Recovery actions, evidence and state all come off the base record, so every capability shares one panel.' },
+  { name: 'nowMs', type: 'number', defaultValue: 'Date.now()', description: 'The clock, as data. Pass it. Read during render instead, an action that becomes available at T does not appear until something else forces a re-render, and no time-gated state is reachable from a test or a gallery case.' },
+  { name: 'onAction', type: '(actionId: string) => void', description: "Called with the action's id when the reader takes it. The panel performs nothing itself — the host owns signing and broadcasting." },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+One note per available action, carrying the action's own effect sentence, then
+the value classification in the panel's words — either `This reuses the payment
+and proof you already made. It sends no further funds.` or `This creates a new
+payment. It is not a retry of the one you already made.` That line is emitted
+whether or not the action's own copy mentions it, which is the point: an
+action's description can be wrong or missing, this line cannot.
+
+Under each note sit the terms: what the action requires, whether it asks you to
+sign and whether it broadcasts a transaction, the state the operation becomes,
+and the time the action is available until. A value-moving action gets the
+attention tone and a ghost button; a reuse gets the primary one.
+
+The panel renders nothing at all for a terminal operation — there is no recovery
+to offer once an operation is final.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **action required** — the executor is late, and the offered action reuses the
+  payment and proof that already exist.
+- **in flight, no safe action yet** — an explicit answer, not an empty state. The
+  operation is progressing on its own and nothing has to be resubmitted. The
+  sentence is derived from the evidence, so an operation that made no payment is
+  never reassured about one.
+- **duplicate-value danger** — the action would create a **new** payment. Ghost
+  button, attention tone, and a sentence that says outright it is not a retry.
+- **recovery window closed** — the window for that action has passed. It says so
+  without claiming the operation failed and without claiming your funds are gone,
+  because it knows neither: only that this particular recovery can no longer be
+  taken.
+
+## Mock to live
+
+The panel takes a record; it never reaches for a network. Whatever produces the
+record — the mock kit or a live one — the component is the same, so moving from
+the mock to a live network swaps the kit, not the screen.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not label a value-moving action as a retry, and it will not offer an
+action whose window has closed, is blocked, or has not opened yet. It will not
+read a closed window as a benign wait, and it will not turn the absence of a safe
+action into a claim about the outcome — an operation with nothing to do is still
+an operation whose outcome is not confirmed, and the panel says only what remains
+available. It signs nothing and broadcasts nothing itself; `onAction` hands the
+decision back to you.

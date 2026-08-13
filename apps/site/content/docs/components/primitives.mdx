@@ -1,0 +1,300 @@
+---
+title: Primitives
+description: The shared atoms every composed surface is built from — one chip, one row, one table, one modal — so a host reuses them instead of re-coding a card, badge, pill or spine.
+breadcrumb: ['Docs', 'Components', 'Primitives']
+importLine: "import { StateChip, DetailRow, CodeWindow } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/stake-card', label: 'StakeCard' }
+next: { href: '/docs/hooks/flare-provider', label: 'FlareProvider' }
+---
+
+One shared component per pattern. Every composed surface on this site is
+assembled from the primitives below, all exported from `@flare-kit/react-ui`. If
+your app needs a card, a badge, a pill, a chip or a timeline spine, reach for one
+of these rather than writing a second one: the moment two copies exist they
+drift, and the one that drifts is always the one carrying an exact value or an
+accessibility behaviour.
+
+## Identity and marks
+
+### AssetLogo
+
+Turns an asset symbol into a mark. Resolution is bundled SVG then seeded
+monogram, never a remote image — a widget under a strict CSP makes no external
+request, and hotlinking a logo host would leak which assets a person is looking
+at. An unknown `symbol` gets a deterministic colour and its first letters, which
+is the honest "no bundled mark yet"; it never guesses a plausible logo. `size`
+is the diameter in CSS pixels, default `24`.
+
+```tsx
+import { AssetLogo } from '@flare-kit/react-ui'
+<AssetLogo symbol="FXRP" size={24} />
+```
+
+### NetworkLogo
+
+The mark for a chain family, so a person recognises the network at a glance. It
+is an aid and never the whole signal — a testnet is the proper noun `Coston2` in
+words beside it, so `testnet` only draws a secondary ring. `family` is `'evm'`
+or `'xrpl'`; `size` defaults to `20`.
+
+```tsx
+import { NetworkLogo } from '@flare-kit/react-ui'
+<NetworkLogo family="evm" testnet />
+```
+
+## Data display
+
+### DetailRow
+
+A key/value row, and the reason every amount, address, hash, round number and
+deadline in this kit renders the same way. Pass an `Amount` as the `value` and
+it prints at full stored precision with its asset attached; a number in the body
+face is a bug. `label` names the row and `sub` adds a qualifier beside the
+value. `Details` is the grouping wrapper and takes an `aria-label` naming what
+the group is.
+
+```tsx
+import { DetailRow, Details } from '@flare-kit/react-ui'
+<Details aria-label="Stake limits">
+  <DetailRow label="Minimum stake" value={minimum} />
+</Details>
+```
+
+### DataTable
+
+The one table. Portfolio and activity are the same object at two altitudes, so
+they share a shell — and it is a real `<table>`, because a grid of divs with
+ARIA roles bolted on is what breaks row-and-column navigation in screen readers.
+`caption` names it for assistive tech and `columns` declares each key, label and
+whether it is `numeric` (right-aligned, mono). `EmptyRow` states *why* there is
+nothing rather than showing a blank body; `SkeletonRows` renders a loading
+placeholder that is deliberately not zeroes or dashes.
+
+```tsx
+import { DataTable, EmptyRow, SkeletonRows } from '@flare-kit/react-ui'
+<DataTable caption="Your positions" columns={columns}>{rows}</DataTable>
+```
+
+### Timestamp
+
+The one way an instant renders: ISO to the second, mono, always UTC. A relative
+time is unusable in an exported record and ambiguous across a day boundary. It
+takes `seconds` as a `bigint` (chain time) or `ms` as a number (host time), and
+converts once here rather than at nine call sites. With neither it reads
+`no timestamp` — never a dash or an epoch zero, because a placeholder shaped
+like a time is read as one.
+
+```tsx
+import { Timestamp } from '@flare-kit/react-ui'
+<Timestamp seconds={validator.endTime} />
+```
+
+### CodeWindow
+
+A framed code block with a mono `filename` in its title bar, a copy control, and
+horizontal scroll inside its own container. `code` renders verbatim; `caption`
+sits above the frame. Nothing is syntax-highlighted: a highlighter that
+mis-tokenises a hex literal would decorate a value this kit keeps exact.
+
+```tsx
+import { CodeWindow } from '@flare-kit/react-ui'
+<CodeWindow filename="proof.json" code={json} />
+```
+
+### Countdown
+
+A live countdown that is pure: the host passes `now` in unix seconds and the
+component renders `targetUnix − now`. Nothing here reads a wall clock, so a
+gallery screenshot is deterministic and the app makes it live by advancing the
+`now` it already threads everywhere. Past the target it clamps to zero and marks
+itself `data-reached`, leaving the surface to decide what that means.
+
+```tsx
+import { Countdown } from '@flare-kit/react-ui'
+<Countdown targetUnix={unlockAt} now={now} label="Claimable in" />
+```
+
+## State and evidence
+
+### StateChip
+
+The operation `state` as a mono pill carrying a glyph and a word. The glyph is
+`aria-hidden` and the word carries the meaning, so nobody depends on the hue;
+`label` overrides the default word. `ToneChip` is the same anatomy for something
+that is *not* an operation outcome — a mode badge, a property tag — and it
+carries no glyph unless you pass one, because the seven marks are an outcome
+vocabulary and a label is not an outcome.
+
+```tsx
+import { StateChip, ToneChip } from '@flare-kit/react-ui'
+<StateChip state={operation.state} />
+<ToneChip tone="att">Mock kit</ToneChip>
+```
+
+### SourceChip
+
+Where a value came from and how old it is: source word, provider, observation
+age, from an `observation` and the host's `now`. A balance read from a contract
+and one read from an index are two different claims, and this tells them apart
+on screen rather than only in the type. An `unavailable` observation reads
+`Not read` with the dotted unknown glyph — nobody read the source, so the
+outcome is unknown, never failed. `SourceLine` spells out the provider and
+network, for a drawer or a wide row.
+
+```tsx
+import { SourceChip, SourceLine } from '@flare-kit/react-ui'
+<SourceChip observation={balance} now={now} />
+```
+
+### EvidenceChip
+
+One anatomy wherever an identifier appears: mono type label, truncated value,
+copy control, built from an `EvidenceItem`. Truncation is display only — the
+whole value is on the title and on the copy, because an identifier a person
+cannot retrieve is not evidence. It composes `ExplorerLink` and `CopyButton`
+beneath.
+
+```tsx
+import { EvidenceChip } from '@flare-kit/react-ui'
+<EvidenceChip item={evidence} />
+```
+
+### ExplorerLink
+
+A shortened identifier that opens its explorer, with a trailing external glyph.
+With no `href` it renders the same shortened value as plain text — a voting
+round, a Merkle proof, an address on a chain nothing indexes is still a real
+value a person reads and copies, so this never disables and never errors.
+`value` is always the full identifier and the title; `shorten` picks
+`'address'` (first six, last four) or `'hash'`.
+
+```tsx
+import { ExplorerLink } from '@flare-kit/react-ui'
+<ExplorerLink value={txHash} href={explorerUrl} shorten="hash" />
+```
+
+### CopyButton
+
+The copy control on its own, for a value that is not operation evidence — a
+wallet address is identity, not an `EvidenceKind`, and it deserves the same
+affordance without being dressed as an evidence chip. `value` is the full value,
+never the truncated display form, and `label` names the control. The accessible
+name carries the confirmation, so the tick is not the only signal.
+
+```tsx
+import { CopyButton } from '@flare-kit/react-ui'
+<CopyButton value={address} label="Flare address" />
+```
+
+### Note
+
+An inline notice in one of four tones: `'info' | 'att' | 'bad' | 'ok'`, with an
+optional `title` and an `id` so a control can point `aria-describedby` at the
+visible explanation. Every tone carries an icon as well as a colour, and the
+ones that report a change are announced — `att` and `bad` interrupt, `ok`
+announces politely, and `info` gets no live region at all, because explanatory
+copy that happens to sit in a box is not a status change.
+
+```tsx
+import { Note } from '@flare-kit/react-ui'
+<Note tone="att" title="Position unavailable">The last read didn’t land.</Note>
+```
+
+### FeeNote
+
+What a read cost, from a `FeedFeeQuote`, never hidden behind a disclosure. Every
+`FtsoV2` read method is payable, and the fee being zero today is a measured
+result rather than a property of the surface — so the number is shown even when
+it is zero, because "we checked and it was free" and "we assumed it was free"
+are different claims. Where two contracts disagree on the fee it shows both and
+says which one guards the call.
+
+```tsx
+import { FeeNote } from '@flare-kit/react-ui'
+<FeeNote quote={quote} />
+```
+
+### LegTimeline
+
+A compact read-only progression of named legs, distinct from
+`OperationTimeline`, which carries the wallet-signed steps. The gasless relay
+timeline and the staking round trip are the same render over different legs.
+`legs` is `{ id, label, state }` where state is `pending`, `active`, `done` or
+`failed`; `ariaLabel` names the progression.
+
+```tsx
+import { LegTimeline } from '@flare-kit/react-ui'
+<LegTimeline legs={legs} ariaLabel="Staking round trip" />
+```
+
+## Controls and layout
+
+### Button
+
+The only button. Buttons are `rounded-md`; a pill on screen always means "this
+is a tag", never "this is an action". `variant` is `'primary'` or `'ghost'`,
+`size` is `'md'` or `'sm'`, `block` stretches it and `icon` names a glyph; every
+native button attribute passes through. `type` defaults to `"button"`, so a
+widget dropped inside a host's form never submits it by accident.
+
+```tsx
+import { Button } from '@flare-kit/react-ui'
+<Button variant="primary" block disabled={cta.disabled}>{cta.label}</Button>
+```
+
+### Panel
+
+The widget shell every composed surface sits in. It carries the `fk` scope class
+all tokens are declared on, so a host page needs no wrapper of its own and
+nothing leaks out. `title`, optional `subtitle`, and `aside` for the top-right
+chip. It forwards any `data-*` attribute to the root, so a state that exists as
+a paragraph is also something a host can style and a test can target.
+
+```tsx
+import { Panel } from '@flare-kit/react-ui'
+<Panel title="Stake" aside={<StateChip state={state} />} data-stake-state={key}>
+  {children}
+</Panel>
+```
+
+### Modal
+
+The one dialog shell, so the wallet picker and the token selector do not each
+re-code an overlay that then drifts on accessibility. `role="dialog"` sits on
+the content rather than the backdrop; it traps and restores focus, and closes on
+Escape and on a backdrop click. Takes `open`, `title`, an `ariaLabel` for the
+accessible name, `onClose`, and an optional pinned `footer`.
+
+```tsx
+import { Modal } from '@flare-kit/react-ui'
+<Modal open={open} title="Connect" ariaLabel="Connect a wallet" onClose={close}>
+  {children}
+</Modal>
+```
+
+### SegmentedTabs
+
+A pick-one-mode control. Its reason for being a primitive is the
+declared-unbuilt tab: a mode the kit cannot act on is shown, disabled and
+reasoned — never omitted, and never faked into looking available. `tabs` is
+`{ id, label, disabled?, reason? }`, and a `reason` is rendered as text on
+screen and tied to the tab for assistive tech. `value`, `onChange` and a `label`
+naming the group complete it.
+
+```tsx
+import { SegmentedTabs } from '@flare-kit/react-ui'
+<SegmentedTabs tabs={tabs} value={mode} onChange={setMode} label="Order type" />
+```
+
+### PercentPills
+
+Four presets over a balance — `25%`, `50%`, `75%`, `Max` — plus an exact-percent
+field beside them for anything the grid does not cover. The active preset is
+told apart by shape, weight and border rather than colour alone, and every
+target meets the 24-pixel minimum the package holds everywhere else. `value` is
+the current percent; `onChange` receives the new one.
+
+```tsx
+import { PercentPills } from '@flare-kit/react-ui'
+<PercentPills value={percent} onChange={setPercent} />
+```

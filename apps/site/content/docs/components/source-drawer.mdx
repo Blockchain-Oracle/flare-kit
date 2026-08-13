@@ -1,0 +1,114 @@
+---
+title: SourceDrawer
+description: How every value on the portfolio was obtained — which source answered, how old the reading is, which sources went silent, and when a chain read and an index disagree, both claims side by side.
+breadcrumb: ['Docs', 'Components', 'SourceDrawer']
+importLine: "import { SourceDrawer } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/activity-table', label: 'ActivityTable' }
+next: { href: '/docs/components/pending-tray', label: 'PendingTray' }
+---
+
+`SourceDrawer` is the provenance view behind the portfolio. Source classes are
+only useful if a person can inspect them, so this is where each value's origin
+and age become readable. Its hardest job is the conflict case: when a chain read
+and an index disagree, both claims are shown and neither is quietly dropped.
+Resolving that silently is what turns a data problem into a trust problem.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the drawer never actually reaches.
+
+<SourceDrawerDemo />
+
+## Usage
+
+Give it the same portfolio the table is rendering, plus the conflicts
+`usePortfolio` found. Conflicts only exist when a second source was handed over
+to compare against — one source cannot disagree with itself.
+
+```tsx
+import { createMockKit, mockPortfolio, type PortfolioPosition } from '@flare-kit/core'
+import { FlareProvider, usePortfolio } from '@flare-kit/react'
+import { SourceDrawer } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+function Sources({ indexed }: { indexed: readonly PortfolioPosition[] }) {
+  const { portfolio, conflicts } = usePortfolio({
+    read: async ({ now }) => mockPortfolio('source-conflict', now),
+    compareWith: indexed,
+  })
+
+  return <SourceDrawer portfolio={portfolio} conflicts={conflicts} now={Date.now()} />
+}
+
+export function Provenance({ indexed }: { indexed: readonly PortfolioPosition[] }) {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <Sources indexed={indexed} />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'portfolio', type: 'Portfolio', description: 'The portfolio whose values are being explained. Leave it undefined and the drawer says nothing has been read yet rather than implying an empty set of sources.' },
+  { name: 'conflicts', type: 'readonly SourceConflict[]', description: "Positions where two sources disagree. Defaults to none. Each conflict carries both claims — the canonical chain read and the other source — and the drawer renders both." },
+  { name: 'now', type: 'number', required: true, description: 'The clock every reading is aged against, and what decides which values are past their freshness budget. Required, because an age with no reference time is a guess.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the drawer.' },
+]} />
+
+## What it renders
+
+Up to four grouped sections. `Sources that disagree` comes first when there are
+any: each conflicting position shows its canonical claim and the other source's
+claim, each with its own value and source chip. `Sources that did not answer`
+repeats the endpoint's own reason per asset, so a silent XRP Ledger and a silent
+Flare node stay distinguishable. `Every value on this portfolio` is the full
+list, one source line each.
+
+Last is `Sources this build does not have` — the indexer that is not connected
+and the cache nothing is served from. Declared rather than omitted, because a
+person comparing sources needs to know which ones were never asked.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **ready** — every position with the source that produced it and when. The
+  baseline the other two are read against.
+- **canonical/indexed conflict** — a direct chain read and an index report
+  different balances for the same position. Both are on screen, labelled
+  `Canonical` and `Other source`, with the note that a chain read is canonical
+  and an index is derived and can lag.
+- **provider unavailable** — the source did not answer, and its own reason is
+  shown. A value that could not be read reads `Not read`.
+
+When any reading is past its freshness budget the drawer says how many, and
+those values stay on screen with their age rather than being replaced by a blank.
+
+## Mock to live
+
+`SourceDrawer` renders whatever `usePortfolio` read and compared, so moving from
+the mock to a live network swaps the reader and the kit, not the screen.
+Addresses come from `@flare-kit/contracts`; network is configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not pick a winner between two disagreeing sources or hide the loser. It
+will not present the absence of a reading as a zero, or a stale value as a
+current one. And it will not imply a source was consulted when it was not —
+the sources this build does not have are listed by name.

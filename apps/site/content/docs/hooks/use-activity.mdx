@@ -1,0 +1,126 @@
+---
+title: useActivity
+description: The operation registry as a filterable feed, with each operation's ledger payment, attestation round and Flare execution kept as separate identifiers, plus an export that refuses rather than writes a partial file.
+breadcrumb: ['Docs', 'Hooks', 'useActivity']
+importLine: "import { useActivity } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-portfolio', label: 'usePortfolio' }
+next: { href: '/docs/hooks/use-observed-read', label: 'useObservedRead' }
+---
+
+`useActivity` builds a feed from the operation registry the provider holds.
+Activity is a list of *operations*, not a list of transactions: a mint's XRP
+Ledger payment, its Data Connector voting round and its Flare execution are
+three identifiers on three different systems, and an entry keeps all three
+reachable rather than picking one to call "the" hash.
+
+The pending tray reads the same records through `usePending`. A pending
+operation is not a different kind of thing from a historical one — it is the
+same durable operation before it settled — so one source feeds both, and a tray
+and a table can never disagree about the state of the same mint.
+
+## Live
+
+The readout below is the hook's actual return value on this render. The
+registry holds three of the mock's operation records — two mints and a
+redemption, written in through `upsert` like any reconciliation would — and the
+filter names one capability, which is why `entries` is shorter than
+`feed.entries.length` while `filteredEmpty` stays `false`.
+
+<UseActivityDemo />
+
+## Usage
+
+Mount it under a `FlareProvider`. The feed, the filtered view and the export
+all come from one source.
+
+```tsx
+import { FlareProvider, useActivity } from '@flare-kit/react'
+import { ActivityTable } from '@flare-kit/react-ui'
+
+function History() {
+  const { feed, entries, empty, filteredEmpty, exportError, exportJson } =
+    useActivity({ filter: { capability: 'fassets.direct-mint' } })
+
+  if (empty) return <p>No operations have been started here yet.</p>
+
+  return (
+    <ActivityTable
+      feed={feed}
+      entries={entries}
+      exportError={exportError}
+      onExport={() => exportJson()}
+    />
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'filter', type: 'ActivityFilter', required: false, description: 'Narrows the view only. { capability?, state?, search? } — search is matched against the operation id and every identifier the entry correlates, so a ledger hash finds its operation.' },
+  { name: 'backfilling', type: 'boolean', required: false, defaultValue: 'false', description: 'True while older operations are still being reconciled. It changes what an empty list means, which is why the caller has to say.' },
+]} />
+
+Give the filter a stable identity — hoist it, or memoise it. The filtered view
+is memoised on that identity, and a fresh object every render re-filters every
+render for no change in content.
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'feed', type: 'ActivityFeed', description: 'The whole feed: entries, coverage, backfilling, empty and builtAt. feed.entries stays the unfiltered truth.' },
+  { name: 'entries', type: 'readonly ActivityEntry[]', description: 'The filtered view, newest first. Identical to feed.entries when no filter is given.' },
+  { name: 'empty', type: 'boolean', description: 'No history at all. False during a backfill, because an empty list mid-read is an unfinished read rather than an answer.' },
+  { name: 'filteredEmpty', type: 'boolean', description: 'The filter hid everything. A different claim from empty, and never rendered as one.' },
+  { name: 'exportError', type: 'string | undefined', description: 'The last export refusal, in words. Set when the secret guard stopped the export.' },
+  { name: 'exportJson', type: '() => string | undefined', description: 'Returns the JSON, or undefined if it refused. Never a partial file.' },
+]} />
+
+Each `ActivityEntry` carries `operationId`, `capability`, `state`, `network`,
+`intent`, `startedAt`, `updatedAt`, its `evidence` — every correlated
+identifier, each already linked to its own explorer — and the `source` it came
+from.
+
+## States
+
+- **empty** — no operations have been started in this installation.
+- **filteredEmpty** — there is history, and this filter matched none of it.
+- **backfilling** — older operations are still being reconciled, so the list is
+  short because the read is unfinished, not because the history is.
+- **partial coverage** — `feed.coverage` is always `complete: false` with a
+  `sourceClass` of `local`, and its `reason` says why: this history covers the
+  operations started in this installation, and no indexer is connected, so an
+  operation started elsewhere will not appear here. Out of reach is a different
+  claim from non-existent.
+- **export error** — the export was refused and nothing was written.
+
+## Mock to live
+
+The hook does not change, and neither does what it reads: it always reads the
+provider's registry. What changes is the kit driving the operations that get
+written there.
+
+```tsx
+// Mock: the operations the mock kit reconciles.
+<FlareProvider kit={createMockKit()}>
+
+// Live: the same registry, filled by real reconciliation.
+<FlareProvider kit={liveKit} store={indexedDbStore}>
+```
+
+Pass a durable `store` to the provider and operations survive a reload. Without
+one the registry is in-memory, and the history is what this session has seen.
+
+## What it will not do
+
+It will not rewrite a state on the way to a surface. `submitted` is carried
+through exactly as recorded and is never rendered as `succeeded`, and an
+unknown outcome is never rendered as failed.
+
+It will not claim complete history. There is no indexer, `coverage.complete` is
+`false` and its `reason` is written for a person to read, not for a log.
+
+It will not write a partial export. The same secret guard the durable store
+uses runs on every entry's intent first; if it refuses, `exportJson` returns
+`undefined` and reports why through `exportError` — a truncated file would look
+complete to whoever opened it later.

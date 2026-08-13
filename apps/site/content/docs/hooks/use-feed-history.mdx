@@ -1,0 +1,151 @@
+---
+title: useFeedHistory
+description: Anchor-feed history across a range of voting rounds, where every round in the range comes back as its own point — including the ones that answered nothing.
+breadcrumb: ['Docs', 'Hooks', 'useFeedHistory']
+importLine: "import { useFeedHistory } from '@flare-kit/react'"
+prev: { href: '/docs/hooks/use-feeds', label: 'useFeeds' }
+next: { href: '/docs/hooks/use-custom-feeds', label: 'useCustomFeeds' }
+---
+
+`useFeedHistory` walks a range of voting rounds and classifies every one of
+them. A round that answered nothing is a point in the series, not a row that
+disappeared.
+
+That exists because of a real, non-erroneous condition: **the Relay's merkle
+root outlives the data.** Measured on Coston2, the data-availability host served
+round `1130919` while round `1127919`'s root was still set on chain and its leaf
+was gone. The chain asserts a commitment for a round whose value can no longer
+be retrieved. Rendering that as an error would be wrong — nothing failed — and
+rendering it as a missing value would be wrong too, because the chain did commit
+to one. It gets its own status.
+
+Where that edge sits is not a constant. Two bisections run minutes apart on
+2026-08-05 returned boundaries `513576` rounds apart, so no single retention
+floor is reported. The boundary is whatever this query observed, per query.
+
+## Live
+
+This is the one hook on the site whose read leaves the chain: each round's leaf
+comes from the data-availability host over HTTP, and the hook takes no fetch
+implementation, so no mock can answer it and driving it here would mean a
+network call out of a documentation page. These pages make none.
+
+So the range below is deliberately empty — `toRound` sits one round below
+`fromRound`, the walk runs zero times, and no host is contacted. What you are
+looking at is genuinely what the hook returned: the observation envelope,
+naming the provider it would have asked, around a point list with nothing in it.
+The populated table — retention boundary included — is on the
+[FeedHistoryTable](/docs/components/feed-history-table) page, driven by the
+gallery's recorded Coston2 measurement.
+
+<UseFeedHistoryDemo />
+
+## Usage
+
+```tsx
+import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/core'
+import { useFeedHistory } from '@flare-kit/react'
+import { FeedHistoryTable } from '@flare-kit/react-ui'
+
+const FEED_ID = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
+
+export function History({ reader }) {
+  const { data, loading, refresh } = useFeedHistory({
+    reader,
+    chainId: 114,
+    feedId: FEED_ID,
+    fromRound: 1415856n,
+    toRound: 1415859n,
+  })
+
+  return (
+    <FeedHistoryTable
+      history={data}
+      feedName="FLR/USD"
+      loading={loading}
+      now={Date.now()}
+      onRefresh={refresh}
+    />
+  )
+}
+```
+
+The range is walked newest first, which is the order a surface reads in, and
+every round in it costs a request — so a range is a decision about how much you
+are asking the host for, not a window to widen for free.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the chain, not the host. It is asked one thing: what root the Relay published for a round whose leaf did not come back.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. It selects both the Relay address and the data-availability host, from @flare-kit/contracts.' },
+  { name: 'feedId', type: 'FeedId', required: true, description: 'One feed. History is per feed because a leaf is per feed.' },
+  { name: 'fromRound', type: 'bigint', required: true, description: 'Inclusive lower bound of the range.' },
+  { name: 'toRound', type: 'bigint', required: true, description: 'Inclusive upper bound. The walk starts here and counts down.' },
+  { name: 'apiKey', type: 'string', required: false, description: 'A transport credential for the data-availability host, not a user identity. Omitted, the public key for the network is used.' },
+]} />
+
+## Return type
+
+`ObservedRead<Observation<FeedHistory>>`, from
+[useObservedRead](/docs/hooks/use-observed-read).
+
+<PropsTable rows={[
+  { name: 'data', type: 'Observation<FeedHistory> | undefined', description: 'undefined until the walk finishes. Its source class is provider — the host serves the leaves, and only the root they hash to is on chain.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no history has ever arrived.' },
+  { name: 'error', type: 'string | undefined', description: 'The walk threw. A round that could not be classified is a point with a status, not an error; this is the read itself failing.' },
+  { name: 'refresh', type: '() => void', description: 'Walk the range again. The previous history stays on screen until the new one lands.' },
+]} />
+
+Inside `data.value`: `feedId`, `points`, and two figures discovered rather than
+assumed — `oldestRetrievedRound`, the oldest round in this range the host
+actually served, and `retentionBoundary`, the newest round that was committed
+and unretrievable. The boundary moves, so it is reported per query and never
+cached as a constant.
+
+## States
+
+Each point in `points` carries one of four statuses, and they are four different
+sentences:
+
+- **`retrieved`** — the leaf came back, with its proof. The point carries the
+  `AnchorFeedWithProof` and its own exponent.
+- **`committed_not_retrievable`** — the Relay published a root for this round
+  and the host no longer serves the leaf. The commitment exists; the value is
+  gone. Not an error, and not an absence.
+- **`not_finalized`** — no root was published for this round under FTSO.
+  Nothing was ever committed.
+- **`could_not_ask`** — the host could not be reached. This says nothing about
+  the round either way, and it is never collapsed into one of the two above.
+
+An absence is confirmed three times before it is believed. The host
+intermittently serves an empty `200` for a round it demonstrably holds —
+measured on 2026-08-05, where round `812988` answered empty and then returned a
+real value on three paced retries seconds later. An unconfirmed absence flowing
+into the root check would manufacture a permanent "this value is gone forever"
+claim out of a blip.
+
+## Mock to live
+
+`reader` swaps the way every other FTSO hook's does. The data-availability host
+does not: it is reached with the real `fetch`, at the URL
+`@flare-kit/contracts` holds for that network.
+
+```tsx
+import { chainFor } from '@flare-kit/contracts'
+import { createPublicClient, http } from 'viem'
+
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+## What it will not do
+
+It will not drop the rounds that answered nothing, and it will not draw a line
+between the two values either side of a gap — a rendered interpolation across a
+retention boundary is an invented price, which is why the spec forbids a chart
+here at all.
+
+It will not conclude that a value is permanently gone from a single empty
+response, and it will not report a host it could not reach as a round that was
+never finalized. It will not carry a compiled-in retention floor: the boundary
+is whatever this query observed. It will not poll.

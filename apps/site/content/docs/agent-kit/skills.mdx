@@ -1,0 +1,46 @@
+---
+title: Skills
+description: Procedural knowledge for agents, published separately from tools and carrying no signing authority. Planned, not built — scoped by the agent-surfaces decision, which ships in the repository.
+breadcrumb: ['Docs', 'Agent Kit', 'Skills']
+prev: { href: '/docs/agent-kit/cli', label: 'CLI' }
+---
+
+Knowing how to compose a direct mint safely is not the same capability as being
+able to submit one. Skills are the first thing; they are never the second.
+
+**Planned.** This surface is scoped and not yet built. The decision that scoped
+it is `.thoughts/decisions/2026-08-03-agent-facing-surfaces.md`; decisions ship
+in the repository, so you can read the reasoning before any of this exists.
+There is no skill to install today.
+
+## What it will be
+
+A skill carries procedural knowledge — how to sequence an operation, what to
+check before it, what the recovery paths are. It is never a transaction tool and
+never implies signing authority, and it is published separately from the
+[tools](/docs/agent-kit/tools) so a host can adopt the knowledge surface without
+adopting any action surface.
+
+Each skill declares its name, description and license, and states explicitly
+that it cannot sign. Skills will be installable through the
+[CLI](/docs/agent-kit/cli) and through a plugin marketplace entry, from one
+source of truth with no duplicated content between the two.
+
+## Why they are separate
+
+The three deliveries divide cleanly, and the division is the point:
+
+- **MCP** connects an agent to this system's actions.
+- **Skills** carry procedural knowledge about using it safely.
+- **CLI** gives humans and shell agents the same surface deterministically.
+
+A skill is also far cheaper than a server: an MCP server injects every tool
+schema into the host's context at startup, where a skill is read when it is
+needed.
+
+## What exists today
+
+The documentation you are reading, and the headless operation contract it
+describes. A skill will encode the same procedures — see the
+[quickstart](/docs/quickstart) and [mock mode](/docs/mock-mode) for the
+lifecycle those procedures are about.

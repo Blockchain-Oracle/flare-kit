@@ -1,0 +1,137 @@
+---
+title: SwapCard
+description: The swap composer over the V2 router — an honest getAmountsOut quote with its exact minimum received, and the approval and the swap kept as the two transactions they are.
+breadcrumb: ['Docs', 'Components', 'SwapCard']
+importLine: "import { SwapCard } from '@flare-kit/react-ui'"
+prev: { href: '/docs/components/custom-feed-review', label: 'CustomFeedReview' }
+next: { href: '/docs/components/token-selector', label: 'TokenSelector' }
+---
+
+`SwapCard` is one currency context over a Uniswap V2 router — BlazeSwap on
+Coston2, SparkDEX's V2 router on Flare. The price is a `getAmountsOut` read, the
+floor is the quote's own `minReceived`, and the approval and the swap stay two
+transactions, because that is what they are.
+
+## Live
+
+The preview runs the gallery's own states. The switcher walks the states the
+card was verified against, each built from the real swap state machine, so
+nothing here shows a state the card never reaches.
+
+<SwapCardDemo />
+
+## Usage
+
+The card is prop-driven and reads nothing itself. You quote, you read the
+allowance, and the state machine turns that pair into the state the card
+renders — `ready` when the allowance covers the trade, `awaiting_approval` when
+it does not.
+
+```tsx
+import { dexFor } from '@flare-kit/contracts'
+import { applyQuote, createSwap, quoteSwap, readAllowance, startQuoting } from '@flare-kit/core'
+import { SwapCard } from '@flare-kit/react-ui'
+import '@flare-kit/react-ui/styles.css'
+
+const dex = dexFor(114) // Coston2
+
+export async function quoted(reader, intent, owner, now) {
+  const { fromKey, toKey, amountIn, slippageBips } = intent
+  const result = await quoteSwap({ reader, chainId: 114, fromKey, toKey, amountIn, slippageBips, now })
+  const allowance = await readAllowance(reader, 114, fromKey, owner)
+  const quoting = startQuoting(createSwap({ chainId: 114, intent, now }), now).record
+  return { operation: applyQuote(quoting, { result, allowance, now }).record, result }
+}
+
+export function Swap({ operation, result }) {
+  return (
+    <SwapCard
+      operation={operation}
+      quoteResult={result}
+      fromToken={dex.tokens.FXRP}
+      toToken={dex.tokens.USDT0}
+      networkLabel="Coston2"
+      onSubmit={signNextStep}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'SwapOperation', required: true, description: 'The swap record. Its state drives the CTA, the note, the spine and whether the quote is still shown as live.' },
+  { name: 'fromToken', type: 'DexToken', required: true, description: "The pay token. It comes from the network's dex registry in @flare-kit/contracts, never a literal." },
+  { name: 'toToken', type: 'DexToken', required: true, description: 'The receive token, from the same registry.' },
+  { name: 'quoteResult', type: 'SwapQuoteResult', description: 'The latest reading — a quote, a no_route with its reason, or an unavailable read. Drives the receive amount and the detail rows.' },
+  { name: 'priceImpactBips', type: 'number | null', description: 'Price impact in bips, measured against a reference quote. Null or omitted renders an em dash, because an uncomputed impact is not zero impact.' },
+  { name: 'amountInText', type: 'string', description: "The pay leg's shown text while the reader is typing. Omit it and the leg shows the intent's own amount." },
+  { name: 'fromBalance', type: 'Amount', description: "The holder's balance of the pay token, when read. Absence is unknown, so the row is simply not shown." },
+  { name: 'toBalance', type: 'Amount', description: "The holder's balance of the receive token, when read." },
+  { name: 'mockLabel', type: 'string', description: "A labelled mock kit's name, rendered as an explicit mock badge. Mock mode is declared on screen, never inferred." },
+  { name: 'networkLabel', type: 'string', description: 'The network the quote was read on, named in the header.' },
+  { name: 'onAmountInChange', type: '(text: string) => void', description: 'Called as the pay amount is typed. Omit it and the field is inert.' },
+  { name: 'onFlip', type: '() => void', description: 'Called when the reader switches the pay and receive sides.' },
+  { name: 'onSelectFrom', type: '() => void', description: "Called when the pay token's picker is opened — this is where you mount a TokenSelector." },
+  { name: 'onSelectTo', type: '() => void', description: "Called when the receive token's picker is opened." },
+  { name: 'onMax', type: '() => void', description: 'Called by the MAX affordance on the pay leg. The button appears only when this is given, so it never offers a fill the host cannot compute.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called for the CTA — approve, review or re-quote, depending on state. The card signs nothing and broadcasts nothing itself.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel: the order tabs, a pay leg and a receive leg with the flip control
+between them, the note for the current state, and the quote details — rate,
+minimum received, price impact, max slippage and route. Once the swap is in
+flight the two steps render on the shared `OperationTimeline` spine, and each
+transaction hash appears as its own labelled evidence chip, so the approval is
+never folded into the swap.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **quote** — a real `getAmountsOut` reading, with the rate, the exact
+  `minReceived` floor and the measured price impact on screen.
+- **needs approval** — the allowance is short of the trade, so the plan carries
+  an approve step and the CTA names the token it will approve.
+- **approving** — the approval transaction is in flight; the spine shows it as
+  the first of two steps.
+- **swapping** — the approval is done and its hash is on the card; the swap
+  transaction is submitted and its outcome is not known yet.
+- **success** — `Swapped`, with the approval and swap hashes as separate
+  evidence. The receive amount reads `—`: the exact fill is recorded on the swap
+  transaction, and the pre-trade quote is never redressed as a receipt.
+- **no route** — no pool pairs these tokens, stated with the reason. The output
+  is `—`, never `0`, and there is nothing to sign.
+- **slippage exceeded** — the pool moved past the minimum received before the
+  swap confirmed. The revert is atomic, so nothing moved; the state is distinct
+  and re-quotable, not a failure of the kit.
+- **Limit** — the tab is shown, disabled, and carries its reason: no limit-order
+  venue is wired, and Uniswap V2 has no native limit order.
+
+## Mock to live
+
+The card never quotes; the reader does. `createMockSwapReader()` is a labelled
+`SwapReader` that the real `quoteSwap` and `readAllowance` run against, priced
+with the V2 constant-product curve over the actual Coston2 pool reserves — so
+moving to live swaps the reader, not the screen.
+
+```tsx
+// From this…
+const reader = createMockSwapReader({ allowance: 0n })
+
+// …to this. The component does not change.
+const reader = createPublicClient({ chain: coston2, transport: http() })
+```
+
+## What it will not do
+
+It will not price a pair with no pool, and it will not show the quoted output as
+the amount received once the trade concludes. It will not collapse the approval
+into the swap, and it will not present a slippage revert as a failed swap — the
+revert is atomic, so it says so and offers a re-quote.
