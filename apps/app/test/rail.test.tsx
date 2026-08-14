@@ -54,10 +54,27 @@ describe('the rail', () => {
     }
   })
 
-  it('marks an unbuilt family as unbuilt in its accessible name', () => {
+  /**
+   * Asserted through the description's own element rather than
+   * `toHaveAccessibleDescription`, which hung this suite for fifteen minutes
+   * computing an accessible description over the rail. The assertions below are
+   * stricter anyway: they pin WHY the note is reachable, not just that some
+   * description resolved.
+   */
+  it('marks an unbuilt family as unbuilt, announced rather than drawn', () => {
     render(<Rail currentId="swap" />)
     const chat = screen.getByRole('link', { name: 'Chat' })
     expect(chat).toHaveAttribute('data-unbuilt', 'true')
-    expect(chat).toHaveAccessibleDescription(/not built/i)
+
+    const describedBy = chat.getAttribute('aria-describedby')
+    expect(describedBy, 'an unbuilt family must describe itself').toBeTruthy()
+
+    const note = document.getElementById(describedBy!)
+    expect(note).toHaveTextContent(/not built/i)
+    // `hidden` drops the element from the accessibility tree in some user
+    // agents, which would make the description invisible to exactly the reader
+    // it exists for. The kit's utility keeps it announced.
+    expect(note).not.toHaveAttribute('hidden')
+    expect(note).toHaveClass('fk-sr')
   })
 })

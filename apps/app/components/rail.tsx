@@ -44,8 +44,12 @@ export function Rail({ currentId }: { currentId: string }) {
                   >
                     {family.label}
                   </Link>
+                  {/* `fk-sr`, not `hidden`: the description must genuinely reach
+                      assistive technology, and a hidden element is dropped from
+                      the accessibility tree in some user agents. The kit already
+                      owns this utility — "only ever announced, never drawn". */}
                   {unbuilt && (
-                    <span id={describedBy} hidden>
+                    <span id={describedBy} className="fk-sr">
                       Not built yet
                     </span>
                   )}
