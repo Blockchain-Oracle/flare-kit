@@ -1,0 +1,35 @@
+{
+  "name": "@flarekit-dev/app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@flarekit-dev/contracts": "workspace:^",
+    "@flarekit-dev/core": "workspace:^",
+    "@flarekit-dev/react": "workspace:^",
+    "@flarekit-dev/react-ui": "workspace:^",
+    "next": "^16.2.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "viem": "^2.40.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.5",
+    "jsdom": "^30.0.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
+  }
+}

@@ -1,0 +1,28 @@
+/* The app is an object on a surface: a fixed panel that scrolls internally.
+   This is the opposite of the docs site, and the difference is deliberate. */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* --fk-bg is the kit's page background token; there is no --fk-canvas. */
+.app-shell {
+  display: grid;
+  grid-template-columns: 232px minmax(0, 1fr);
+  height: 100dvh;
+  background: var(--fk-bg);
+  color: var(--fk-text);
+}
+
+.app-main {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-width: 0;
+}
+
+.app-panel {
+  overflow-y: auto;
+  padding: 28px;
+}
