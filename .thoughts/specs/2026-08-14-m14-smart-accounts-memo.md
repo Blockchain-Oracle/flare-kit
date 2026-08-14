@@ -153,12 +153,33 @@ loses money that a plausible-looking implementation would not prevent.
   inverse and refuses any length that is not exactly right. `walletId` is **dead on chain** —
   read by no contract — and is carried as a client convention with that stated.
 
-- **M14-R3 — the `PackedUserOperation` builder.** Only `sender`, `nonce` and `callData` are
-  validated on chain (`MemoInstructions.sol:55-66`); the other six fields are decoded and
+- **M14-R3 — the `PackedUserOperation` builder.** Nine fields in OpenZeppelin's ERC-4337 order,
+  which is load-bearing because the decode is positional. Only `sender`, `nonce` and `callData`
+  are validated on chain (`MemoInstructions.sol:55-66`); the other six are decoded and
   discarded, and **there is no signature verification anywhere** — authorisation is the XRPL
-  signature that derives the account. The builder zero-fills the rest and says why. It also
-  builds `executeUserOp(Call[])` batches, where `Call = {target, value, data}` and a failure
-  reverts `CallFailed(i, result)` with the failing index — **partial batches are impossible**.
+  signature that derives the account, so `signature: '0x'` is the correct final value and not a
+  placeholder. It also builds `executeUserOp(Call[])` batches, where `Call = {target, value,
+  data}` and a failure reverts `CallFailed(i, result)` with the failing index — **partial
+  batches are impossible**, and that index is decoded onto the error surface.
+
+  **The encoding must keep its leading offset word.** `abi.encode` of a struct with dynamic
+  members emits `0x20` in the first 32 bytes, and `abi.decode(_memoData[10:],
+  (PackedUserOperation))` expects exactly that. A builder that strips it, or hand-rolls a
+  packed concat, produces a memo that reverts as a **bare panic with no named error** — the
+  vendored test asserts only `vm.expectRevert()` with no selector, so nothing can be reported
+  back to the user beyond "it failed".
+
+  **Measured sizes decide which opcode is usable** (measured with viem against this exact
+  tuple, not estimated): an empty-callData userOp is 448 bytes → a 458-byte `0xFF` memo; one
+  call is 736 → 746; three calls are 1152 → **1162, over the 1024 ceiling**. So `0xFF` carries
+  roughly one or two calls and no more, and a batch that does not fit is a plan refusal
+  pointing at `0xFE`, whose memo is 42 bytes whatever the batch size. This is the real reason
+  the protocol has two opcodes.
+
+  **Value is forwarded as one lump.** `msg.value` on the relay call reaches
+  `_personalAccount.call{value: msg.value}` (`MemoInstructions.sol:71`) and `executeUserOp`
+  distributes it per call; the attached value must equal the batch's `sum(call.value)` or the
+  inner call reverts post-settlement.
 
 - **M14-R4 — account reads for this flow. DEVIATION, FOUND IN BUILD: three of the four already
   exist, and the fourth cannot be read at all.** The per-account nonce and pinned executor are
@@ -181,12 +202,41 @@ loses money that a plausible-looking implementation would not prevent.
   "a replacement fee was set at ⟨tx⟩", and must **not** claim one is currently pending — the
   chain will not tell us whether it has since been consumed.
 
-- **M14-R5 — the fee and amount computation, before signing.**
-  `mintingFeeUBA = max(net * feeBIPS / 10000, minimumFeeUBA)`;
-  `totalUBA = net + mintingFeeUBA + executorFeeUBA`, from the AssetManager's own
-  `getDirectMintingFeeBIPS()`, `getDirectMintingMinimumFeeUBA()` and
-  `getDirectMintingExecutorFeeUBA()`. Refuses an amount that would land under the minimum,
-  because that is a total loss.
+- **M14-R5 — the fee and amount computation, before signing. The vendored reference gets this
+  wrong twice, and both are corrected here rather than copied.**
+
+  The contract's actual model on the memo path, read end to end:
+
+  ```
+  mintingFee   = min(max(floor(total * feeBIPS / 10000), minimumFeeUBA), total)  // DirectMintingFacet.sol:433-436
+  toController = total - mintingFee                                              // :395
+  require(toController >= memoExecutorFee)                                       // MemoInstructionsFacet.sol:167
+  personal account receives = toController - memoExecutorFee                     // :179-181
+  ```
+
+  - **The fee basis is the TOTAL, not the net.** The contract charges
+    `_receivedAmount.mulBips(feeBIPS)` (`:433`) while the reference computes it from the net
+    (`fassets.ts:130`), so the reference under-budgets and the account lands slightly short.
+    Second-order, but it grows with the executor fee and it is a real shortfall. To land
+    exactly `net`, invert the contract's own formula —
+    `total = ceil((net + memoExecutorFee) * 10000 / (10000 - feeBIPS))` — then re-check the
+    minimum branch, because `max` may select the floor instead.
+  - **The AssetManager charges NO executor fee on this branch.** `_mintToSmartAccounts` mints
+    `_receivedAmount - _mintingFeeUBA` (`:395`); the executor fee it computes at `:438-439` is
+    consumed only by the plain-EOA path. On the memo path the executor fee is the **memo's own
+    bytes 2-9**. The reference adds the AssetManager's default into the total anyway
+    (`fassets.ts:132`) while encoding `0n` in the memo — so it merely overpays and the surplus
+    is minted to the account. A builder that copied that arithmetic **and** encoded a non-zero
+    memo fee would budget one fee and be charged two.
+  - Rounding is `floor`, matching `SafePct.mulBips`'s documented round-down (`SafePct.sol:39-43`).
+  - **bigint throughout.** The reference round-trips XRP through a JS float
+    (`fassets.ts:105,134`); this stays in drops/UBA and formats only at the display edge.
+
+  The plan **forward-simulates the contract's own `_computeFees` on the computed total** and
+  asserts the resulting credit equals the target before anything is signed. It refuses an
+  amount that would land under the minimum fee, because that is a total, unrecoverable loss.
+  A live `0xE2` override silently wins over the memo's fee (`MemoInstructionsFacet.sol:150-154`),
+  which the plan states rather than hides.
 
 - **M14-R6 — the plan gate.** Refuses, each with a named typed refusal and a test: an
   unverified network; any destination tag; a memo over the ledger's 1024-byte ceiling; an
