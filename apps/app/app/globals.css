@@ -26,3 +26,42 @@ body {
   overflow-y: auto;
   padding: 28px;
 }
+
+.app-rail {
+  overflow-y: auto;
+  padding: 20px 12px;
+  border-right: 1px solid var(--fk-border);
+}
+.app-rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+.app-rail-link {
+  display: block;
+  padding: 7px 12px;
+  border-radius: var(--fk-r-sm);
+  color: var(--fk-text-muted);
+  text-decoration: none;
+}
+.app-rail-link[aria-current='page'] {
+  background: var(--fk-surface);
+  color: var(--fk-text);
+}
+/* Unbuilt reads as quieter, but it is never hidden and never colour alone —
+   the rail link carries an accessible description too. */
+.app-rail-link[data-unbuilt='true'] {
+  color: var(--fk-text-faint);
+}
+.app-topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--fk-border);
+}
+.app-account {
+  margin-left: auto;
+}
