@@ -8,9 +8,16 @@ import { SiteFooter } from '../components/footer'
 import { SiteNav } from '../components/nav'
 import { ThemeScript } from './theme-script'
 
+/**
+ * The description every page and every social card carries, so it states the
+ * identity rather than a slogan. "Ship Flare operations that recover." was
+ * never approved as a motto — it was one specimen's hero line — and a motto
+ * remains an open choice. See .thoughts/specs/2026-08-13-docs-site.md.
+ */
 export const metadata = {
   title: 'flare-kit',
-  description: 'Ship Flare operations that recover.',
+  description:
+    'The developer toolkit for Flare: one operation lifecycle across headless TypeScript, React hooks, embeddable widgets and agent tools.',
 }
 
 export default function RootLayout({ children }: { children: ReactNode }) {
