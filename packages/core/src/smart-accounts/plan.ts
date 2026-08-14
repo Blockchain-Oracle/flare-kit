@@ -163,6 +163,15 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
       )
     }
   }
+  // UNREACHABLE TODAY, AND KEPT (decided 2026-08-14, after the M13 review asked whether to
+  // delete it). All three agent-vault-tail instructions — 0x00, 0x10, 0x20 — are `superseded`,
+  // and the availability gate above refuses those as `not_composable` before control arrives
+  // here. But that is a property of a `standing` field recording a PROTOCOL decision, not a
+  // structural impossibility: un-supersede one, or add a new agent-vault instruction that is
+  // `current`, and this guard is load-bearing again the same day. Deleting it would trade a
+  // few inert lines for a payment lost to an unregistered agent vault. Its reachability
+  // argument is pinned by a test, so if the standing ever changes we are told rather than
+  // finding out from a user.
   if (instruction.tail === 'agentVault' || instruction.tail === 'agentVaultAndVault') {
     const known = settings.agentVaults?.some(
       (candidate) => candidate.agentVaultId === intent.agentVaultId,

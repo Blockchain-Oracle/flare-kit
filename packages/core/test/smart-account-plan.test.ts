@@ -1,4 +1,4 @@
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flare-kit/contracts'
 import { describe, expect, it } from 'vitest'
 import type { DeploymentSettings } from '../src/smart-accounts/adapter.js'
 import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'
@@ -350,5 +350,30 @@ describe('the plan carries the spine the reconciler indexes', () => {
     const result = plan()
     const recordSteps = mockInstructionRecord(TRANSFER).steps.map((step) => step.id)
     expect(result.ok && result.plan.steps.map((step) => step.id)).toEqual(recordSteps)
+  })
+})
+
+/**
+ * The agent-vault refusal is unreachable TODAY, and the reason is a protocol standing rather
+ * than a structural impossibility. This is the test that says so out loud: if a future table
+ * marks an agent-vault instruction `current`, the guard stops being decorative and this fails
+ * to tell us — instead of a user finding out by losing a payment.
+ */
+describe('the agent-vault refusal, and why it is kept', () => {
+  it('is unreachable only because every agent-vault instruction is superseded', () => {
+    const agentVaultTails = BUILT_IN_INSTRUCTIONS.filter(
+      (instruction) => instruction.tail === 'agentVault' || instruction.tail === 'agentVaultAndVault',
+    )
+    expect(agentVaultTails.map((instruction) => instruction.id)).toEqual([0x00, 0x10, 0x20])
+    expect(agentVaultTails.every((instruction) => instruction.standing === 'superseded')).toBe(true)
+  })
+
+  it('refuses a superseded instruction before it can reach that guard', () => {
+    // `not_composable`, not `agent_vault_not_registered` — the availability gate runs first,
+    // which is exactly what makes the guard below it unreachable.
+    const result = plan({
+      intent: { xrplOwner: ACCOUNT.xrplOwner, instructionId: 0x00, value: 1n, agentVaultId: 99 },
+    })
+    expect(!result.ok && result.refusal.code).toBe('not_composable')
   })
 })

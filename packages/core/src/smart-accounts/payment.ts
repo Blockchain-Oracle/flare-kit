@@ -15,6 +15,20 @@ import type { UnsignedXrplPayment } from '../xrpl.js'
  * which would let an unrelated party front-run the user operation — the Smart Accounts docs
  * warn about it, and `xrpl.ts` already refuses tags on the direct-mint path for its own
  * reason. There is no option to add one, because there is no legitimate use for one here.
+ *
+ * DELIBERATELY NOT MERGED with `xrpl.ts`'s `buildDirectMintPayment` (decided 2026-08-14, after
+ * the M13 review raised it). The two share a twelve-line object literal and differ in exactly
+ * the parts that carry safety:
+ *
+ * - the mint builder ENCODES its own memo from a `DirectMintTarget`; this one receives 32
+ *   already-encoded bytes and VALIDATES their length, because a short reference here is an
+ *   instruction the controller cannot parse after the XRP is gone;
+ * - the fee field is named `ledgerFeeDrops` rather than `feeDrops` on purpose (see below).
+ *   A merged signature would have to pick one name, and picking `feeDrops` reintroduces the
+ *   exact confusion this file exists to prevent.
+ *
+ * Deduplicating twelve lines of literal by refactoring a live-verified minting path is a bad
+ * trade. The duplication is visible and inert; the hazard would not be.
  */
 
 export interface BuildInstructionPaymentInput {
