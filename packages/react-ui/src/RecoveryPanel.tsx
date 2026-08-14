@@ -64,6 +64,15 @@ export interface RecoveryPanelProps {
 export function RecoveryPanel({ operation, onAction, nowMs, className }: RecoveryPanelProps) {
   if (isTerminal(operation.state)) return null
 
+  // `expired` is deliberately NOT in the canonical terminal set — an expired QUOTE is
+  // re-quotable, and that decision is right for swaps and bridges. But it meant an expired
+  // operation with no recovery actions fell through to the idle sentence below and said
+  // "this operation is progressing on its own… nothing is at risk while it completes".
+  // Nothing is progressing, and for M13's expired proof window the XRP is already the
+  // operator's — the surface's own terminal copy is the only honest thing on screen, and
+  // this panel must not contradict it. Found by looking at the rendered expiry state.
+  if (operation.state === 'expired') return null
+
   const now = nowMs ?? Date.now()
   const all = operation.recovery ?? []
   const offered = availableActions(all, now)

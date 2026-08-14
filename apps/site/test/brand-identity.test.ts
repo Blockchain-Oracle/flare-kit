@@ -64,7 +64,7 @@ describe('the tab icon', () => {
 /**
  * The brand diagrams name packages in live `<text>`, so they are the one place
  * a package rename cannot be caught by a compiler. The @flarekit-dev rename
- * missed them: both diagrams still drew `@flare-kit/*`, which is a scope that
+ * missed them: both diagrams still drew `@flarekit-dev/*`, which is a scope that
  * no longer exists, on assets served from the README and npm.
  *
  * The live scope is derived from a package rather than written here, so a

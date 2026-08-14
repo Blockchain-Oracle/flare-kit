@@ -92,9 +92,41 @@ export * from './fdc/catalogue.js'
 export * from './fdc/operation.js'
 export * from './fdc/execution-gate.js'
 export * from './fdc/families/xrp-payment.js'
+export * from './fdc/families/payment.js'
 export * from './fdc/families/evm-transaction.js'
 export * from './fdc/families/web2-json.js'
 export * from './fdc/families/xrp-payment-nonexistence.js'
+// The smart-accounts registry vocabulary, re-exported so react/react-ui can name the
+// deployment type and the instruction vocabulary without a second dependency on contracts
+// — the same treatment the governance/staking/vault/bridge registries get above.
+export type {
+  SmartAccountsDeployment,
+  BuiltInInstruction,
+  InstructionTypeName,
+  VaultTypeName,
+  ValueDenomination,
+  ReferenceTail,
+  InstructionStanding,
+} from '@flarekit-dev/contracts'
+export {
+  SMART_ACCOUNTS,
+  smartAccountsFor,
+  BUILT_IN_INSTRUCTIONS,
+  INSTRUCTION_TYPE,
+  VAULT_TYPE,
+  builtInInstruction,
+  requiredVaultType,
+} from '@flarekit-dev/contracts'
+export * from './smart-accounts/payment-reference.js'
+export * from './smart-accounts/adapter.js'
+export * from './smart-accounts/personal-account.js'
+export * from './smart-accounts/catalogue.js'
+export * from './smart-accounts/payment.js'
+export * from './smart-accounts/plan-types.js'
+export * from './smart-accounts/plan.js'
+export * from './smart-accounts/states.js'
+export * from './smart-accounts/watch.js'
+export * from './mock-smart-accounts.js'
 export * from './fassets/fees.js'
 export * from './fassets/direct-mint-quote.js'
 export * from './fassets/direct-mint-recovery.js'

@@ -1106,6 +1106,130 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   from tokens only, `@import`-ed into `styles.css`.
 - `packages/react-ui/gallery/m12-governance-sections.tsx` — M12-AC6. The state
   matrix, both themes, observed states only.
+- `packages/contracts/src/smart-accounts.ts` — M13-R1. The
+  `MasterAccountController` registry for `coston2` + `flare` (the same address on
+  both, resolved by name from `FlareContractRegistry`), `smartAccountsVerified`
+  per network, and the built-in instruction vocabulary as types. Deliberately
+  carries NO operator-mutable value: the operator XRPL wallets, source id, proof
+  validity window, instruction fees, vault ids, agent vault ids and default
+  executor are settings the operator can change, so freezing them here would
+  produce a plan that signs an XRPL payment to a stale destination. They are read
+  live in `smart-accounts/adapter.ts` instead.
+- `packages/contracts/src/smart-accounts-abis.ts` — M13-R1. The
+  `IMasterAccountController` read fragments (personal account, instructions,
+  fees, vaults, agent vaults, executor, XRPL provider wallets, payment proofs),
+  `executeInstruction`, the `InstructionExecuted` event — whose
+  `personalAccount`, `transactionId` and `paymentReference` are all INDEXED,
+  unlike M1's direct-minting events, which is what makes the R7 backfill scan
+  possible — the named errors, and `IPersonalAccount`.
+- `packages/contracts/src/fdc/payment-abi.ts` — M13-R2b. `IPayment.Proof` and
+  `FdcVerification.verifyPayment`. DISTINCT from `direct-minting-abi.ts`'s
+  `IXRPPayment.Proof`: the request body is `{transactionId, inUtxo, utxo}` rather
+  than `{transactionId, proofOwner}`, and the response carries
+  `standardPaymentReference` — the field `executeInstruction` dispatches on —
+  where `IXRPPayment` carries `firstMemoData` and `destinationTag` instead.
+  Neither proof verifies against the other's consumer.
+- `packages/core/src/fdc/families/payment.ts` — M13-R2b. The chain-agnostic
+  `Payment` attestation family over M3's generic lifecycle. M3 catalogued this
+  family with `hasBuilder: false`; M13 builds the builder and flips that row,
+  because a catalogue that denies a capability the kit has is a lie in the
+  direction this project cares most about.
+- `packages/core/src/smart-accounts/payment-reference.ts` — M13-R2. The 32-byte
+  payment-reference codec, command-aware because the tail windows OVERLAP: bytes
+  12–13 `agentVaultId`, 14–15 `vaultId`, or 12–31 a 20-byte address. Carries the
+  value's denomination (lots, drops, shares, a Firelight period, an Upshift
+  `yyyymmdd` date) as typed data, because one 80-bit field means five different
+  things across the eleven instructions.
+- `packages/core/src/smart-accounts/adapter.ts` — M13-R3. Live deployment and
+  personal-account reads (including deployment state by code size), plus the
+  pure `executeInstruction` call builder. Every read is `undefined`-on-throw and
+  surfaces as `unavailable`; a revert is never coerced to `0`, `[]` or `false`.
+- `packages/core/src/smart-accounts/personal-account.ts` — M13-R3. The
+  personal-account half of the reads, split from `adapter.ts` to keep both under
+  300 lines. Carries the `getCode` subtlety: viem answers `undefined` for an
+  address with no code, which is the same value a thrown read would produce, so
+  it is read through a result wrapper — "not deployed" and "we could not look"
+  must stay distinguishable.
+- `packages/core/src/smart-accounts/catalogue.ts` — M13-R4. The DISCOVERED
+  instruction catalogue: availability derived from live deployment state, the
+  three legacy collateral-reservation commands marked `superseded`, and the
+  instruction-type nibble validated against `IVaultsFacet.VaultType`
+  (`None=0, Firelight=1, Upshift=2`) — the nibble IS the enum.
+- `packages/core/src/smart-accounts/payment.ts` — M13-R5. The unsigned XRPL
+  instruction payment, built on M1's `xrpl.ts` primitives. Never touches key
+  material; never emits a `DestinationTag`.
+- `packages/core/src/smart-accounts/plan.ts` — M13-R5. `smartAccountsVerified`
+  gate first, then the invariants the chain would otherwise enforce after the
+  money has already left; the plan carries the whole chain for approval,
+  including the proof-expiry deadline as a wall-clock instant.
+- `packages/core/src/smart-accounts/plan-types.ts` — M13-R5. The plan vocabulary,
+  split from `plan.ts` to stay under 300 lines and so react/react-ui can name a
+  refusal or a warning without the planner's logic. Every `RefusalCode` names a
+  controller revert that would land AFTER the XRP reached the operator.
+- `packages/core/src/smart-accounts/states.ts` — M13-R6. The four-leg durable
+  lifecycle (xrpl → fdc → flare → effect) over the canonical states via the
+  shared `reconcile.ts` helpers; `succeeded` only from the decoded
+  `InstructionExecuted` AND the observable consequence; proof expiry is a
+  distinct terminal state that never offers a retry.
+- `packages/core/src/smart-accounts/watch.ts` — M13-R7. The bounded, chunked
+  backfill scan over the indexed `InstructionExecuted` topics; an incomplete
+  scan yields `unavailable`, never an empty history.
+- `packages/core/src/mock-smart-accounts.ts` — M13-R8. Written after the live
+  runs of 2026-08-13; drives the real plan builder and real reconciler, copies
+  observed, refuses unobserved. Its recorded references are re-derived by the
+  real encoder in test, so they stay bytes the Coston2 controller actually
+  accepted. The deposit is recorded with `dispatchedByUs: false` — its
+  instruction executed and its effect is real, but the operator's backend
+  submitted the proof first, and claiming that leg would be inventing it.
+- `packages/core/src/mock-smart-accounts-observed.ts` — M13-R8. **Deviation,
+  found in build:** the observed values, split from the reader above when the
+  two together crossed 300 lines. A record with no behaviour, beside a reader
+  that drives the real code with it. Re-exported, so the published surface is
+  unchanged. It also carries the mainnet READ-LENS probe, so the
+  identical-address property is shown from two independently-read values rather
+  than one printed twice; `smartAccountsVerified.flare` stays `false`.
+- `packages/core/scripts/probe-smart-accounts.mjs` — M13 Verification / M13-R1.
+  Dev, not shipped: the keyless both-network probe (controller by name, operator
+  wallets, source id, proof window, fees, vaults, agent vaults, executor, and the
+  personal account derived for the run's XRPL address).
+- `packages/core/scripts/live-smart-account.mjs` — M13 Verification. Dev, not
+  shipped: the gated live round trips — XRPL payment, FDC `Payment` attestation,
+  `executeInstruction`, effect read-back (keys from `.secrets`, never logged).
+- `packages/react/src/use-smart-account.ts` — M13-R9. Account identity, plan and
+  the durable lifecycle; reads keyless, signing via an injected wallet client.
+- `packages/react/src/use-instruction.ts` — M13-R9. The plan and the durable
+  four-leg lifecycle for one instruction. Planning is keyless and pure; SIGNING
+  is deliberately the host's job, because the payment is an XRPL transaction and
+  a hook that took an XRPL seed would put key material in the render tree for no
+  gain. Replaces the planned `use-instruction-catalogue.ts`: discovery is derived
+  from the same settings read `use-smart-account.ts` already performs, so a
+  separate catalogue hook would double the RPC traffic for the same answer.
+- `packages/react-ui/src/SmartAccountCard.tsx` (+
+  `packages/react-ui/src/smart-account-card-state.ts`) — M13-R10. The identity
+  surface: XRPL controller, personal account, deployed / not deployed as a
+  first-class fact, balances, memo nonce, pinned executor, fee settings, both
+  networks side by side.
+- `packages/react-ui/src/SmartAccountNetwork.tsx` — M13-R10. **Deviation, found
+  in build:** one network's column, split out of the card, which reached 299
+  lines. The two halves it draws are different subjects — what this XRPL
+  address's account IS, and what the DEPLOYMENT is.
+- `packages/react-ui/src/InstructionCatalogue.tsx` — M13-R10. The discovered
+  catalogue, in the `AttestationCatalogue`/`VaultCatalogue` anatomy.
+- `packages/react-ui/src/InstructionComposer.tsx` (+
+  `packages/react-ui/src/instruction-composer-state.ts`) — M13-R10. The plan
+  surface: the entire chain before approval, with the proof-expiry deadline
+  stated.
+- `packages/react-ui/src/InstructionChain.tsx` — M13-R10. **Deviation, found in
+  build:** the four legs, split out of the composer at 320 lines. A real seam
+  rather than arithmetic: this renders a PLAN (what will happen), the composer
+  renders an OPERATION (what did), and keeping those apart is the milestone.
+- `packages/react-ui/src/instruction-visuals.ts` — M13-R10. The vocabulary the
+  three surfaces share: availability visuals, and the denomination naming that
+  keeps one 80-bit field from rendering as five different things unlabelled.
+- `packages/react-ui/src/smart-accounts.css` — M13-R10. The `fk-sa` classes,
+  values from tokens only, `@import`-ed into `styles.css`.
+- `packages/react-ui/gallery/m13-smart-account-sections.tsx` — M13-AC6. The
+  state matrix, both themes, observed states only.
 
 ## Integrations
 

@@ -183,13 +183,20 @@ export const ATTESTATION_FAMILIES: readonly AttestationFamilyRow[] = [
   {
     name: 'Payment',
     summary: 'A payment on any supported chain, in the chain-agnostic shape.',
-    hasBuilder: false,
+    // Flipped false -> true by M13-R2b, which built the request builder. The row said
+    // `false` from M3 through M12 and was accurate then; leaving it would make the
+    // capability catalogue deny a capability the kit demonstrably has.
+    hasBuilder: true,
     sources: PAYMENT_CHAINS,
     bigIntResponseFields: PAYMENT_BIGINTS,
     amountResponseFields: NO_AMOUNTS,
+    // The controller binds the XRPL source address instead, by comparing
+    // `sourceAddressHash` against `keccak256(bytes(xrplAddress))`.
     bindsProofOwner: false,
     hasDeployedConsumer: true,
-    consumer: 'FAssets AssetManager — redemption payment confirmation and minting default.',
+    consumer:
+      'FAssets AssetManager — redemption payment confirmation and minting default; ' +
+      'Smart Accounts MasterAccountController — XRPL instruction dispatch (executeInstruction).',
   },
   {
     name: 'ReferencedPaymentNonexistence',

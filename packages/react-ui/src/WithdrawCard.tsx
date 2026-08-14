@@ -127,7 +127,14 @@ export function WithdrawCard(props: WithdrawCardProps) {
 
       {note ? <Note tone={note.tone} title={note.title}>{note.body}</Note> : null}
 
-      {op && IN_FLIGHT.has(op.state) && op.steps.length > 0 ? <OperationTimeline operation={op} stepEvidence={{}} {...(props.theme ? { theme: props.theme } : {})} /> : null}
+      {/* `nowMs`, because this card's own `now` is unix SECONDS (the Countdown's unit) and
+          RecoveryPanel measures action windows in milliseconds. Without it the panel fell
+          back to `Date.now()` — and of every card in the package this is the one that most
+          matters, because its recovery actions are genuinely time-gated by the claim window,
+          so the wall clock was deciding what a user is told they can do. Found by the M13
+          test-quality review, which flagged the leak on the M13 composer; this is the same
+          bug on the surface where it was already live. */}
+      {op && IN_FLIGHT.has(op.state) && op.steps.length > 0 ? <OperationTimeline operation={op} stepEvidence={{}} nowMs={now * 1000} {...(props.theme ? { theme: props.theme } : {})} /> : null}
 
       {phase?.kind === 'waiting' && props.claimableAt ? (
         <div className="fk-vault-timeline" data-phase="waiting">

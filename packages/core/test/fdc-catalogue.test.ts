@@ -82,14 +82,18 @@ describe('when the verifier agrees with the table', () => {
     expect(rows.every((row) => row.agreement === 'agrees')).toBe(true)
     expect(rowFor(rows, 'JsonApi').status).toBe('deprecated')
 
+    // `Payment` joined the four M3 declared when M13-R2b built its request builder — the
+    // Smart Accounts controller dispatches on `standardPaymentReference`, which only the
+    // chain-agnostic `Payment` response carries.
     const supported = rows.filter((r) => r.status === 'supported').map((r) => r.family.name).sort()
     expect(supported).toEqual([
       'EVMTransaction',
+      'Payment',
       'Web2Json',
       'XRPPayment',
       'XRPPaymentNonexistence',
     ])
-    expect(rows.filter((r) => r.status === 'planned')).toHaveLength(5)
+    expect(rows.filter((r) => r.status === 'planned')).toHaveLength(4)
   })
 
   it('carries the provenance of the answer, not just the answer', async () => {

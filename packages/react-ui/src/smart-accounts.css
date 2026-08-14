@@ -1,0 +1,311 @@
+/* ============================================================
+   @flarekit-dev/react-ui — the XRPL-controlled smart-account
+   surfaces (M13).
+
+   SmartAccountCard, InstructionCatalogue and InstructionComposer
+   reuse the shared Panel / Note / DetailRow / StateChip /
+   ToneChip / DataTable / ExplorerLink / Countdown and the
+   OperationTimeline spine, so this file adds only what those
+   three surfaces have that nothing else does:
+
+   - a TWO-NETWORK column layout, because the identical-address
+     property is only visible when both reads sit side by side;
+   - a numbered CHAIN, because approving an instruction commits
+     the user to four legs across three actors and the order is
+     the information;
+   - a full-width 32-byte reference, which must never truncate:
+     the memo IS the instruction, and a shortened one cannot be
+     checked against what the user meant to send.
+
+   Every value derives from a token in styles.css — nothing is a
+   raw literal. Theme is runtime, under data-theme.
+   ============================================================ */
+
+/* ---------- SmartAccountCard (SA-01) ---------- */
+.fk.fk-sa-card {
+  max-width: 760px;
+}
+
+.fk-sa-card .fk-sa-owner {
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.fk-sa-card .fk-sa-lede {
+  margin-top: 4px;
+  max-width: 58ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fk-text-muted);
+}
+
+/* Two networks side by side — the identical-address property is only legible
+   when both reads are in view at once, so the breakpoint is set at the width
+   where a column can still hold a truncated address and its label on one line
+   (measured in the browser at 260px), not at a round number. Below that it
+   stacks rather than squeezing every address into a two-line wrap. */
+.fk-sa-card .fk-sa-nets {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.fk-sa-card .fk-sa-net-col {
+  padding: 12px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-card);
+  min-width: 0;
+  /* Queried below. The column's width is decided by the HOST's width and how
+     many networks are shown, so a viewport media query would be asking the
+     wrong element — the first container query in this package, and it earns
+     itself: this is a widget whose own box is the only thing worth measuring. */
+  container-type: inline-size;
+  container-name: fk-sa-net;
+}
+
+/* A side-by-side column is too narrow for `label … value` on one line: an
+   18-decimal balance is twenty characters, and `.fk-row-v`'s `overflow-wrap:
+   anywhere` was breaking `0.000000000000000000` ACROSS TWO LINES. A number
+   split down the middle is not an exact value any more — it is two numbers.
+   So the row stacks and the value takes the full column, which also stops
+   `MasterAccountController` hyphenating mid-word. Measured in the browser at
+   the width where the break first appeared. */
+@container fk-sa-net (max-width: 340px) {
+  .fk-sa-net-col .fk-row {
+    display: block;
+  }
+  .fk-sa-net-col .fk-row-v {
+    display: block;
+    margin-top: 2px;
+    text-align: left;
+  }
+}
+
+.fk-sa-card .fk-sa-net-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fk-sa-card .fk-sa-net-name {
+  font-family: var(--fk-font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.fk-sa-card .fk-sa-net-detail {
+  margin-top: 6px;
+  max-width: 46ch;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fk-text-muted);
+}
+
+/* The operator-mutable half, set apart from the account's own reads: they are
+   different subjects, and a reader must not take a fee for a balance. */
+.fk-sa-card .fk-sa-settings {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--fk-border);
+}
+
+.fk-sa-card .fk-sa-wallet {
+  display: block;
+}
+
+/* ---------- recent instructions ---------- */
+.fk-sa-card .fk-sa-history {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--fk-border);
+}
+
+.fk-sa-card .fk-sa-history-title {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+  margin-bottom: 8px;
+}
+
+.fk-sa-card .fk-sa-history-empty {
+  font-size: 12px;
+  color: var(--fk-text-muted);
+}
+
+.fk-sa-card .fk-sa-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fk-sa-card .fk-sa-history-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
+}
+
+.fk-sa-card .fk-sa-history-id {
+  color: var(--fk-text-muted);
+}
+
+/* The action is the row's subject and reads in the body face; the transaction
+   id beside it is a value and keeps the mono face `ExplorerLink` gives it.
+   `min-width: 0` so a long id shrinks instead of pushing the block number out
+   of the row. */
+.fk-sa-card .fk-sa-history-action {
+  font-weight: 500;
+}
+
+.fk-sa-card .fk-sa-history-tx {
+  min-width: 0;
+}
+
+.fk-sa-card .fk-sa-history-block {
+  color: var(--fk-text-faint);
+}
+
+/* ---------- InstructionCatalogue (SA-02) ---------- */
+.fk.fk-sa-catalogue {
+  max-width: 880px;
+}
+
+.fk-sa-catalogue .fk-sa-catalogue-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.fk .fk-sa-net {
+  font-size: 0.8rem;
+  color: var(--fk-text-muted);
+}
+
+.fk-sa-catalogue .fk-sa-row-id {
+  color: var(--fk-text-faint);
+}
+
+/* `collateralReservationAndDeposit` is one 31-character unbreakable token, and
+   in an auto-layout table that becomes the column's floor: measured at 263px,
+   which pushed the table 24px past a 568px container and CLIPPED the
+   availability chip — the one cell that carries the row's answer. An identifier
+   may break; a state chip may not be cut in half. */
+.fk-sa-catalogue .fk-sa-row-name {
+  overflow-wrap: anywhere;
+}
+
+/* Prose at a paragraph's width — the FDC-catalogue lesson. In a status column
+   these clip to a one-word-per-line sliver. */
+.fk-sa-catalogue .fk-sa-row-summary,
+.fk-sa-catalogue .fk-sa-row-reason {
+  display: block;
+  margin-top: 5px;
+  max-width: 56ch;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fk-text-muted);
+}
+
+.fk-sa-catalogue .fk-sa-row-reason {
+  color: var(--fk-text-faint);
+}
+
+/* `1000 drops` was breaking after the number, which reads as a bare `1000` with
+   a stray unit under it. A value and its denomination are one token here. */
+.fk-sa-catalogue .fk-sa-row-fee {
+  white-space: nowrap;
+}
+
+.fk-sa-catalogue .fk-sa-row-reason-label {
+  font-family: var(--fk-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* ---------- InstructionComposer (SA-02) ---------- */
+.fk.fk-sa-compose {
+  max-width: 560px;
+}
+
+.fk-sa-compose .fk-sa-compose-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fk-sa-compose .fk-sa-chain {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* The legs are numbered rather than merely stacked: this is a sequence across
+   three actors, and the order is the information. The rule down the left is the
+   same idea as the operation spine, at plan altitude. */
+.fk-sa-compose .fk-sa-leg {
+  padding-left: 12px;
+  border-left: 2px solid var(--fk-border);
+}
+
+.fk-sa-compose .fk-sa-leg-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.fk-sa-compose .fk-sa-leg-index {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fk-text-faint);
+}
+
+.fk-sa-compose .fk-sa-leg-title {
+  font-family: var(--fk-font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* NEVER truncated and never ellipsised: the 32 bytes are the instruction, and a
+   shortened memo cannot be checked against what the user meant to send. */
+.fk-sa-compose .fk-sa-reference {
+  display: inline-block;
+  font-size: 11px;
+  line-height: 1.5;
+  word-break: break-all;
+  max-width: 100%;
+}
+
+.fk-sa-compose .fk-sa-downstream {
+  margin-top: 6px;
+  max-width: 52ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fk-text);
+}
+
+.fk-sa-compose .fk-sa-deadline {
+  margin-top: 4px;
+}
+
+.fk-sa-compose .fk-sa-spine {
+  margin-top: 14px;
+}
+
+/* A dead operation is NOT dimmed. The first version of this file faded the
+   chain to `opacity: 0.72`, and the a11y audit measured five elements inside it
+   falling from passing to 3.00:1 — the plan a person most needs to read
+   carefully, made hardest to read, in the one state where their money is
+   already gone. What the operation is dead is said in words (the terminal note)
+   and in the absent affordance (a disabled CTA that never says "retry"); those
+   carry it without taking a single point of contrast. The attribute stays for
+   hosts and tests to target. */

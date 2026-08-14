@@ -34,10 +34,11 @@ describe('AttestationCatalogue', () => {
   })
 
   it('never renders a planned family as supported', () => {
-    // M3-R4. Five families have no builder and must say so in words.
+    // M3-R4. The families with no builder must say so in words. `Payment` left this
+    // set in M13-R2b, which built its request builder, so the counts moved by one.
     render(<AttestationCatalogue catalogue={mockCatalogue()} now={NOW} />)
-    expect(screen.getAllByText('Planned')).toHaveLength(5)
-    expect(screen.getAllByText('Supported')).toHaveLength(4)
+    expect(screen.getAllByText('Planned')).toHaveLength(4)
+    expect(screen.getAllByText('Supported')).toHaveLength(5)
   })
 
   it('keeps unreachable distinct from unavailable', () => {
@@ -108,7 +109,11 @@ describe('AttestationRequestBuilder', () => {
           feeUnavailableReason="The deployment would not price this request."
         />
       ),
-      plannedFamily: <AttestationRequestBuilder row={rowFor('Payment')} sourceId="testXRP" />,
+      // Was `Payment` until M13-R2b built its builder. The state under test is
+      // "planned", so the fixture must name a family that still has none.
+      plannedFamily: (
+        <AttestationRequestBuilder row={rowFor('ReferencedPaymentNonexistence')} sourceId="testXRP" />
+      ),
       ownerMismatch: (
         <AttestationRequestBuilder
           row={rowFor('XRPPayment')}
@@ -168,7 +173,9 @@ describe('AttestationRequestBuilder', () => {
 
   it('does not offer a family the kit has no builder for', () => {
     // M3-R4: `planned` is never rendered as supported, and never as broken.
-    render(<AttestationRequestBuilder row={rowFor('Payment')} sourceId="testXRP" />)
+    render(
+      <AttestationRequestBuilder row={rowFor('ReferencedPaymentNonexistence')} sourceId="testXRP" />,
+    )
     expect(screen.getByRole('button', { name: /submit/i }).hasAttribute('disabled')).toBe(true)
     expect(screen.getByText(/No builder in this kit/i)).toBeTruthy()
   })

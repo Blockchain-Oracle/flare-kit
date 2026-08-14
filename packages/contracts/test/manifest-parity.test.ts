@@ -6,6 +6,7 @@ import { registryFor } from '../src/addresses.js'
 import { delegationFor } from '../src/delegation.js'
 import { governanceFor } from '../src/governance.js'
 import { rewardsFor } from '../src/rewards.js'
+import { smartAccountsFor } from '../src/smart-accounts.js'
 import { stakingFor } from '../src/staking.js'
 
 /**
@@ -243,3 +244,55 @@ describe.each(GOVERNANCE_NETWORKS)(
     }, 30_000)
   },
 )
+
+/**
+ * M13 Task 1: `MasterAccountController` must resolve, by name, from the live
+ * FlareContractRegistry on BOTH networks — and to the SAME address on both.
+ *
+ * That second assertion is not decoration. A personal account is a CREATE2 address derived
+ * from the controller and an XRPL address, so one XRPL address maps to one Flare account
+ * everywhere ONLY while the controller address is identical across networks. If a future
+ * deployment breaks that, `SmartAccountCard` would show two different accounts for one
+ * XRPL controller and the surface's headline claim would be false — so it fails here
+ * rather than being discovered in a screenshot.
+ *
+ * Same resilience as the blocks above: an RPC hiccup SKIPS loudly, a MISMATCH fails.
+ */
+describe('M13 smart-accounts parity — snapshot vs a live getAllContracts read', () => {
+  it('MasterAccountController resolves by name, and is the same address on both networks', async (ctx) => {
+    const resolvedPerNetwork = new Map<string, `0x${string}` | undefined>()
+    for (const network of GOVERNANCE_NETWORKS) {
+      try {
+        const client = createPublicClient({
+          transport: http(network.rpc, { timeout: 15_000, retryCount: 1 }),
+        })
+        const [names, addresses] = await client.readContract({
+          address: CONTRACT_REGISTRY,
+          abi: REGISTRY_ABI,
+          functionName: 'getAllContracts',
+        })
+        const index = names.indexOf('MasterAccountController')
+        resolvedPerNetwork.set(
+          network.key,
+          index >= 0 ? getAddress(addresses[index]!) : undefined,
+        )
+      } catch (err) {
+        const reason = err instanceof Error ? err.message.split('\n')[0] : String(err)
+        console.warn(
+          `[M13 parity ${network.key}] SKIPPED — ${network.key} RPC unreachable (${reason}). ` +
+            'This is NOT a pass: re-run with network access to verify the snapshot against ' +
+            'the live registry.',
+        )
+        ctx.skip()
+        return
+      }
+    }
+
+    for (const network of GOVERNANCE_NETWORKS) {
+      const snapshot = smartAccountsFor(network.key).masterAccountController
+      expect(resolvedPerNetwork.get(network.key), network.key).toBe(getAddress(snapshot))
+    }
+    // The cross-network identity itself, read from the chain rather than from our constant.
+    expect(resolvedPerNetwork.get('coston2')).toBe(resolvedPerNetwork.get('flare'))
+  }, 45_000)
+})

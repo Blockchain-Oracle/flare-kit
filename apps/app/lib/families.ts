@@ -12,27 +12,89 @@ export interface Family {
   readonly id: string
   readonly label: string
   readonly status: FamilyStatus
+  /**
+   * The `@flarekit-dev/react-ui` components this family renders.
+   *
+   * Declared, not inferred, because `test/surface-coverage.test.ts` checks it
+   * against the kit's own directory. A component with no family fails the
+   * build, so a capability cannot be forgotten the way smart accounts and
+   * activity were — both were shipped, live-verified, and simply absent from
+   * this list.
+   */
+  readonly surfaces: readonly string[]
 }
 
-const built = (id: string, label: string): Family => ({ id, label, status: { kind: 'built' } })
+/**
+ * Surfaces that belong to the shell rather than to any one capability: the
+ * connect flow, the account sheet, the network-mismatch resolver, the
+ * non-blocking operations tray, the shared operation spine, and the provenance
+ * drawer. Being chrome is a decision recorded here, not a default for anything
+ * that failed to find a family.
+ */
+export const CHROME_SURFACES: readonly string[] = [
+  'ConnectModal',
+  'AccountSheet',
+  'NetworkResolutionSheet',
+  'PendingTray',
+  'OperationTimeline',
+  'SourceDrawer',
+]
+
+const built = (id: string, label: string, surfaces: readonly string[]): Family => ({
+  id,
+  label,
+  status: { kind: 'built' },
+  surfaces,
+})
 
 export const FAMILIES: readonly Family[] = [
-  built('swap', 'Swap'),
-  built('mint', 'Mint & redeem'),
-  built('pool', 'Pools'),
-  built('vaults', 'Vaults'),
-  built('bridge', 'Bridge'),
-  built('stake', 'Stake'),
-  built('delegate', 'Delegate'),
-  built('rewards', 'Rewards'),
-  built('governance', 'Governance'),
-  built('feeds', 'Feeds'),
-  built('attestations', 'Attestations'),
-  built('payments', 'Payments'),
-  built('portfolio', 'Portfolio'),
+  built('swap', 'Swap', ['SwapCard', 'SwapLeg', 'TokenSelector']),
+  built('mint', 'Mint & redeem', ['MintFXRP', 'RedeemFXRP', 'RecoveryPanel']),
+  built('pool', 'Pools', ['PoolCatalogue', 'AddLiquidityCard', 'PositionCard']),
+  built('vaults', 'Vaults', ['VaultCatalogue', 'DepositCard', 'WithdrawCard']),
+  built('bridge', 'Bridge', ['RouteCatalogue', 'BridgeCard']),
+  built('stake', 'Stake', ['StakeCard']),
+  built('delegate', 'Delegate', ['DelegationCard']),
+  built('rewards', 'Rewards', ['ClaimCard']),
+  built('governance', 'Governance', ['GovernanceCard', 'ProposalCatalogue', 'ProposalDetail']),
+  // M13, live-verified on Coston2 and absent from this list until the surface
+  // audit found it. Its components arrive when this branch merges `main`.
+  built('smart-accounts', 'Smart accounts', [
+    'SmartAccountCard',
+    'SmartAccountNetwork',
+    'InstructionCatalogue',
+    'InstructionComposer',
+    'InstructionChain',
+  ]),
+  built('feeds', 'Feeds', [
+    'FeedCatalogue',
+    'FeedCatalogueRow',
+    'FeedDetail',
+    'FeedHistoryTable',
+    'CustomFeedReview',
+    'SecureRandomPanel',
+    'IncentiveComposer',
+    'IncentiveEffectPanel',
+  ]),
+  built('attestations', 'Attestations', [
+    'AttestationCatalogue',
+    'AttestationRequestBuilder',
+    'AttestationTimeline',
+    'ProofDetail',
+    'ProofHandoff',
+    'ProofResponseFields',
+    'ScalingProofDetail',
+  ]),
+  built('payments', 'Payments', ['GaslessCard', 'X402Card']),
+  built('portfolio', 'Portfolio', ['PortfolioTable']),
+  // Its own family, not a portfolio tab: activity is the durable record of every
+  // operation, and M2 built it as a first-class capability.
+  built('activity', 'Activity', ['ActivityTable']),
   {
     id: 'chat',
     label: 'Chat',
+    /** Nothing yet: an unbuilt family renders no kit surface. */
+    surfaces: [],
     status: {
       kind: 'unbuilt',
       milestone: 'M14 — agent tools, MCP server and CLI',
@@ -44,6 +106,8 @@ export const FAMILIES: readonly Family[] = [
   {
     id: 'confidential',
     label: 'Confidential compute',
+    /** Nothing yet: an unbuilt family renders no kit surface. */
+    surfaces: [],
     status: {
       kind: 'unbuilt',
       milestone: 'FCC — Flare Confidential Compute',
@@ -53,6 +117,8 @@ export const FAMILIES: readonly Family[] = [
   {
     id: 'operator',
     label: 'Operator release',
+    /** Nothing yet: an unbuilt family renders no kit surface. */
+    surfaces: [],
     status: {
       kind: 'unbuilt',
       milestone: 'Operator support — release and claim',

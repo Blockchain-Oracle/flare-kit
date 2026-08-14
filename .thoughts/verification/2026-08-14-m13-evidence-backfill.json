@@ -1,0 +1,55 @@
+{
+  "milestone": "M13 — evidence back-fill for values the surfaces render",
+  "reason": "The 2026-08-14 reviews found `paused`, `xrplLedgerIndex`, the deposit dispatch identifiers and the TRANSFER run's voting round rendered or recorded without a machine-written source (the live script wrote both attestations under one `attest` key). This is that source.",
+  "readAt": "2026-08-14T06:24:34.675Z",
+  "keyless": true,
+  "pausedState": {
+    "coston2": {
+      "chainId": 114,
+      "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "isPaused": {
+        "value": false
+      }
+    },
+    "flare": {
+      "chainId": 14,
+      "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "isPaused": {
+        "value": false
+      }
+    }
+  },
+  "depositDispatch": {
+    "transactionHash": "0x53aad8df00e90fc6bd2917a68756d2fb2de0ce5875f46f3e35a3f96851173c6d",
+    "dispatchedBy": "0xca0bf4cbc1cf8c4b5fd7984b42af907099084466",
+    "blockNumber": "34022984",
+    "status": "success",
+    "logCount": 9
+  },
+  "transferDispatch": {
+    "transactionHash": "0xd23a2d66eafc0de230590276794709e71eda91dee9ca687d0a46ba3fd16cabb1",
+    "from": "0xa4b05cdb545fa7ca12be9f866d64e8a843a31bd9",
+    "functionName": "executeInstruction",
+    "xrplAddress": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+    "votingRound": "1424618",
+    "attestationType": "0x5061796d656e7400000000000000000000000000000000000000000000000000",
+    "sourceId": "0x7465737458525000000000000000000000000000000000000000000000000000",
+    "standardPaymentReference": "0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a"
+  },
+  "xrplLedgerIndex": {
+    "transfer": {
+      "value": {
+        "ledgerIndex": 19881251,
+        "validated": true,
+        "date": 839960853
+      }
+    },
+    "deposit": {
+      "value": {
+        "ledgerIndex": 19884153,
+        "validated": true,
+        "date": 839970232
+      }
+    }
+  }
+}
