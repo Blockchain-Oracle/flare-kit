@@ -1208,6 +1208,50 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
 - `packages/react-ui/gallery/m13-smart-account-sections.tsx` — M13-AC6. The
   state matrix, both themes, observed states only.
 
+### M14 — Smart Accounts part two, the direct-minting memo flow
+
+Spec: `.thoughts/specs/2026-08-14-m14-smart-accounts-memo.md`. The kit never calls
+the controller on this path — `handleMintedFAssets` is `OnlyAssetManager`, so the
+instruction runs as a consequence of a direct mint the kit self-relays.
+
+- `packages/contracts/src/smart-accounts-abis.ts` — M14-R1. Extend with the
+  `IMemoInstructionsFacet` reads, its seven events and its ten named errors.
+- `packages/contracts/src/direct-minting-abi.ts` — M14-R1. Add
+  `executeDirectMintingWithData`, which is live on Coston2 and missing from our
+  own transcription; M13's spec recorded that absence as a protocol fact and it
+  is not one.
+- `packages/core/src/smart-accounts/memo.ts` — M14-R2. The seven-opcode memo
+  codec: one 10-byte header, exact lengths (42/42/50/30/10 and `0xFF` variable),
+  raw-width concatenation — an ABI-padded `0xD0` address is 42 bytes and reverts.
+- `packages/core/src/smart-accounts/user-operation.ts` — M14-R3. The
+  `PackedUserOperation` builder and `executeUserOp(Call[])` batches. Only
+  `sender`, `nonce` and `callData` are validated on chain and nothing is
+  signature-checked; the rest is zero-filled.
+- `packages/core/src/smart-accounts/memo-reads.ts` — M14-R4. Nonce, pinned
+  executor, used-transaction-id and the replacement fee — the last through the
+  accessor, never the raw slot, which stores `newFee + 1`.
+- `packages/core/src/smart-accounts/direct-mint-fees.ts` — M14-R5. The
+  minting-fee, minimum and executor-fee computation, refusing an amount that
+  would burn to the fee receiver.
+- `packages/core/src/smart-accounts/memo-plan.ts` — M14-R6/R7. The plan gate and
+  the pre-signature simulation of the inner call.
+- `packages/core/src/smart-accounts/memo-states.ts` — M14-R8. The lifecycle,
+  including `delayed` as a state that is neither success nor failure.
+- `packages/core/src/smart-accounts/recovery.ts` — M14-R9. The five recovery
+  opcodes as first-class operations, with their ordering rules.
+- `packages/core/src/smart-accounts/self-relay.ts` — M14-R10. `proofOwner`-bound
+  attestation request and submission, absorbing `PaymentAlreadyConfirmed`.
+- `packages/core/src/mock-smart-accounts-memo.ts` — M14-R12.
+- `packages/core/scripts/probe-memo-flow.mjs` — M14-AC3. Keyless.
+- `packages/core/scripts/live-memo-instruction.mjs` — M14-AC4. Gated, double
+  broadcast guard, testnet only.
+- `packages/react/src/use-memo-instruction.ts` — M14-R11.
+- `packages/react-ui/src/MemoInstructionComposer.tsx` — M14-R11.
+- `packages/react-ui/src/RecoveryComposer.tsx` — M14-R11. The five recovery
+  paths, leading with `0xE0` because it is the only one that works on a memo too
+  malformed to parse.
+- `packages/react-ui/gallery/m14-memo-sections.tsx` — M14-AC6.
+
 ## Integrations
 
 | Surface | Classification | Note |
