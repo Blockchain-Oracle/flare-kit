@@ -191,6 +191,12 @@ export const OBSERVED_TRANSFER = {
    * not an observed one; the honest-rendering review caught the comment claiming otherwise.
    */
   xrplCloseUnix: 1_786_645_653n,
+  /**
+   * Decoded back out of the dispatch's own calldata in the 2026-08-14 back-fill — the proof
+   * this kit submitted carries its voting round. It needed a source because the live script
+   * wrote BOTH runs' attestations under one `attest` key, so run 1's round survived only in a
+   * prose summary line. The same decode re-confirms the reference bytes and our signer.
+   */
   votingRoundId: 1_424_618n,
   dispatchHash: '0xd23a2d66eafc0de230590276794709e71eda91dee9ca687d0a46ba3fd16cabb1',
   dispatchBlock: 34_018_235n,

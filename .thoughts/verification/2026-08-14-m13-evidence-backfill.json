@@ -1,7 +1,7 @@
 {
   "milestone": "M13 — evidence back-fill for values the surfaces render",
-  "reason": "The 2026-08-14 honest-rendering review found `paused`, `xrplLedgerIndex` and the deposit dispatch identifiers rendered without a machine-written source. This file is that source.",
-  "readAt": "2026-08-14T06:03:17.374Z",
+  "reason": "The 2026-08-14 reviews found `paused`, `xrplLedgerIndex`, the deposit dispatch identifiers and the TRANSFER run's voting round rendered or recorded without a machine-written source (the live script wrote both attestations under one `attest` key). This is that source.",
+  "readAt": "2026-08-14T06:24:34.675Z",
   "keyless": true,
   "pausedState": {
     "coston2": {
@@ -25,6 +25,16 @@
     "blockNumber": "34022984",
     "status": "success",
     "logCount": 9
+  },
+  "transferDispatch": {
+    "transactionHash": "0xd23a2d66eafc0de230590276794709e71eda91dee9ca687d0a46ba3fd16cabb1",
+    "from": "0xa4b05cdb545fa7ca12be9f866d64e8a843a31bd9",
+    "functionName": "executeInstruction",
+    "xrplAddress": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+    "votingRound": "1424618",
+    "attestationType": "0x5061796d656e7400000000000000000000000000000000000000000000000000",
+    "sourceId": "0x7465737458525000000000000000000000000000000000000000000000000000",
+    "standardPaymentReference": "0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a"
   },
   "xrplLedgerIndex": {
     "transfer": {
