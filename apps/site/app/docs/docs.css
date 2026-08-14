@@ -147,6 +147,11 @@
 .doc-body p,
 .doc-body li {
   color: var(--fk-text-muted);
+  /* Prose keeps its measure while the column grows on wide displays. Only the
+     surfaces that genuinely need width — live previews, code windows, props
+     tables — spend the extra room, so a wider screen never buys a worse line
+     length. */
+  max-width: 74ch;
 }
 .doc-body strong {
   color: var(--fk-text);
@@ -418,6 +423,17 @@ h4:hover .hash,
 .toc a.active {
   color: var(--fk-primary);
   border-left-color: var(--fk-primary);
+}
+
+/* A live preview is the widest thing on a component page, and several of them
+   (StakeCard 1076, DelegationCard 1053, ClaimCard 900) are wider than the
+   748px column the 1320px shell leaves. On a large display that meant scrolling
+   a component sideways while ~400px of viewport sat unused either side.
+   The extra width goes to the content column, not to the margins. */
+@media (min-width: 1400px) {
+  .docs-shell {
+    max-width: 1680px;
+  }
 }
 
 @media (max-width: 1180px) {
