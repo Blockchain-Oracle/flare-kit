@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { HookReadout } from '../components/docs/demos/hook-readout'
 
@@ -90,6 +91,49 @@ describe('HookReadout depth', () => {
     render(<HookReadout name="useThing" value={{ conflicts: [], meta: {} }} depth={1} />)
     expect(readoutText()).toMatch(/conflicts: \[\]/)
     expect(readoutText()).toMatch(/meta: \{\}/)
+  })
+})
+
+/**
+ * The pane renders LIVE hook state, so the server's pre-read snapshot and the
+ * client's settled one differ by construction — the server rendered
+ * `position: { status: 'unavailable' }` in 12 lines while the client rendered
+ * the settled value in 42, and React failed hydration.
+ *
+ * Every hook demo shares this pane, so every one of them has the same race.
+ * `useDelegation` escaped it only on timing: its mock read takes several
+ * microtasks and lands after hydration finishes, while `useGovernance`'s
+ * resolves in one and lands during it. A bug that only some pages show, for
+ * reasons that have nothing to do with those pages, is a bug in the shared
+ * thing.
+ *
+ * So the pane renders nothing live until it has mounted: both passes then agree,
+ * and the value arrives afterwards. It was never a static value to begin with.
+ */
+describe('HookReadout hydration', () => {
+  /**
+   * Tags stripped before asserting: the highlighter splits every value across
+   * span boundaries, so a raw `toContain` on the HTML passes whether or not the
+   * value is there. That version of this test passed against the UNFIXED
+   * component, which is the only reason this comment exists.
+   */
+  const serverText = (node: Parameters<typeof renderToString>[0]) =>
+    renderToString(node).replace(/<[^>]*>/g, '')
+
+  it('renders no live value on the server, so the two passes cannot disagree', () => {
+    expect(serverText(<HookReadout name="useThing" value={{ vp: 1n }} />)).not.toMatch(/vp: 1n/)
+  })
+
+  it('still names the pane on the server, so the layout does not jump', () => {
+    const html = renderToString(
+      <HookReadout name="useThing" value={{ vp: 1n }} returnType="UseThingResult" />,
+    )
+    expect(html).toContain('UseThingResult')
+  })
+
+  it('renders the value once mounted', () => {
+    render(<HookReadout name="useThing" value={{ vp: 1n }} />)
+    expect(readoutText()).toMatch(/vp: 1n/)
   })
 })
 

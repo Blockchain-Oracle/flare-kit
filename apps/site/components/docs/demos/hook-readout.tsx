@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { CodeBlock } from '../code-block'
 
 /**
@@ -123,10 +124,28 @@ export function HookReadout({
   /** How deep to render before summarising. Rarely worth overriding. */
   depth?: number
 }) {
+  /**
+   * The pane reads LIVE hook state, so the server's pre-read snapshot and the
+   * client's settled value differ by construction — and React fails hydration
+   * when the update lands mid-hydration rather than after it.
+   *
+   * Every hook demo shares this pane, so every one carries the same race.
+   * `useGovernance` was simply the first mock fast enough to lose it: it
+   * resolves in one microtask, while `useDelegation` takes several and lands
+   * after hydration completes. Fixing it per-page would have left the race in
+   * place for whichever mock got faster next.
+   *
+   * So nothing live renders until mount. Both passes then agree, and the value
+   * arrives immediately afterwards — which costs nothing, because a live
+   * readout was never static content.
+   */
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+
   return (
     <>
       <CodeBlock
-        code={formatHookValue(value, depth)}
+        code={mounted ? formatHookValue(value, depth) : '// reads on mount'}
         language="ts"
         title={returnType ?? `${name} — live return value`}
       />
