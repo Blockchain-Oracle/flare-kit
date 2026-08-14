@@ -15,7 +15,7 @@
   &nbsp;·&nbsp;
   <a href="https://app.flare-kit.xyz"><b>▶&nbsp; The app</b></a>
   &nbsp;·&nbsp;
-  <a href="https://www.npmjs.com/org/flarekit-dev"><b>Packages</b></a>
+  <a href="https://www.npmjs.com/package/@flarekit-dev/core"><b>Packages</b></a>
   &nbsp;·&nbsp;
   <a href="https://github.com/Blockchain-Oracle/flare-kit"><b>Source</b></a>
 </p>
