@@ -25,6 +25,17 @@ export * from './bridge-quote.js'
 export * from './bridge-states.js'
 export * from './bridge.js'
 export * from './mock-bridge.js'
+export * from './governance-adapter.js'
+export * from './governance.js'
+export * from './governance-states.js'
+export * from './proposals.js'
+export * from './mock-governance.js'
+// The governance registry vocabulary, re-exported so react/react-ui can name the
+// governance deployment type and read the configured addresses (both networks) without a
+// second dependency on contracts — the same treatment the staking/vault/bridge registries
+// get below (M12-T8 gap: Tasks 3-5 never re-exported this, unlike every prior domain).
+export type { GovernanceDeployment } from '@flarekit-dev/contracts'
+export { GOVERNANCE, governanceFor } from '@flarekit-dev/contracts'
 export * from './delegation-adapter.js'
 export * from './delegation.js'
 export * from './delegation-states.js'

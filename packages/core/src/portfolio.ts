@@ -72,6 +72,11 @@ export const UNBUILT_POSITION_TYPES: readonly UnbuiltPositionType[] = Object.fre
     label: 'Stakes',
     reason: 'No staking capability is verified yet, so stakes are not read.',
   }),
+  // M12-R10 / Task 6: governance is now BUILT — the live Coston2 delegate/undelegate round trip
+  // (2026-08-13, delegate tx 0xc0da39ab…d1419d7, read back via getDelegateOfAtNow) flipped
+  // `governanceVerified` true, so its position is observed via `governancePosition`
+  // (`governance.ts`) and it no longer declares itself unbuilt — exactly as delegation's row was
+  // removed in M10-R12. Mainnet stays a read lens (its flag never flips this milestone).
 ])
 
 /**

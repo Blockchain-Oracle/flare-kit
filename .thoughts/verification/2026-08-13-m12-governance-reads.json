@@ -1,0 +1,150 @@
+{
+  "ranAt": "2026-08-13T12:11:52.335Z",
+  "milestone": "M12 governance — Task 6 keyless live reads (AC1) + plan/invariant proof (AC2)",
+  "broadcast": false,
+  "keyless": true,
+  "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+  "deployment": {
+    "coston2": {
+      "governanceVotePower": "0x8e4A2c063E1C82C9f5cb96489c0d2b6d78dF0538",
+      "pollingFoundation": "0x6D7ca85Cb3451b772B87EBB32A9E5cFc500BfA94",
+      "pollingFtso": "0x0f86aD3D5a910Bd0D6A73f7c256bDae1A8Ff7563",
+      "pollingManagementGroup": "0x056A8AcdCd2B5D3bF7a4F1d218B8A1660BB4D912",
+      "chainId": 114,
+      "governanceVerified": false
+    },
+    "flare": {
+      "governanceVotePower": "0x95eD14840d3A1C75b8629Ae5599fe55270C51e04",
+      "pollingFoundation": "0xc8294a2335C6c45de827121090ce4Ba9977907D2",
+      "pollingFtso": "0x84e6790c97B48195161f899d3C509711e267B391",
+      "pollingManagementGroup": "0x1e91A59aaC440D7ecA5EBf58d85903CdB0021812",
+      "chainId": 14,
+      "governanceVerified": false
+    }
+  },
+  "coston2Reads": {
+    "block": "34007182",
+    "governanceVotePower": "0x8e4A2c063E1C82C9f5cb96489c0d2b6d78dF0538",
+    "votes": "0",
+    "votesHuman": "0",
+    "delegate": "0x0000000000000000000000000000000000000000",
+    "delegateIsZero": true,
+    "votesRender": "observed: 0 governance VP, delegate 0x0000000000000000000000000000000000000000 — a real blank-slate read (0 VP, zero delegate), not a fabricated fill",
+    "position": "observed",
+    "eligibility": {
+      "isProposer": false,
+      "canPropose": false,
+      "isMember": null
+    },
+    "eligibilityRender": "isProposer=false canPropose=false isMember=undefined (PollingFtso.isMember REVERTS for a non-member — probe CONCERN A; never coerced to false)",
+    "nativeC2flr": "146634056736830560487",
+    "nativeC2flrHuman": "146.634056736830560487"
+  },
+  "coston2Discovery": {
+    "count": 0,
+    "proposals": [],
+    "render": "honest-empty: getLastProposal id 0 + bounded PollingFoundation scan found none — Coston2 hosts no proposal (blank), never invented"
+  },
+  "flareReads": {
+    "block": "67309105",
+    "governanceVotePower": "0x95eD14840d3A1C75b8629Ae5599fe55270C51e04",
+    "votes": "0",
+    "delegate": "0x0000000000000000000000000000000000000000",
+    "eligibility": {
+      "isProposer": false,
+      "canPropose": false,
+      "isMember": null
+    },
+    "discoveryCount": 1,
+    "discovered": [
+      {
+        "id": "1",
+        "source": "ftso",
+        "state": "defeated",
+        "proposer": "0xb5Dd6cA7b14bd7d2B6E296983D0AA0D373979CFE",
+        "votePowerBlock": null,
+        "voteStart": "1733413499",
+        "voteEnd": "1733586299"
+      }
+    ],
+    "ftsoProposalDetail": {
+      "id": "1",
+      "source": "ftso",
+      "state": "defeated",
+      "proposer": "0xb5Dd6cA7b14bd7d2B6E296983D0AA0D373979CFE",
+      "voteStart": "1733413499",
+      "voteStartIso": "2024-12-05T15:44:59.000Z",
+      "voteEnd": "1733586299",
+      "voteEndIso": "2024-12-07T15:44:59.000Z",
+      "for": "2354308387975507843417",
+      "forHuman": "2354.308387975507843417",
+      "against": "0",
+      "againstHuman": "0",
+      "thresholdBIPS": 6600,
+      "majorityBIPS": 5000,
+      "totalVotePower": "5217782567582675528275",
+      "totalVotePowerHuman": "5217.782567582675528275",
+      "votePowerBlock": null,
+      "hasVoted": null,
+      "accountVotes": null
+    },
+    "render": "real mainnet FTSO proposal #1 — defeated; for 2354.308387975507843417 / against 0; threshold 6600 BIPS / majority 5000 BIPS"
+  },
+  "plan": {
+    "probeTarget": "0x1000000000000000000000000000000000000001",
+    "verifiedGate": {
+      "governanceVerified": false,
+      "ok": false,
+      "error": "unverified"
+    },
+    "validUnderOverride": {
+      "ok": true,
+      "calls": [
+        "delegate"
+      ]
+    },
+    "selfDelegation": {
+      "ok": false,
+      "error": "self_delegation"
+    },
+    "invalidTarget": {
+      "ok": false,
+      "error": "invalid_target"
+    },
+    "noDelegate": {
+      "ok": false,
+      "error": "no_delegate"
+    }
+  },
+  "honestExpectations": {
+    "all": true,
+    "failed": []
+  },
+  "broadcastGuard": {
+    "mechanism": "DOUBLE guard: the delegate/undelegate broadcast runs only with the `--broadcast` CLI flag AND `LIVE_GOV_BROADCAST` set to the token, both required.",
+    "ran": false,
+    "keyRead": false,
+    "note": "Default invocation is the keyless read pass; the broadcast branch was not entered and the secrets file was never opened."
+  },
+  "carry": "The delegate/undelegate round trip is HELD on Abu's explicit go. It is cheap and reversible (no funding floor) but moves real governance vote power, so it runs only on the double guard. governanceVerified stays FALSE on both networks; the governance-delegation write is declared-unbuilt, nothing faked. It flips (Coston2 only) exclusively after a live delegate lands and getDelegateOfAtNow reads back the target, then undelegate restores the zero address.",
+  "note": "READ-ONLY: readGovernanceVotes + readEligibility + governancePosition + discoverProposals + readProposalDetail + planGovernance (pure). No signer constructed, no key read, nothing broadcast; the account address is the only account value used.",
+  "broadcastRun": {
+    "ranAt": "2026-08-13T12:23:11.793Z",
+    "account": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
+    "target": "0xDddF991858311597bFD3D125cb342a0d4B56ea0a",
+    "delegate": {
+      "tx": "0xc0da39abf699242a1306c7ac659c59d7df98612940e8b4036ec6d0075d1419d7",
+      "explorer": "https://coston2-explorer.flare.network/tx/0xc0da39abf699242a1306c7ac659c59d7df98612940e8b4036ec6d0075d1419d7",
+      "delegateReadBack": "0xDddF991858311597bFD3D125cb342a0d4B56ea0a",
+      "opState": "succeeded",
+      "confirmedAt": "2026-08-13T12:23:14.648Z"
+    },
+    "undelegate": {
+      "tx": "0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d",
+      "explorer": "https://coston2-explorer.flare.network/tx/0x5537335d5fcabebcb512b9ece76f258b15cba773fd6a3785e0697e76e75bea7d",
+      "delegateReadBack": "0x0000000000000000000000000000000000000000",
+      "opState": "succeeded",
+      "confirmedAt": "2026-08-13T12:32:15.732Z"
+    }
+  }
+}

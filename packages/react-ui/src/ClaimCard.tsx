@@ -1,4 +1,4 @@
-import { type ClaimPlanResult, type DexToken, type RewardsReads, amount, formatExact } from '@flarekit-dev/core'
+import { type ClaimPlanResult, type DexToken, type RewardsReads, amount, formatExact, truncateAddress } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'
@@ -40,8 +40,6 @@ import { claimStateNote } from './claim-card-notes.js'
 
 const DEFAULT_FLAREDROP_ENDED = '2026-01-30'
 const RNAT_DECIMALS = 18
-
-const shorten = (address: string): string => `${address.slice(0, 6)}…${address.slice(-4)}`
 
 export interface ClaimCardProps {
   readonly kind: ClaimKind
@@ -96,7 +94,7 @@ function FtsoBody(props: Pick<ClaimCardProps, 'reads' | 'proofSource' | 'recipie
       {props.reads ? (
         <DetailRow label="Expires next (epoch)" value={`${props.reads.expireNextEpoch} · ${props.expiryEpochs ?? 25}-epoch window`} />
       ) : null}
-      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{shorten(props.recipient)}</span>} /> : null}
+      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{truncateAddress(props.recipient)}</span>} /> : null}
       {rewards.map((reward) => (
         <DetailRow
           key={reward.epoch}
@@ -144,7 +142,7 @@ function FlareDropBody(props: { reads?: RewardsReads; recipient?: string; endedA
   return (
     <Details aria-label="FlareDrop distribution" className="fk-claim-position">
       <DetailRow label="Status" value={`Concluded · ${props.endedAt}`} />
-      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{shorten(props.recipient)}</span>} /> : null}
+      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{truncateAddress(props.recipient)}</span>} /> : null}
       <DetailRow label="Claimable months" value={months.length > 0 ? months.join(', ') : 'None'} />
     </Details>
   )
@@ -162,7 +160,7 @@ function StakingBody(props: { reads?: RewardsReads; recipient?: string; wrap: bo
   return (
     <Details aria-label="Staking rewards" className="fk-claim-position">
       <DetailRow label="Reward type" value="Staking · validator" />
-      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{shorten(props.recipient)}</span>} /> : null}
+      {props.recipient ? <DetailRow label="Recipient" value={<span className="fk-mono">{truncateAddress(props.recipient)}</span>} /> : null}
       <DetailRow label="Wrap" value={props.wrap ? 'Wrap to WNat' : 'Native'} />
       <DetailRow label="Expiry" value="Does not expire" />
       <DetailRow label="Claimable" value={amount(staking?.claimable ?? 0n, decimals, asset)} />

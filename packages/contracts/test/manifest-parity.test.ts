@@ -4,6 +4,7 @@ import { createPublicClient, getAddress, http } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { registryFor } from '../src/addresses.js'
 import { delegationFor } from '../src/delegation.js'
+import { governanceFor } from '../src/governance.js'
 import { rewardsFor } from '../src/rewards.js'
 import { stakingFor } from '../src/staking.js'
 
@@ -90,6 +91,8 @@ describe.each(NETWORKS)('$file addresses match the deployment manifest', (networ
  * is drift the milestone must see.
  */
 const COSTON2_RPC = 'https://coston2-api.flare.network/ext/C/rpc'
+const FLARE_RPC = 'https://flare-api.flare.network/ext/C/rpc'
+// The FlareContractRegistry is deployed at the same address on both networks.
 const CONTRACT_REGISTRY = '0xaD67FE66660Fb8dFE9d6b1b4240d8650e30F6019'
 const REGISTRY_ABI = [
   {
@@ -184,3 +187,59 @@ describe('M11 staking parity — snapshot vs a live getAllContracts read', () =>
     )
   }, 30_000)
 })
+
+/**
+ * M12 Task 2: the four governance snapshot addresses pinned in `governance.ts` must equal
+ * what the live FlareContractRegistry resolves right now — on BOTH networks. Governance
+ * spans Coston2 (114, write/verify) AND Flare mainnet (14, the proposal read lens), so —
+ * unlike the Coston2-only M10/M11 blocks above — this reads `getAllContracts()` on EACH
+ * network and checks the snapshot for that network. It also asserts `GovernorReject` is
+ * NOT a registered name (the probe confirmed it absent on both networks; it must never be
+ * treated as a real deployed contract). Same resilience as the blocks above: an RPC
+ * hiccup SKIPS loudly (never a silent pass), a genuine address MISMATCH still fails.
+ */
+const GOVERNANCE_NETWORKS = [
+  { key: 'coston2', rpc: COSTON2_RPC },
+  { key: 'flare', rpc: FLARE_RPC },
+] as const
+
+describe.each(GOVERNANCE_NETWORKS)(
+  'M12 governance parity ($key) — snapshot vs a live getAllContracts read',
+  (network) => {
+    it('the four governance addresses match and GovernorReject is absent', async (ctx) => {
+      let names: readonly string[]
+      let addresses: readonly `0x${string}`[]
+      try {
+        const client = createPublicClient({
+          transport: http(network.rpc, { timeout: 15_000, retryCount: 1 }),
+        })
+        ;[names, addresses] = await client.readContract({
+          address: CONTRACT_REGISTRY,
+          abi: REGISTRY_ABI,
+          functionName: 'getAllContracts',
+        })
+      } catch (err) {
+        const reason = err instanceof Error ? err.message.split('\n')[0] : String(err)
+        console.warn(
+          `[M12 parity ${network.key}] SKIPPED — ${network.key} RPC unreachable (${reason}). ` +
+            'This is NOT a pass: re-run with network access to verify the snapshot against ' +
+            'the live registry.',
+        )
+        ctx.skip()
+        return
+      }
+
+      const resolved = new Map(names.map((name, i) => [name, getAddress(addresses[i]!)]))
+      const governance = governanceFor(network.key)
+
+      expect(resolved.get('GovernanceVotePower')).toBe(getAddress(governance.governanceVotePower))
+      expect(resolved.get('PollingFoundation')).toBe(getAddress(governance.pollingFoundation))
+      expect(resolved.get('PollingFtso')).toBe(getAddress(governance.pollingFtso))
+      expect(resolved.get('PollingManagementGroup')).toBe(
+        getAddress(governance.pollingManagementGroup),
+      )
+      // GovernorReject must never be a registered name — the probe confirmed its absence.
+      expect(resolved.has('GovernorReject')).toBe(false)
+    }, 30_000)
+  },
+)

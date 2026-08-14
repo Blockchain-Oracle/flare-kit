@@ -7,7 +7,7 @@ const config: NextConfig = {
   // and CSS must go through this app's compiler. cdr-kit does not need this — it
   // consumes published tarballs via the `npm:` alias.
   // See .thoughts/decisions/2026-08-13-docs-site-framework.md (R-SITE-009).
-  transpilePackages: ['@flare-kit/react-ui', '@flare-kit/react', '@flare-kit/core'],
+  transpilePackages: ['@flarekit-dev/react-ui', '@flarekit-dev/react', '@flarekit-dev/core'],
 }
 
 const withMDX = createMDX()

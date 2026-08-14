@@ -1,4 +1,4 @@
-import { type Amount, type DexToken, amount, formatExact } from '@flarekit-dev/core'
+import { type Amount, type DexToken, amount, formatExact, truncateAddress } from '@flarekit-dev/core'
 import type { DelegationPlanResult, DelegationPositionView } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
@@ -66,8 +66,6 @@ export interface DelegationCardProps {
   readonly theme?: 'light' | 'dark'
   readonly className?: string
 }
-
-const shorten = (address: string): string => `${address.slice(0, 6)}…${address.slice(-4)}`
 
 export function DelegationCard(props: DelegationCardProps) {
   const { operation: op, planResult, position, nativeToken, wrappedToken, theme } = props
@@ -146,7 +144,7 @@ export function DelegationCard(props: DelegationCardProps) {
               position.delegates.map((delegate) => (
                 <DetailRow
                   key={delegate.address}
-                  label={<span className="fk-mono">{shorten(delegate.address)}</span>}
+                  label={<span className="fk-mono">{truncateAddress(delegate.address)}</span>}
                   value={`${delegate.bips} bips · ${percentOf(delegate.bips)}`}
                 />
               ))

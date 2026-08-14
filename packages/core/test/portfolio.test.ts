@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { stakingFor } from '@flarekit-dev/contracts'
+import { governanceFor, stakingFor } from '@flarekit-dev/contracts'
 import { createAccountContext, supplyReadOnly, walletConnected } from '../src/account.js'
 import { unavailable } from '../src/observation.js'
 import {
@@ -8,6 +8,7 @@ import {
   delegationPosition,
   stakePosition,
 } from '../src/portfolio.js'
+import { governancePosition } from '../src/governance.js'
 import type { DelegationReads } from '../src/delegation-adapter.js'
 import type { StakePosition } from '../src/pchain-rpc.js'
 import {
@@ -35,6 +36,9 @@ describe('unbuilt position types', () => {
     expect(kinds).toContain('vault')
     expect(kinds).toContain('bridge-message')
     expect(kinds).toContain('stake')
+    // M12 Task 6: governance is now BUILT (the live Coston2 round trip flipped
+    // governanceVerified) — like delegation, it no longer declares itself unbuilt.
+    expect(kinds).not.toContain('governance')
     // M10-R12: delegation is now BUILT — it no longer declares itself unbuilt.
     expect(kinds).not.toContain('delegation')
   })
@@ -233,6 +237,42 @@ describe('stakePosition (M11) — built mechanism, gated on stakeVerified', () =
       status: 'observed',
       stakes: [pos],
       mirroredVotePower: undefined,
+    })
+  })
+})
+
+// M12 Task 6: the governance position mechanism is built (`governancePosition` produces the
+// M10-style `observed | unavailable` view), and the live Coston2 delegate/undelegate round trip
+// flipped `governanceVerified` true — so the portfolio now SURFACES governance (it no longer
+// declares itself unbuilt), exactly as delegation was surfaced in M10-R12. Honesty (M2 coverage):
+// an ABSENT read is `unavailable`, never a fabricated zero — and an observed read with 0 votes
+// and no delegate is a REAL observed-empty holding, distinct from unavailable.
+describe('governancePosition (M12) — built mechanism, surfaced after the governanceVerified flip', () => {
+  const A = '0x00000000000000000000000000000000000000A1' as const
+  const ZERO = '0x0000000000000000000000000000000000000000' as const
+
+  it('governance is now BUILT — the live Coston2 round trip flipped governanceVerified, so it no longer declares itself unbuilt', () => {
+    expect(governanceFor('coston2').governanceVerified).toBe(true)
+    expect(UNBUILT_POSITION_TYPES.map((type) => type.kind)).not.toContain('governance')
+  })
+
+  it('an absent read is unavailable — never a fabricated zero', () => {
+    expect(governancePosition(undefined)).toEqual({ status: 'unavailable' })
+  })
+
+  it('an observed account with zero votes and no delegate is a REAL observed-empty, distinct from unavailable', () => {
+    expect(governancePosition({ votes: 0n, delegate: ZERO })).toEqual({
+      status: 'observed',
+      votes: 0n,
+      delegate: ZERO,
+    })
+  })
+
+  it('a present read is observed, carrying the votes and the current delegate', () => {
+    expect(governancePosition({ votes: 42n, delegate: A })).toEqual({
+      status: 'observed',
+      votes: 42n,
+      delegate: A,
     })
   })
 })

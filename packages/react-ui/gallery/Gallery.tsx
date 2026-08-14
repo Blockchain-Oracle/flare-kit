@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { M12_GOVERNANCE_SECTIONS } from './m12-governance-sections'
 import { M11_STAKING_SECTIONS } from './m11-staking-sections'
 import { M10_DELEGATION_SECTIONS } from './m10-delegation-sections'
 import { M10_CLAIMS_SECTIONS } from './m10-claims-sections'
@@ -18,8 +19,10 @@ import { M4_PROOF_SECTIONS } from './m4-proof-sections'
 import { M4_INCENTIVE_SECTIONS } from './m4-incentive-sections'
 
 /**
- * Dev-only. Renders every required state of every M2 surface in both themes,
- * so the screens can be looked at rather than only asserted about.
+ * Dev-only. Renders every required state of EVERY milestone's surfaces — M1
+ * through M12, newest first — in both themes, so the screens can be looked at
+ * rather than only asserted about. Each milestone owns its own `m*-sections`
+ * module; this file only orders them.
  *
  * Kept apart from `main.tsx` so this file exports components and nothing else:
  * a module that both defines a component and calls `createRoot` cannot Fast
@@ -35,9 +38,11 @@ export function Gallery() {
       <header className="g-head">
         <h1>flare-kit — state gallery</h1>
         <p>
-          Every required state of the M4 FTSO surfaces, the M3 FDC surfaces and the M2 surfaces,
-          plus M1's four composed surfaces. All values are from the labelled mock; nothing here is
-          live.
+          Every required state of every surface the kit ships, newest milestone first: M12
+          governance, M11 staking, M10 delegation and claims, M9 gasless and x402, M8 bridge, M7
+          vault, M6 liquidity, M5 swap, the re-cut shell, M4 FTSO, M3 FDC, the M2 surfaces and
+          M1's four composed screens. Every value is driven from props or a labelled mock —
+          nothing here is live.
         </p>
         <button type="button" onClick={() => setTheme((t) => (t === 'light' ? 'dark' : 'light'))}>
           {theme === 'light' ? 'Dark' : 'Light'} theme
@@ -45,6 +50,7 @@ export function Gallery() {
       </header>
 
       {[
+        ...M12_GOVERNANCE_SECTIONS,
         ...M11_STAKING_SECTIONS,
         ...M10_DELEGATION_SECTIONS,
         ...M10_CLAIMS_SECTIONS,
