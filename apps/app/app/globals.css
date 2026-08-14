@@ -82,6 +82,17 @@ body {
 .app-account {
   margin-left: auto;
 }
+.app-connect {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* Stated while the kit is still reading the chain. Not an error, and not a
+   claim that anything is connected. */
+.app-kit-status {
+  font-size: 0.78rem;
+  color: var(--fk-text-muted);
+}
 
 /* ---------- Network selector ---------- */
 /* The kit has no select primitive, so the control is dressed here with kit

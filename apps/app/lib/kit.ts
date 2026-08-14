@@ -1,14 +1,18 @@
 import { type FlareNetworkKey, FLARE_NETWORKS } from '@flarekit-dev/contracts'
 import { type FlareKit, createFlareKit } from '@flarekit-dev/core'
 import { useEffect, useState } from 'react'
-import { createPublicClient, http } from 'viem'
+import { type PublicClient, createPublicClient, http } from 'viem'
 
 /**
  * The read client for a network, built entirely from the registry. Network is
  * configuration: no chain id, RPC URL or address is literal in this app, so
  * switching network rewrites no source.
+ *
+ * The return type is annotated rather than inferred: viem's inferred client
+ * type reaches into its own `_types` paths, which TypeScript cannot name
+ * portably (TS2742) and which fails the build rather than a test.
  */
-export function publicClientFor(key: FlareNetworkKey) {
+export function publicClientFor(key: FlareNetworkKey): PublicClient {
   const chain = FLARE_NETWORKS[key]
   return createPublicClient({
     chain: {

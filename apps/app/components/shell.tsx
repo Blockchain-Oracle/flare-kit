@@ -1,9 +1,12 @@
 'use client'
 
 import type { FlareNetworkKey } from '@flarekit-dev/contracts'
+import { FlareProvider } from '@flarekit-dev/react'
 import { usePathname } from 'next/navigation'
 import { type ReactNode, useEffect, useState } from 'react'
+import { useAppKit } from '../lib/kit'
 import { readStoredNetwork, storeNetwork } from '../lib/network'
+import { AccountArea } from './account-area'
 import { Rail } from './rail'
 import { TopBar } from './top-bar'
 
@@ -30,16 +33,24 @@ export function AppShell({ children }: { children: ReactNode }) {
     storeNetwork(window.localStorage, key)
   }
 
-  return (
+  const kit = useAppKit(network)
+
+  const frame = (
     <div className="app-shell">
       <Rail currentId={currentId} />
       <div className="app-main">
-        {/* No account control yet. The connect flow is R-APP-010/011/012 and
-            belongs to a later plan; an affordance that cannot connect would be
-            a fabricated one. */}
-        <TopBar network={network} onNetworkChange={changeNetwork} />
+        <TopBar
+          network={network}
+          onNetworkChange={changeNetwork}
+          account={<AccountArea kit={kit} network={network} />}
+        />
         <div className="app-panel">{children}</div>
       </div>
     </div>
   )
+
+  // The provider carries the kit AND the account store, so it can only mount
+  // once the kit exists. The frame renders either way: a network that will not
+  // answer is a stated condition in the top bar, never a blank app.
+  return kit.status === 'ready' ? <FlareProvider kit={kit.kit}>{frame}</FlareProvider> : frame
 }
