@@ -1,5 +1,11 @@
+'use client'
+
+// The react-ui barrel re-exports @flarekit-dev/react, which builds a
+// createContext, so a Server Component cannot import from it. Every other file
+// in this app that imports the kit is already a client component; the footer
+// joins them now that it draws the shared lockup.
+import { BrandLockup } from '@flarekit-dev/react-ui'
 import Link from 'next/link'
-import { BrandLockup } from './brand-mark'
 
 const GITHUB = 'https://github.com/Blockchain-Oracle/flare-kit'
 const NPM = 'https://www.npmjs.com/org/flare-kit'

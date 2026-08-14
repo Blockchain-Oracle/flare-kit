@@ -32,6 +32,15 @@ body {
   padding: 20px 12px;
   border-right: 1px solid var(--fk-border);
 }
+/* The frame that positions the shared lockup in this shell. The glyph and
+   wordmark styling travels with the component, in the kit's sheet. */
+.app-rail-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 12px 20px;
+  text-decoration: none;
+}
 .app-rail ul {
   list-style: none;
   margin: 0;
@@ -115,10 +124,10 @@ body {
   pointer-events: none;
 }
 
-:focus-visible {
-  outline: 2px solid var(--fk-primary);
-  outline-offset: 2px;
-}
+/* No focus rule here on purpose. The kit declares `.fk :focus-visible` —
+   "never suppressed: 2px primary ring at 2px offset" — and `.fk` is on <body>,
+   so every focusable thing in this app already inherits it. A second copy here
+   was re-coding the kit's, minus its border-radius. */
 
 /* The declared-unbuilt panel is a statement, not a workspace: it reads at a
    text measure rather than stretching the full stage. */

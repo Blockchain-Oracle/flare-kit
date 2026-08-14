@@ -22,6 +22,16 @@ describe('the rail', () => {
     expect(screen.getByRole('link', { name: 'Chat' })).toBeInTheDocument()
   })
 
+  it('opens with the brand lockup, above the family list', () => {
+    render(<Rail currentId="swap" />)
+    const home = screen.getByRole('link', { name: /flare-kit home/i })
+    const swap = screen.getByRole('link', { name: 'Swap' })
+    expect(
+      home.compareDocumentPosition(swap) & Node.DOCUMENT_POSITION_FOLLOWING,
+      'the lockup sits above the families',
+    ).toBeTruthy()
+  })
+
   /**
    * R-APP-001: the families, and BELOW A DIVIDER, the reserved seams. Without
    * the rule the seams read as ordinary capabilities sitting between Pools and

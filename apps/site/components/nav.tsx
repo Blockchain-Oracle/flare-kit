@@ -1,9 +1,9 @@
 'use client'
 
+import { BrandLockup } from '@flarekit-dev/react-ui'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { BrandLockup } from './brand-mark'
 import { GithubIcon, NpmIcon } from './icons'
 import { NavSearch } from './nav-search'
 import { ThemeToggle } from './theme-toggle'

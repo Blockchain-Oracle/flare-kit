@@ -9,32 +9,13 @@
 }
 
 /* ---------- Brand lockup ---------- */
+/* The glyph and wordmark rules moved into @flarekit-dev/react-ui with
+   BrandLockup, because two apps draw this mark. Only the frame that positions
+   it in this shell stays here. */
 .brand {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-}
-.brand-glyph {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  color: var(--fk-brand);
-}
-.brand-glyph svg {
-  width: 100%;
-  height: 100%;
-}
-.brand-word {
-  font-family: var(--fk-font-mono);
-  font-weight: 700;
-  font-size: 0.98rem;
-  letter-spacing: -0.02em;
-  color: var(--fk-text);
-}
-.brand-word b {
-  color: var(--fk-brand-text);
-  font-weight: 700;
 }
 
 /* ---------- Nav ---------- */

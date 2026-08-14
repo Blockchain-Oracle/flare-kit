@@ -11,7 +11,13 @@ import { describe, expect, it } from 'vitest'
  * changing it everywhere or failing here.
  */
 const CANONICAL = readFileSync('../../brand/flare-kit-mark.svg', 'utf8')
-const COMPONENT = readFileSync('components/brand-mark.tsx', 'utf8')
+/**
+ * The mark moved into the kit: a brandmark needed by two apps is one shared
+ * component, not a copy per app. The guard follows it rather than being
+ * dropped — it is the only thing standing between one identity and four
+ * drawings of it.
+ */
+const COMPONENT = readFileSync('../../packages/react-ui/src/BrandMark.tsx', 'utf8')
 const ICON = readFileSync('app/icon.svg', 'utf8')
 
 /** The drawn shapes, normalised: self-closing slashes and spacing vary by author. */

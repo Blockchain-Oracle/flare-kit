@@ -1,4 +1,5 @@
 export * from './state-visuals.js'
+export * from './BrandMark.js'
 export * from './primitives/AssetLogo.js'
 export * from './primitives/NetworkLogo.js'
 export * from './primitives/Button.js'

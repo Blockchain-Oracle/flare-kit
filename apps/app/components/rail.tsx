@@ -1,3 +1,4 @@
+import { BrandLockup } from '@flarekit-dev/react-ui'
 import Link from 'next/link'
 import { Fragment } from 'react'
 import { FAMILIES } from '../lib/families'
@@ -19,34 +20,41 @@ const FIRST_SEAM = FAMILIES.findIndex((family) => family.status.kind === 'unbuil
  */
 export function Rail({ currentId }: { currentId: string }) {
   return (
-    <nav className="app-rail" aria-label="Capabilities">
-      <ul>
-        {FAMILIES.map((family, index) => {
-          const unbuilt = family.status.kind === 'unbuilt'
-          const describedBy = unbuilt ? `rail-note-${family.id}` : undefined
-          return (
-            <Fragment key={family.id}>
-              {index === FIRST_SEAM && <li role="separator" className="app-rail-divider" />}
-              <li>
-                <Link
-                  href={`/${family.id}`}
-                  className="app-rail-link"
-                  aria-current={family.id === currentId ? 'page' : undefined}
-                  aria-describedby={describedBy}
-                  data-unbuilt={unbuilt ? 'true' : undefined}
-                >
-                  {family.label}
-                </Link>
-                {unbuilt && (
-                  <span id={describedBy} hidden>
-                    Not built yet
-                  </span>
-                )}
-              </li>
-            </Fragment>
-          )
-        })}
-      </ul>
-    </nav>
+    <div className="app-rail">
+      {/* The lockup is the shared component, not a second drawing of the mark.
+          It sits outside the nav: it is the way home, not a capability. */}
+      <Link href="/" className="app-rail-brand" aria-label="flare-kit home">
+        <BrandLockup />
+      </Link>
+      <nav aria-label="Capabilities">
+        <ul>
+          {FAMILIES.map((family, index) => {
+            const unbuilt = family.status.kind === 'unbuilt'
+            const describedBy = unbuilt ? `rail-note-${family.id}` : undefined
+            return (
+              <Fragment key={family.id}>
+                {index === FIRST_SEAM && <li role="separator" className="app-rail-divider" />}
+                <li>
+                  <Link
+                    href={`/${family.id}`}
+                    className="app-rail-link"
+                    aria-current={family.id === currentId ? 'page' : undefined}
+                    aria-describedby={describedBy}
+                    data-unbuilt={unbuilt ? 'true' : undefined}
+                  >
+                    {family.label}
+                  </Link>
+                  {unbuilt && (
+                    <span id={describedBy} hidden>
+                      Not built yet
+                    </span>
+                  )}
+                </li>
+              </Fragment>
+            )
+          })}
+        </ul>
+      </nav>
+    </div>
   )
 }

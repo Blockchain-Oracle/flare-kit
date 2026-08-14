@@ -22,14 +22,21 @@ export function BrandMark({ className }: { className?: string }) {
   )
 }
 
-/** Mark plus wordmark, the shell's home link content. */
+/**
+ * Mark plus wordmark, the shell's home link content.
+ *
+ * A fragment, not a wrapper: each shell positions the lockup in its own frame
+ * — the site links it from a nav bar, the app from the head of its rail — and
+ * a container here would fight both. The glyph and word carry `fk-` classes
+ * because they are the kit's, and travel with the component.
+ */
 export function BrandLockup() {
   return (
     <>
-      <span className="brand-glyph" aria-hidden="true">
+      <span className="fk-brand-glyph" aria-hidden="true">
         <BrandMark />
       </span>
-      <span className="brand-word">
+      <span className="fk-brand-word">
         flare<b>-</b>kit
       </span>
     </>
