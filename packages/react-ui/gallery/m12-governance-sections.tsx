@@ -17,8 +17,8 @@ import {
   planGovernance,
   reconcileGovernance,
 } from '@flarekit-dev/core'
-import { GovernanceCard, ProposalCatalogue, ProposalDetail } from '../src/index.js'
-import type { Section } from './sections.js'
+import { GovernanceCard, ProposalCatalogue, ProposalDetail } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every state of the M12 GovernanceCard, ProposalCatalogue and ProposalDetail that

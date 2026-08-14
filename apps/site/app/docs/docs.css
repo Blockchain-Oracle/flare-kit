@@ -463,3 +463,15 @@ h4:hover .hash,
   display: grid;
   gap: 18px;
 }
+
+/* The provenance line under a hook's live return value. Matches the kit's own
+   code caption, but sits BELOW the window: the reading order is the value
+   first, then where it came from. The 74ch prose cap does not apply — it is a
+   caption on a full-width surface, not body copy. */
+.doc-body .hook-readout-note {
+  margin-top: 8px;
+  max-width: none;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fk-text-faint);
+}
