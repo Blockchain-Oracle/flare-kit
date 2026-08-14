@@ -85,6 +85,8 @@ export const READING_ORDER: readonly string[] = [
   '/docs/hooks/use-delegation',
   '/docs/hooks/use-rewards',
   '/docs/hooks/use-staking',
+  '/docs/hooks/use-governance',
+  '/docs/hooks/use-proposals',
   '/docs/hooks/operation-store',
 
   // Headless

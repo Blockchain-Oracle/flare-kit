@@ -58,6 +58,41 @@ describe('HookReadout notation', () => {
   })
 })
 
+/**
+ * A plan result carries the contract call it would make, and that carries the
+ * ABI fragment — so the honest full serialisation of `useGovernance` ran to
+ * hundreds of lines of `stateMutability` / `inputs` / `outputs` before reaching
+ * anything a reader came for. A pane documenting a RETURN SHAPE has to show the
+ * shape.
+ *
+ * Depth is capped rather than filtered: what is elided is COUNTED and named, so
+ * the pane never implies a structure is smaller or simpler than it is.
+ */
+describe('HookReadout depth', () => {
+  const deep = { a: { b: { c: { d: { e: 'buried' } } } } }
+
+  it('elides past the readable depth rather than running for hundreds of lines', () => {
+    render(<HookReadout name="useThing" value={deep} />)
+    expect(readoutText()).not.toMatch(/buried/)
+  })
+
+  it('says how many keys it elided, so nothing looks smaller than it is', () => {
+    render(<HookReadout name="useThing" value={{ abi: { x: 1, y: 2, z: 3 } }} depth={1} />)
+    expect(readoutText()).toMatch(/\{…3 keys\}/)
+  })
+
+  it('says how many items a long array holds', () => {
+    render(<HookReadout name="useThing" value={{ abi: [1, 2, 3, 4] }} depth={1} />)
+    expect(readoutText()).toMatch(/\[…4 items\]/)
+  })
+
+  it('keeps an empty collection literal, which is a real answer', () => {
+    render(<HookReadout name="useThing" value={{ conflicts: [], meta: {} }} depth={1} />)
+    expect(readoutText()).toMatch(/conflicts: \[\]/)
+    expect(readoutText()).toMatch(/meta: \{\}/)
+  })
+})
+
 describe('HookReadout rendering', () => {
   it('is syntax-highlighted, like every other code surface on the page', () => {
     const { container } = render(<HookReadout name="useThing" value={{ vp: 1n }} />)

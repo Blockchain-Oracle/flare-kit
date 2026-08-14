@@ -35,7 +35,24 @@ function signatureOf(fn: (...args: never[]) => unknown): string {
   return `(${named.join(', ')}) => …`
 }
 
-function formatValue(value: unknown, depth: number, seen: WeakSet<object>): string {
+/**
+ * How deep the pane renders before summarising.
+ *
+ * A plan result carries the call it would make, which carries the ABI fragment,
+ * which runs for hundreds of lines of `stateMutability` / `inputs` / `outputs`.
+ * A pane documenting a return SHAPE has to show the shape, so depth is capped —
+ * but what is elided is counted and named, never silently dropped, because a
+ * structure must not read as smaller than it is.
+ */
+const READABLE_DEPTH = 4
+
+function summarise(value: object): string {
+  if (Array.isArray(value)) return `[…${value.length} items]`
+  const keys = Object.keys(value).length
+  return `{…${keys} ${keys === 1 ? 'key' : 'keys'}}`
+}
+
+function formatValue(value: unknown, depth: number, seen: WeakSet<object>, max: number): string {
   if (value === undefined) return 'undefined'
   if (value === null) return 'null'
 
@@ -61,46 +78,55 @@ function formatValue(value: unknown, depth: number, seen: WeakSet<object>): stri
   if (seen.has(object)) return '[circular]'
   seen.add(object)
 
+  if (value instanceof Date) return `new Date('${value.toISOString()}')`
+
+  // An EMPTY collection is a real answer — "read as empty" — so it is always
+  // rendered literally, never summarised away as `[…0 items]`.
+  const isEmpty = Array.isArray(value)
+    ? value.length === 0
+    : Object.keys(value as object).length === 0
+  if (isEmpty) return Array.isArray(value) ? '[]' : '{}'
+
+  if (depth >= max) return summarise(object)
+
   const pad = '  '.repeat(depth + 1)
   const close = '  '.repeat(depth)
 
-  if (value instanceof Date) return `new Date('${value.toISOString()}')`
-
   if (Array.isArray(value)) {
-    if (value.length === 0) return '[]'
-    const items = value.map((item) => `${pad}${formatValue(item, depth + 1, seen)},`)
+    const items = value.map((item) => `${pad}${formatValue(item, depth + 1, seen, max)},`)
     return `[\n${items.join('\n')}\n${close}]`
   }
 
-  const entries = Object.entries(value as Record<string, unknown>)
-  if (entries.length === 0) return '{}'
-  const lines = entries.map(([key, entry]) => {
+  const lines = Object.entries(value as Record<string, unknown>).map(([key, entry]) => {
     const name = IDENTIFIER.test(key) ? key : `'${key}'`
-    return `${pad}${name}: ${formatValue(entry, depth + 1, seen)},`
+    return `${pad}${name}: ${formatValue(entry, depth + 1, seen, max)},`
   })
   return `{\n${lines.join('\n')}\n${close}}`
 }
 
 /** The hook's return value as a TypeScript literal. */
-export function formatHookValue(value: unknown): string {
-  return formatValue(value, 0, new WeakSet())
+export function formatHookValue(value: unknown, max = READABLE_DEPTH): string {
+  return formatValue(value, 0, new WeakSet(), max)
 }
 
 export function HookReadout({
   name,
   value,
   returnType,
+  depth = READABLE_DEPTH,
 }: {
   name: string
   /** The value the hook returned on this render. */
   value: unknown
   /** The hook's declared return type, when the page states one. */
   returnType?: string
+  /** How deep to render before summarising. Rarely worth overriding. */
+  depth?: number
 }) {
   return (
     <>
       <CodeBlock
-        code={formatHookValue(value)}
+        code={formatHookValue(value, depth)}
         language="ts"
         title={returnType ?? `${name} — live return value`}
       />
