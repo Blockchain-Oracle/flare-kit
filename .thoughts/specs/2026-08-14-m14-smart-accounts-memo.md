@@ -169,12 +169,18 @@ loses money that a plausible-looking implementation would not prevent.
   vendored test asserts only `vm.expectRevert()` with no selector, so nothing can be reported
   back to the user beyond "it failed".
 
-  **Measured sizes decide which opcode is usable** (measured with viem against this exact
-  tuple, not estimated): an empty-callData userOp is 448 bytes → a 458-byte `0xFF` memo; one
-  call is 736 → 746; three calls are 1152 → **1162, over the 1024 ceiling**. So `0xFF` carries
-  roughly one or two calls and no more, and a batch that does not fit is a plan refusal
-  pointing at `0xFE`, whose memo is 42 bytes whatever the batch size. This is the real reason
-  the protocol has two opcodes.
+  **Measured sizes decide which opcode is usable, and they are INPUT-DEPENDENT.** Measured
+  against this exact tuple with a four-byte payload per call: an empty batch encodes to 544
+  bytes → a 554-byte `0xFF` memo; one call 736 → 746; three calls 1120 → **1130, over the
+  1024 ceiling**. A parallel measurement with a different per-call payload gave 448 / 736 /
+  1152 — the one-call figure agreeing exactly and the others not, precisely because each
+  call's `data` length moves the total.
+
+  So **no constant may be quoted as "the" size**, and the plan must MEASURE the encoded memo
+  for the actual batch rather than consult a table. What is stable is the shape: `0xFF` carries
+  roughly one call and rarely more, a batch that does not fit is a plan refusal pointing at
+  `0xFE`, and `0xFE`'s memo is 42 bytes whatever the batch size. That is the real reason the
+  protocol has two opcodes.
 
   **Value is forwarded as one lump.** `msg.value` on the relay call reaches
   `_personalAccount.call{value: msg.value}` (`MemoInstructions.sol:71`) and `executeUserOp`
