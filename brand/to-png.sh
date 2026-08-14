@@ -23,12 +23,12 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p png
 
-rsvg-convert -z 2 flare-kit-mark.svg    -o png/flare-kit-mark@2x.png
+rsvg-convert -z 2 flare-kit-mark.svg    -o png/flare-kit-mark-2x.png
 rsvg-convert -w 512 -h 512 flare-kit-mark.svg -o png/flare-kit-mark-512.png
-rsvg-convert -z 2 flare-kit-logo.svg    -o png/flare-kit-logo@2x.png
-rsvg-convert -z 2 flare-kit-banner.svg  -o png/flare-kit-banner@2x.png
-rsvg-convert -z 2 architecture.svg      -o png/architecture@2x.png
-rsvg-convert -z 2 packages.svg          -o png/packages@2x.png
+rsvg-convert -z 2 flare-kit-logo.svg    -o png/flare-kit-logo-2x.png
+rsvg-convert -z 2 flare-kit-banner.svg  -o png/flare-kit-banner-2x.png
+rsvg-convert -z 2 architecture.svg      -o png/architecture-2x.png
+rsvg-convert -z 2 packages.svg          -o png/packages-2x.png
 
 echo "Regenerated:"
 ls -1 png/

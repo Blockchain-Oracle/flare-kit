@@ -1,3 +1,5 @@
+import { type FlareChain, chainFor } from '@flarekit-dev/contracts'
+import { type ChainIdentity, walletConnected, wrongNetwork } from '@flarekit-dev/core'
 import type { InjectedWallet } from '@flarekit-dev/react'
 import type { WalletOption } from '@flarekit-dev/react-ui'
 
