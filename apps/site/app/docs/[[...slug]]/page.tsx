@@ -6,6 +6,7 @@ import type { ComponentType, ReactElement, ReactNode } from 'react'
 import { CopyPageButton } from '../../../components/docs/copy-page-button'
 import { DocPage } from '../../../components/docs/doc-page'
 import { getMDXComponents } from '../../../lib/mdx-components'
+import { neighbours } from '../../../lib/reading-order'
 import { source } from '../../../lib/source'
 
 /**
@@ -34,8 +35,6 @@ interface DocFrontmatter {
   description?: string
   importLine?: string
   breadcrumb?: string[]
-  prev?: { href: string; label: string }
-  next?: { href: string; label: string }
   body: ComponentType<{ components: ReturnType<typeof getMDXComponents> }>
   toc: { url: string; title: unknown; depth: number }[]
 }
@@ -88,6 +87,13 @@ export default async function Page({ params }: Props) {
     .filter((node) => node.depth <= 3)
     .map((node) => ({ id: node.url.replace(/^#/, ''), label: flattenTitle(node.title) }))
 
+  // Each neighbour is labelled with its OWN title, so renaming a page can never
+  // leave a stale label behind in the page beside it.
+  const titles = new Map(
+    source.getPages().map((entry) => [entry.url, (entry.data as unknown as DocFrontmatter).title]),
+  )
+  const { prev, next } = neighbours(page.url, titles)
+
   return (
     <DocPage
       data={{
@@ -96,8 +102,8 @@ export default async function Page({ params }: Props) {
         badges: <CopyPageButton markdown={readRawMarkdown(page.url)} />,
         lede: data.description ?? '',
         importLine: data.importLine,
-        prev: data.prev,
-        next: data.next,
+        prev,
+        next,
         content: <MDX components={getMDXComponents()} />,
       }}
       tocItems={tocItems}

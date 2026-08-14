@@ -7,9 +7,12 @@ import { z } from 'zod'
  * about appearance is a cost. See
  * .thoughts/decisions/2026-08-13-docs-site-framework.md.
  *
- * The extra fields are the component-doc anatomy: a breadcrumb, the import
- * line shown as a chip under the title, and explicit prev/next so page order
- * is authored rather than inferred from the file tree.
+ * The extra fields are the component-doc anatomy: a breadcrumb, and the import
+ * line shown as a chip under the title.
+ *
+ * Page order is NOT frontmatter. It is authored once in lib/reading-order.ts,
+ * which both the sidebar and the pager read, so the two cannot disagree and
+ * adding a page costs one line instead of edits to its two neighbours.
  */
 export const docs = defineDocs({
   dir: 'content/docs',
@@ -17,8 +20,6 @@ export const docs = defineDocs({
     schema: frontmatterSchema.extend({
       importLine: z.string().optional(),
       breadcrumb: z.array(z.string()).optional(),
-      prev: z.object({ href: z.string(), label: z.string() }).optional(),
-      next: z.object({ href: z.string(), label: z.string() }).optional(),
     }),
   },
 })

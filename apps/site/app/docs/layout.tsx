@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { DocsSidebar, type SidebarGroup } from '../../components/docs/sidebar'
+import { READING_ORDER } from '../../lib/reading-order'
 import { source } from '../../lib/source'
 import './docs.css'
 
@@ -22,33 +23,20 @@ const SECTION_LABELS: Record<string, string> = {
 
 interface PageData {
   title?: string
-  next?: { href: string }
 }
 
 /**
- * Authored reading order within a section, not alphabetical: walk the
- * frontmatter `next` chain from the docs root and record each page's position.
- * A page off the chain sorts last, keeping the sidebar in the same order a
- * reader would page through.
+ * Position within a section comes from the authored reading order, so the
+ * sidebar lists pages in the same sequence a reader pages through them. A page
+ * missing from the order sorts last — `test/reading-order.test.ts` makes that
+ * a build-time failure rather than a silent one.
  */
-function readingOrder(pages: ReturnType<typeof source.getPages>): Map<string, number> {
-  const byUrl = new Map(pages.map((page) => [page.url, page]))
-  const order = new Map<string, number>()
-  let cursor = byUrl.get('/docs')
-  let index = 0
-  while (cursor && !order.has(cursor.url)) {
-    order.set(cursor.url, index)
-    index += 1
-    const next = (cursor.data as unknown as PageData).next?.href
-    cursor = next ? byUrl.get(next) : undefined
-  }
-  return order
-}
-
 function buildGroups(): SidebarGroup[] {
   const pages = source.getPages()
-  const order = readingOrder(pages)
-  const positionOf = (url: string) => order.get(url) ?? Number.MAX_SAFE_INTEGER
+  const positionOf = (url: string) => {
+    const index = READING_ORDER.indexOf(url)
+    return index === -1 ? Number.MAX_SAFE_INTEGER : index
+  }
   const bySection = new Map<string, { href: string; label: string }[]>()
 
   for (const page of pages) {
