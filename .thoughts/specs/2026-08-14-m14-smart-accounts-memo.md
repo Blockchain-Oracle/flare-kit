@@ -300,8 +300,18 @@ loses money that a plausible-looking implementation would not prevent.
   requires. `0xD0` is proven to be 30 bytes with an unpadded address.
 - **M14-AC2 — the refusals hold.** Every M14-R6 refusal has a test, and the destination-tag
   refusal is proven on both construction and proof submission.
-- **M14-AC3 — reads are live on both networks**, `undefined` on failure, and the replacement
-  fee reads back through the accessor rather than the offset slot.
+- **M14-AC3 — reads are live on both networks**, `undefined` on failure. ~~and the replacement
+  fee reads back through the accessor rather than the offset slot~~ — **corrected in build,
+  2026-08-14.** There is no accessor. `getReplacementFee` is `internal view`
+  (`MemoInstructions.sol:166-174`) and no facet re-exposes it, so the clause was unsatisfiable
+  as written. The probe proves the absence on chain rather than citing the source, and
+  `ReplacementFeeSet` is the only observable — never claimed as current state.
+
+  Satisfied 2026-08-14: `.thoughts/verification/2026-08-14-m14-probe.json`. It also settles
+  M13's mistaken claim that `executeDirectMintingWithData` is absent — the diamond loupe names
+  its facet on BOTH networks (selector `0xa7556da6`). Note the first version of that probe
+  could NOT establish this: it read reverts, and `executeDirectMinting` — called live since M1
+  — failed identically to the function under test.
 - **M14-AC4 — a live Coston2 round trip.** One `0xFF` (or `0xFE` where the batch demands it)
   memo instruction: fund, sign the XRPL payment, request the `XRPPayment` attestation with our
   `proofOwner`, self-relay `executeDirectMinting[WithData]`, and read back
