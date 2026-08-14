@@ -1,6 +1,7 @@
 import {
   type InstructionObservation,
   type ObservedInstruction,
+  OBSERVED_ACCOUNT_AFTER_TRANSFER,
   OBSERVED_ACCOUNT_BLANK,
   OBSERVED_ACCOUNT_FUNDED,
   OBSERVED_ACCOUNT_LIVE,
@@ -116,7 +117,10 @@ const NO_VAULTS_CATALOGUE = buildInstructionCatalogue({ ...OBSERVED_SETTINGS, va
 
 // ── Plans, from the real planner ─────────────────────────────────────────────────────────
 const TRANSFER_PLAN = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)
-const DEPOSIT_PLAN = mockPlan(OBSERVED_DEPOSIT.intent, OBSERVED_ACCOUNT_FUNDED)
+// Planned against the account as it stood WHEN THE DEPOSIT RAN — deployed by run 1, holding
+// 1 000 000. Using the pre-run-1 account made the composer claim this instruction would
+// deploy the account and that it did not exist yet; both were false of this run.
+const DEPOSIT_PLAN = mockPlan(OBSERVED_DEPOSIT.intent, OBSERVED_ACCOUNT_AFTER_TRANSFER)
 // The account as the runs left it holds 500 000 and genuinely cannot cover a 1 000 000
 // transfer. The real refusal, not a contrived one.
 const UNFUNDED_PLAN = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_LIVE)
@@ -134,7 +138,7 @@ const UNVERIFIED_PLAN = planInstruction({
 
 // ── Lifecycles, walked by the real reconciler ────────────────────────────────────────────
 const CLOCK = { now: NOW, proofWindowSeconds: OBSERVED_SETTINGS.proofValidityDurationSeconds }
-const at = (run: typeof OBSERVED_TRANSFER, leg: Parameters<typeof mockObservation>[1]) =>
+const at = (run: Parameters<typeof mockObservation>[0], leg: Parameters<typeof mockObservation>[1]) =>
   reconcileInstruction(mockInstructionRecord(run.intent), mockObservation(run, leg), CLOCK)
 
 const PAID = at(OBSERVED_TRANSFER, 'paid')
@@ -247,6 +251,16 @@ export const M13_SMART_ACCOUNT_SECTIONS: readonly Section[] = [
             xrplOwner={OBSERVED_ACCOUNT_BLANK.xrplOwner}
             networks={[coston2View(OBSERVED_ACCOUNT_BLANK)]}
             history={[]}
+          />
+        ),
+      },
+      {
+        name: 'history-scanning — the backfill is still running: neither an empty history nor a failed one is claimed yet',
+        node: (
+          <SmartAccountCard
+            xrplOwner={OBSERVED_ACCOUNT_LIVE.xrplOwner}
+            networks={[coston2View(OBSERVED_ACCOUNT_LIVE)]}
+            historyLoading
           />
         ),
       },

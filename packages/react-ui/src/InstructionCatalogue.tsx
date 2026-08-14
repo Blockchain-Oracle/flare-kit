@@ -1,6 +1,6 @@
 // packages/react-ui/src/InstructionCatalogue.tsx
 import type { InstructionRow } from '@flare-kit/core'
-import { DataTable, SkeletonRows } from './primitives/DataTable.js'
+import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { ToneChip } from './primitives/StateChip.js'
 import {
@@ -160,6 +160,16 @@ export function InstructionCatalogue({
       <DataTable caption="Instructions this deployment can serve" columns={COLUMNS}>
         {loading && !rows ? (
           <SkeletonRows columns={COLUMNS.length} label="Reading the deployment" />
+        ) : null}
+        {/* A table with no rows and no explanation is a CLAIM — "this deployment serves
+            nothing" — and here it would be made before any read was attempted. The
+            vocabulary is eleven instructions long and never empty, so the only way to
+            reach this is a caller that has not asked yet, and it says exactly that. */}
+        {!loading && !rows ? (
+          <EmptyRow columns={COLUMNS.length}>
+            No deployment has been read yet, so nothing is known about what it serves. This is
+            not an empty catalogue.
+          </EmptyRow>
         ) : null}
         {(rows ?? []).map((row) => (
           <Row

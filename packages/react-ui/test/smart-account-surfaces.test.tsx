@@ -55,22 +55,77 @@ const MAINNET_VIEW: SmartAccountNetworkView = {
 }
 
 const OWNER = OBSERVED_ACCOUNT_LIVE.xrplOwner
+
+/**
+ * One row's value, by its label.
+ *
+ * Card-wide `toContain` is not good enough for the rules this file exists to pin, and the
+ * 2026-08-14 test review proved it: `expect(text).toContain('0 drops')` passed off the
+ * DEFAULT INSTRUCTION FEE row — `"1000 drops"` contains `"0 drops"` — so the assertion named
+ * after this milestone's headline honesty rule could not fail. Exact equality on the named
+ * row is the only form that distinguishes `—` from `0`.
+ */
+const rowValue = (container: HTMLElement, label: string): string | null | undefined =>
+  [...container.querySelectorAll('.fk-row')]
+    .find((row) => row.querySelector('.fk-row-k')?.textContent === label)
+    ?.querySelector('.fk-row-v')?.textContent
 const CLOCK = { now: SMART_ACCOUNT_MOCK_EPOCH, proofWindowSeconds: OBSERVED_SETTINGS.proofValidityDurationSeconds }
 const settledOf = (run: typeof OBSERVED_TRANSFER | typeof OBSERVED_DEPOSIT) =>
   reconcileInstruction(mockInstructionRecord(run.intent), mockObservation(run, 'settled'), CLOCK)
 
 describe('SmartAccountCard — an unread value is never a zero', () => {
   it('renders — for unread fields and the real value for an observed zero', () => {
+    // Both directions of the rule, pinned to their own rows so neither can pass off another
+    // row's text. `unreadOr` returning `'0'` for unread, or `'—'` for a real zero, now fails.
     const unread = render(
       <SmartAccountCard xrplOwner={OWNER} networks={[{ ...coston2View(undefined), settings: undefined }]} />,
     )
-    const unreadText = unread.container.textContent ?? ''
-    expect(unreadText).toContain('—')
+    expect(rowValue(unread.container, 'FAsset balance')).toBe('—')
+    expect(rowValue(unread.container, 'Memo nonce')).toBe('—')
+
     // The blank-slate account genuinely holds 0 and reads nonce 0. Those are answers, and
     // they must render as themselves rather than borrowing the unread mark.
     const observed = render(<SmartAccountCard xrplOwner={OWNER} networks={[coston2View(OBSERVED_ACCOUNT_BLANK)]} />)
-    expect(observed.container.textContent).toContain('0 drops')
+    expect(rowValue(observed.container, 'FAsset balance')).toBe('0 drops')
+    expect(rowValue(observed.container, 'Memo nonce')).toBe('0')
     expect(observed.container.querySelector('[data-deployment="not-deployed"]')).toBeTruthy()
+  })
+
+  it('keeps unread and observed fields apart within ONE account — the common case', () => {
+    // Every field of `PersonalAccountState` carries its own `undefined`, and a partial read
+    // is ordinary rather than exotic: no FAsset token supplied means no balance at all.
+    const { container } = render(
+      <SmartAccountCard
+        xrplOwner={OWNER}
+        networks={[coston2View({ ...OBSERVED_ACCOUNT_LIVE, fassetBalance: undefined, nonce: undefined })]}
+      />,
+    )
+    expect(rowValue(container, 'FAsset balance')).toBe('—')
+    expect(rowValue(container, 'Memo nonce')).toBe('—')
+    // …while a field that DID read still shows its real value on the same card.
+    expect(rowValue(container, 'Gas balance')).toBe('0.000000000000000000 C2FLR')
+  })
+
+  it('keeps the pinned executor’s three answers apart', () => {
+    // `undefined` is unread, the zero address is a REAL "nothing is pinned", and anything
+    // else is an executor. Collapsing the middle one renders a link to 0x000…000 as though
+    // an executor were pinned.
+    const unread = render(
+      <SmartAccountCard xrplOwner={OWNER} networks={[coston2View({ ...OBSERVED_ACCOUNT_LIVE, pinnedExecutor: undefined })]} />,
+    )
+    expect(rowValue(unread.container, 'Pinned executor')).toBe('—')
+
+    const none = render(<SmartAccountCard xrplOwner={OWNER} networks={[coston2View(OBSERVED_ACCOUNT_LIVE)]} />)
+    expect(rowValue(none.container, 'Pinned executor')).toBe('None pinned')
+
+    const pinned = render(
+      <SmartAccountCard
+        xrplOwner={OWNER}
+        networks={[coston2View({ ...OBSERVED_ACCOUNT_LIVE, pinnedExecutor: '0x00000000000000000000000000000000000000C3' })]}
+      />,
+    )
+    expect(pinned.container.querySelector('[aria-label*="0x00000000000000000000000000000000000000C3"], .fk-xl')).toBeTruthy()
+    expect(rowValue(pinned.container, 'Pinned executor')).not.toBe('None pinned')
   })
 
   it('never claims not-deployed when the code read failed', () => {
@@ -86,6 +141,29 @@ describe('SmartAccountCard — an unread value is never a zero', () => {
   })
 })
 
+describe('SmartAccountCard — an empty read is not an absent one', () => {
+  it('calls an empty operator-wallet list a deployment gap, not an unread value', () => {
+    // `settings` being defined proves the read landed, so `[]` means the controller registers
+    // no wallet — the planner refuses that by name. Rendering `—` said "we could not look".
+    const { container } = render(
+      <SmartAccountCard
+        xrplOwner={OWNER}
+        networks={[{ ...coston2View(OBSERVED_ACCOUNT_LIVE), settings: { ...OBSERVED_SETTINGS, xrplProviderWallets: [] } }]}
+      />,
+    )
+    expect(container.textContent).toContain('None registered')
+    expect(container.textContent).toContain('no destination a payment could reach')
+  })
+
+  it('still renders — for the wallet list when the controller itself did not read', () => {
+    const { container } = render(
+      <SmartAccountCard xrplOwner={OWNER} networks={[{ ...coston2View(OBSERVED_ACCOUNT_LIVE), settings: undefined }]} />,
+    )
+    expect(container.textContent).not.toContain('None registered')
+    expect(container.textContent).toContain('—')
+  })
+})
+
 describe('SmartAccountCard — the identical-address property is compared, not claimed', () => {
   it('reports identical only when BOTH networks answered', () => {
     const { container } = render(
@@ -93,6 +171,16 @@ describe('SmartAccountCard — the identical-address property is compared, not c
     )
     expect(container.querySelector('[data-parity="identical"]')).toBeTruthy()
     expect(container.textContent).toContain(OBSERVED_ACCOUNT_LIVE.address)
+  })
+
+  it('never claims agreement from ONE network', () => {
+    // A two-network property asserted from a single read is the failure this module exists
+    // to prevent, and `networks.length < 2` is the only thing standing in its way.
+    const { container } = render(
+      <SmartAccountCard xrplOwner={OWNER} networks={[coston2View(OBSERVED_ACCOUNT_LIVE)]} />,
+    )
+    expect(container.querySelector('[data-parity="not-comparable"]')).toBeTruthy()
+    expect(container.textContent).not.toContain('The same address on both networks')
   })
 
   it('refuses to compare when one side is unread — never rendering that as agreement', () => {
@@ -147,6 +235,52 @@ describe('SmartAccountCard — an incomplete history is not an empty one', () =>
     expect(container.textContent).not.toContain('History unavailable')
   })
 
+  it('keeps a dispatch the codec could not parse in the history', () => {
+    // A row that vanished because its reference did not decode would be the account's own
+    // record quietly losing a real instruction — read right before someone decides whether
+    // to pay again. Both rows must survive, with their identifiers.
+    const rows = [
+      {
+        personalAccount: OBSERVED_ACCOUNT_LIVE.address,
+        transactionId: `0x${OBSERVED_TRANSFER.xrplTransactionId.toLowerCase()}` as `0x${string}`,
+        paymentReference: OBSERVED_TRANSFER.reference,
+        instructionId: 0x01,
+        action: 'transfer',
+        blockNumber: OBSERVED_TRANSFER.dispatchBlock,
+        transactionHash: OBSERVED_TRANSFER.dispatchHash as `0x${string}`,
+      },
+      {
+        personalAccount: OBSERVED_ACCOUNT_LIVE.address,
+        transactionId: `0x${OBSERVED_DEPOSIT.xrplTransactionId.toLowerCase()}` as `0x${string}`,
+        paymentReference: OBSERVED_DEPOSIT.reference,
+        // Neither could be read off the log — the row is still a dispatch that happened.
+        instructionId: undefined,
+        action: undefined,
+        blockNumber: undefined,
+        transactionHash: undefined,
+      },
+    ]
+    const { container } = render(
+      <SmartAccountCard xrplOwner={OWNER} networks={[coston2View(OBSERVED_ACCOUNT_LIVE)]} history={rows} />,
+    )
+    const [parsed, unparsed] = [...container.querySelectorAll('.fk-sa-history-row')]
+    expect(container.querySelectorAll('.fk-sa-history-row')).toHaveLength(2)
+
+    // The row the codec understood: its id, its action and both transaction identifiers.
+    expect(parsed?.textContent).toContain('0x01')
+    expect(parsed?.textContent).toContain('transfer')
+    expect(parsed?.textContent).toContain('block 34018235')
+
+    // The one it did not: it SURVIVES, named as unrecognised, still carrying the payment it
+    // refers to. An unread id and an unread block are `—`, never a confident `0x00` or
+    // `block 0` — `0x00` is a real instruction and would name the wrong one.
+    expect(unparsed?.textContent).toContain('unrecognised instruction')
+    expect(unparsed?.textContent).toContain('aa78f5fb')
+    expect(unparsed?.textContent).not.toContain('0x00')
+    expect(unparsed?.textContent).not.toContain('block 0')
+    expect(unparsed?.textContent).toContain('—')
+  })
+
   it('draws no history block at all when no scan was asked for', () => {
     const { container } = render(<SmartAccountCard xrplOwner={OWNER} networks={[coston2View(OBSERVED_ACCOUNT_LIVE)]} />)
     expect(container.querySelector('.fk-sa-history')).toBeFalsy()
@@ -159,6 +293,27 @@ describe('InstructionCatalogue — availability is read, and its three negatives
     expect(container.querySelectorAll('tbody tr')).toHaveLength(11)
     expect(container.querySelector('[data-instruction="0x01"]')?.getAttribute('data-availability')).toBe('available')
     expect(container.querySelector('[data-instruction="0x00"]')?.getAttribute('data-availability')).toBe('superseded')
+  })
+
+  it('offers selection ONLY for instructions this deployment can serve', () => {
+    // The gate on `selectable`. Without it, a superseded or unavailable row becomes a
+    // clickable path toward composing an instruction the controller refuses — after the XRP
+    // has left. The planner refuses it too, but a surface should not route there at all.
+    const { container } = render(
+      <InstructionCatalogue rows={mockInstructionCatalogue()} onSelect={() => {}} />,
+    )
+    expect(container.querySelector('[data-instruction="0x01"] button')).toBeTruthy()
+    expect(container.querySelector('[data-instruction="0x00"] button')).toBeFalsy()
+    expect(container.querySelector('[data-instruction="0x10"] button')).toBeFalsy()
+  })
+
+  it('renders the deployment’s own per-id fee, not its default', () => {
+    // The READ half of the no-fallback rule. Mainnet charges 950000 for five ids against a
+    // 500000 default, so a renderer quoting the default would under-pay by 450000 drops —
+    // and the payment is already gone when the controller refuses the proof.
+    const { container } = render(<InstructionCatalogue rows={buildInstructionCatalogue(OBSERVED_MAINNET_SETTINGS)} />)
+    expect(container.querySelector('[data-instruction="0x00"] .fk-sa-row-fee')?.textContent).toBe('950000 drops')
+    expect(container.querySelector('[data-instruction="0x01"] .fk-sa-row-fee')?.textContent).toBe('500000 drops')
   })
 
   it('renders an unread fee as — rather than the default fee', () => {
@@ -185,6 +340,15 @@ describe('InstructionCatalogue — availability is read, and its three negatives
     )
   })
 
+  it('never renders a never-attempted read as an empty catalogue', () => {
+    // A table with a header and no rows is a CLAIM — "this deployment serves nothing" — made
+    // here before anything was read. The vocabulary is eleven rows and never empty.
+    const { container } = render(<InstructionCatalogue />)
+    expect(container.querySelectorAll('tbody tr')).toHaveLength(1)
+    expect(container.textContent).toContain('No deployment has been read yet')
+    expect(container.textContent).toContain('not an empty catalogue')
+  })
+
   it('states a reason once when every row shares it, and per row when they differ', () => {
     const shared = render(<InstructionCatalogue rows={buildInstructionCatalogue(undefined)} />)
     expect(shared.container.querySelectorAll('.fk-sa-row-reason')).toHaveLength(0)
@@ -192,8 +356,17 @@ describe('InstructionCatalogue — availability is read, and its three negatives
 
     // The live shape: three superseded rows and eight available ones do NOT share a reason,
     // so each keeps its own — the dedupe must not swallow a genuinely per-row fact.
+    //
+    // Counting `.fk-sa-row-reason` was NOT enough and the test review proved it: that class
+    // is also on the vault-id and agent-vault-id spans, which render either way, so the
+    // count was above zero no matter what the dedupe did. These two assertions are the ones
+    // that bite — the reason text must be on the superseded rows themselves, and the
+    // shared-reason note must be absent.
     const live = render(<InstructionCatalogue rows={mockInstructionCatalogue()} />)
-    expect(live.container.querySelectorAll('.fk-sa-row-reason').length).toBeGreaterThan(0)
+    const superseded = [...live.container.querySelectorAll('[data-availability="superseded"]')]
+    expect(superseded).toHaveLength(3)
+    expect(superseded.every((row) => row.textContent?.includes('Superseded:'))).toBe(true)
+    expect(live.container.textContent).not.toContain('Every row here says the same thing')
   })
 })
 
@@ -238,6 +411,36 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
     expect(container.querySelector('.fk-panel-action')).toBeFalsy()
   })
 
+  it('states a NON-unverified refusal and never offers to sign against it', () => {
+    // The highest-harm untested state in the milestone: fourteen refusal codes share one
+    // path, and only `unverified` had a test. `ctaForInstruction` returning `disabled: false`
+    // there would put an enabled "Sign the XRPL payment" on a plan the controller rejects —
+    // an irreversible payment against a refusal the kit already knew about.
+    const refused = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_LIVE)
+    expect(!refused.ok && refused.refusal.code).toBe('recipient_unfunded')
+
+    const { container } = render(<InstructionComposer planResult={refused} now={SMART_ACCOUNT_MOCK_EPOCH} />)
+    expect(container.querySelector('[data-refusal="recipient_unfunded"]')).toBeTruthy()
+    expect(container.textContent).toContain('The account cannot cover this')
+    // The planner's OWN message survives the note's framing — it carries the balance and the
+    // amount, and losing it leaves a user with an apology and no numbers.
+    expect(container.textContent).toContain('holds 500000')
+
+    const cta = container.querySelector('.fk-panel-action button') as HTMLButtonElement | null
+    expect(cta).toBeTruthy()
+    expect(cta?.disabled).toBe(true)
+    expect(cta?.textContent).not.toContain('Sign')
+  })
+
+  it('renders the plan’s warnings before anything is signed', () => {
+    // The plan carries `account_undeployed`; core asserts the warning exists, and this is
+    // what asserts it reaches the screen. Deleting the map was invisible to the suite.
+    const { container } = render(
+      <InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} />,
+    )
+    expect(container.textContent).toContain('The account does not exist yet')
+  })
+
   it('never reaches a success word from a submitted dispatch', () => {
     const submitted = reconcileInstruction(
       mockInstructionRecord(OBSERVED_TRANSFER.intent),
@@ -275,7 +478,11 @@ describe('InstructionComposer — a dead operation invites nothing', () => {
     expect(expired.state).toBe('expired')
     expect(container.textContent).toContain('Your XRP is at the operator’s wallet')
     expect(container.textContent).toContain('a NEW payment')
-    expect([...container.querySelectorAll('button')].every((button) => (button as HTMLButtonElement).disabled)).toBe(true)
+    // Asserted on the CTA itself, not `.every()` over every button: an empty array satisfies
+    // `every`, so deleting the action block entirely would have passed.
+    const cta = container.querySelector('.fk-panel-action button') as HTMLButtonElement | null
+    expect(cta?.textContent).toBe('Window closed')
+    expect(cta?.disabled).toBe(true)
     expect(container.textContent?.toLowerCase()).not.toContain('retry')
   })
 
@@ -324,6 +531,21 @@ describe('InstructionComposer — who dispatched is a separate fact from whether
     expect(container.textContent).toContain('Dispatched by another submitter')
     expect(container.textContent).toContain(OBSERVED_DEPOSIT.dispatchedBy)
     expect(container.textContent).not.toContain('Failed')
+  })
+
+  it('does not tell a user another submitter sent a dispatch this kit sent', () => {
+    // The transfer WAS ours. A guard of `!== undefined` instead of `=== false` would put the
+    // "another submitter" note on our own dispatch — the mirror image of the deposit case.
+    const { container } = render(
+      <InstructionComposer
+        planResult={mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)}
+        record={settledOf(OBSERVED_TRANSFER)}
+        dispatchedByUs={OBSERVED_TRANSFER.dispatchedByUs}
+        now={SMART_ACCOUNT_MOCK_EPOCH}
+      />,
+    )
+    expect(OBSERVED_TRANSFER.dispatchedByUs).toBe(true)
+    expect(container.textContent).not.toContain('Dispatched by another submitter')
   })
 
   it('claims nothing about the submitter when it was not established', () => {

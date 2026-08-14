@@ -117,7 +117,21 @@ export function xrpAmountLabel(drops: bigint, sourceId: string): string {
   return formatExact(xrpAmount(drops, sourceId))
 }
 
+/**
+ * An unread `bigint` is `—`, an observed `0` is `0`. The distinction is the point: a real
+ * blank-slate account genuinely reads nonce 0 and balance 0, and a failed read must not wear
+ * those values.
+ *
+ * Lives here rather than in a card's own state file because both the card and the catalogue
+ * need it, and two copies of this rule would be two chances to get the emptiest value in the
+ * kit wrong.
+ */
+export function unreadOr(value: bigint | undefined, suffix?: string): string {
+  if (value === undefined) return '—'
+  return suffix ? `${value} ${suffix}` : `${value}`
+}
+
 /** An unread fee is `—`, never the default and never a zero. A real 0 renders as `0 drops`. */
 export function feeDropsLabel(feeDrops: bigint | undefined): string {
-  return feeDrops === undefined ? '—' : `${feeDrops} drops`
+  return unreadOr(feeDrops, 'drops')
 }

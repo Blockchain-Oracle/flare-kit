@@ -1,4 +1,5 @@
 import type { SmartAccountsDeployment } from '@flare-kit/contracts'
+import type { OperationStep } from '../operation.js'
 import type { DeploymentSettings } from './adapter.js'
 import type { InstructionRow } from './catalogue.js'
 import type { PersonalAccountState } from './personal-account.js'
@@ -97,6 +98,17 @@ export interface InstructionPlan {
   readonly dispatchValueWei: bigint
   /** What the personal account will do on Flare once the proof is submitted. */
   readonly downstream: string
+  /**
+   * The four record steps this instruction's operation walks, in the order the reconciler
+   * indexes them.
+   *
+   * On the PLAN, the way `staking.ts`, `delegation.ts`, `governance.ts` and `rewards.ts` all
+   * carry theirs — so a host that has approved a plan writes `steps: [...plan.steps]` into
+   * the record and cannot hand-write a three-step spine that reconciles one leg behind for
+   * the operation's whole life. `reconcileInstruction` indexes off `steps.length` (n-3, n-2,
+   * n-1), which made that failure silent.
+   */
+  readonly steps: readonly OperationStep[]
   readonly warnings: readonly PlanWarning[]
 }
 

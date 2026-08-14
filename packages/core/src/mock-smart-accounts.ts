@@ -130,8 +130,10 @@ export function mockObservation(
   if (leg === 'unpaid') return {}
   const xrplPayment = {
     transactionId: run.xrplTransactionId,
-    // The ledger close the proof window is measured from, as the run recorded it.
-    blockTimestamp: BigInt(Math.floor(SMART_ACCOUNT_MOCK_EPOCH / 1000) - 120),
+    // The run's REAL ledger close, read back off the XRP Ledger. It used to be dispatch time
+    // minus two minutes with a comment claiming it was the close — a plausible number wearing
+    // an observed one's label, which is the exact thing this file exists not to do.
+    blockTimestamp: run.xrplCloseUnix,
   }
   if (leg === 'paid') return { xrplPayment }
   if (leg === 'proved') return { xrplPayment, proofRetrieved: true }

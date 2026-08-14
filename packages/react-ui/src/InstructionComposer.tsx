@@ -85,6 +85,9 @@ export function InstructionComposer(props: InstructionComposerProps) {
   const unverified = refusal?.code === 'unverified'
   const inFlight = record ? IN_FLIGHT.has(record.state) : false
   const expired = record?.state === 'expired'
+  // Hoisted rather than bound inside JSX: every sibling card in this package computes its
+  // chrome above the return, and the one IIFE in the tree was this file's alone.
+  const refusalCopy = refusal && !unverified ? refusalNote(refusal.code, refusal.message) : undefined
 
   const aside = (
     <div className="fk-sa-compose-head">
@@ -124,16 +127,11 @@ export function InstructionComposer(props: InstructionComposerProps) {
         />
       ) : null}
 
-      {refusal && !unverified
-        ? (() => {
-            const note = refusalNote(refusal.code, refusal.message)
-            return (
-              <Note tone={note.tone} title={note.title}>
-                {note.body}
-              </Note>
-            )
-          })()
-        : null}
+      {refusalCopy ? (
+        <Note tone={refusalCopy.tone} title={refusalCopy.title}>
+          {refusalCopy.body}
+        </Note>
+      ) : null}
 
       {expired ? (
         <Note tone={EXPIRY_NOTE.tone} title={EXPIRY_NOTE.title}>
@@ -163,6 +161,10 @@ export function InstructionComposer(props: InstructionComposerProps) {
           operation={record}
           stepEvidence={INSTRUCTION_STEP_EVIDENCE}
           className="fk-sa-spine"
+          // The host clock travels all the way down. This surface declares it takes `now` as
+          // a prop so a screenshot is deterministic, and the timeline was where that promise
+          // used to end — its recovery panel fell back to `Date.now()`.
+          nowMs={now}
           {...(theme ? { theme } : {})}
         />
       ) : null}

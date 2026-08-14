@@ -4,12 +4,11 @@ import { DetailRow, Details } from './primitives/DetailRow.js'
 import { ExplorerLink } from './primitives/ExplorerLink.js'
 import { Note } from './primitives/Note.js'
 import { ToneChip } from './primitives/StateChip.js'
-import { xrpAmountLabel } from './instruction-visuals.js'
+import { unreadOr, xrpAmountLabel } from './instruction-visuals.js'
 import {
   type SmartAccountNetworkView,
   deploymentFact,
-  pinnedExecutorLabel,
-  unreadOr,
+  pinnedExecutorOf,
 } from './smart-account-card-state.js'
 
 /**
@@ -30,7 +29,7 @@ export function SmartAccountNetwork({ view }: { view: SmartAccountNetworkView })
   const { account, settings, networkLabel, nativeSymbol, deployment } = view
   const fact = deploymentFact(account)
   const link = account ? accountExplorerLink('evm', account.address, deployment.chainId) : undefined
-  const executorNote = account ? pinnedExecutorLabel(account.pinnedExecutor) : undefined
+  const executor = pinnedExecutorOf(account?.pinnedExecutor)
 
   return (
     <section className="fk-sa-net-col" data-network={networkLabel} data-deployment={fact.kind}>
@@ -82,28 +81,41 @@ export function SmartAccountNetwork({ view }: { view: SmartAccountNetworkView })
         <DetailRow
           label="Pinned executor"
           value={
-            account?.pinnedExecutor === undefined ? (
+            executor.kind === 'unread' ? (
               '—'
-            ) : executorNote ? (
-              executorNote
+            ) : executor.kind === 'none' ? (
+              'None pinned'
             ) : (
-              <ExplorerLink value={account.pinnedExecutor} shorten="address" />
+              <ExplorerLink value={executor.address} shorten="address" />
             )
           }
         />
       </Details>
 
       <Details aria-label={`Deployment settings on ${networkLabel}`} className="fk-sa-settings">
+        {/* Three outcomes, not two. `settings === undefined` is an unread controller (`—`);
+            an EMPTY wallet list is a read that succeeded and found none, which is a
+            deployment gap the planner already refuses by name — so it says so, exactly as
+            the vault row below does. Rendering it as `—` told the user we could not look. */}
         <DetailRow
           label="Operator wallet"
           value={
-            settings?.xrplProviderWallets.length
-              ? settings.xrplProviderWallets.map((wallet) => (
-                  <span key={wallet} className="fk-sa-wallet">
-                    <ExplorerLink value={wallet} shorten="address" />
-                  </span>
-                ))
-              : '—'
+            settings === undefined ? (
+              '—'
+            ) : settings.xrplProviderWallets.length === 0 ? (
+              'None registered'
+            ) : (
+              settings.xrplProviderWallets.map((wallet) => (
+                <span key={wallet} className="fk-sa-wallet">
+                  <ExplorerLink value={wallet} shorten="address" />
+                </span>
+              ))
+            )
+          }
+          sub={
+            settings !== undefined && settings.xrplProviderWallets.length === 0
+              ? 'no destination a payment could reach'
+              : undefined
           }
         />
         <DetailRow label="FDC source" value={<span className="fk-mono">{settings?.sourceId ?? '—'}</span>} />

@@ -49,6 +49,16 @@ export interface OperationTimelineProps {
   stepEvidence?: Record<string, readonly string[]>
   /** Called when the user takes a recovery action. */
   onAction?: (actionId: string) => void
+  /**
+   * The host clock in ms, forwarded to `RecoveryPanel`.
+   *
+   * Without it the panel falls back to `Date.now()` — so a surface that carefully takes
+   * `now` as a prop for determinism (every audited M3/M4 surface, and M13's composer) had a
+   * real wall clock re-enter its subtree at this boundary. Inert only while records carry no
+   * time-gated recovery action; the first one makes those screens unreproducible. Found by
+   * the M13 test-quality review.
+   */
+  nowMs?: number
   theme?: 'light' | 'dark'
   className?: string
 }
@@ -57,6 +67,7 @@ export function OperationTimeline({
   operation,
   stepEvidence = DIRECT_MINT_STEP_EVIDENCE,
   onAction,
+  nowMs,
   theme,
   className,
 }: OperationTimelineProps) {
@@ -115,7 +126,11 @@ export function OperationTimeline({
         </div>
       ) : null}
 
-      <RecoveryPanel operation={operation} {...(onAction ? { onAction } : {})} />
+      <RecoveryPanel
+        operation={operation}
+        {...(nowMs === undefined ? {} : { nowMs })}
+        {...(onAction ? { onAction } : {})}
+      />
     </div>
   )
 }

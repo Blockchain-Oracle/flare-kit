@@ -1,0 +1,45 @@
+{
+  "milestone": "M13 — evidence back-fill for values the surfaces render",
+  "reason": "The 2026-08-14 honest-rendering review found `paused`, `xrplLedgerIndex` and the deposit dispatch identifiers rendered without a machine-written source. This file is that source.",
+  "readAt": "2026-08-14T06:03:17.374Z",
+  "keyless": true,
+  "pausedState": {
+    "coston2": {
+      "chainId": 114,
+      "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "isPaused": {
+        "value": false
+      }
+    },
+    "flare": {
+      "chainId": 14,
+      "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "isPaused": {
+        "value": false
+      }
+    }
+  },
+  "depositDispatch": {
+    "transactionHash": "0x53aad8df00e90fc6bd2917a68756d2fb2de0ce5875f46f3e35a3f96851173c6d",
+    "dispatchedBy": "0xca0bf4cbc1cf8c4b5fd7984b42af907099084466",
+    "blockNumber": "34022984",
+    "status": "success",
+    "logCount": 9
+  },
+  "xrplLedgerIndex": {
+    "transfer": {
+      "value": {
+        "ledgerIndex": 19881251,
+        "validated": true,
+        "date": 839960853
+      }
+    },
+    "deposit": {
+      "value": {
+        "ledgerIndex": 19884153,
+        "validated": true,
+        "date": 839970232
+      }
+    }
+  }
+}

@@ -213,6 +213,16 @@ export type SmartAccountPositionView =
       readonly address: `0x${string}`
       readonly xrplOwner: string
     }
+  | {
+      /**
+       * This network has no live-verified round trip, so no position is read off it. A
+       * DECLARED-UNBUILT answer, and deliberately not `unavailable`: that word means "the
+       * read did not land" everywhere else in this file, and using it here would blame the
+       * network for a gap in what the kit has proven. The M10/M11/M12 flip convention, which
+       * the review of 2026-08-14 found this function collapsing into the failure case.
+       */
+      readonly status: 'unbuilt'
+    }
   | { readonly status: 'unavailable' }
 
 export function smartAccountPosition(
@@ -220,8 +230,10 @@ export function smartAccountPosition(
   verified: boolean,
 ): SmartAccountPositionView {
   // The verified gate first, exactly as the plan does it: an unverified network must not
-  // present a position read off a path no live run has confirmed.
-  if (!verified || account === undefined) return { status: 'unavailable' }
+  // present a position read off a path no live run has confirmed. It is its own answer —
+  // "not built here" and "the read did not land" are different facts about different things.
+  if (!verified) return { status: 'unbuilt' }
+  if (account === undefined) return { status: 'unavailable' }
   // `deployed === undefined` is a FAILED code read, not a "no". It cannot claim
   // `not-deployed`, so it falls through to the observed row with what was actually read.
   if (account.deployed === false) {

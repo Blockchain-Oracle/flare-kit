@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { DeploymentSettings } from '../src/smart-accounts/adapter.js'
 import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'
 import type { PersonalAccountState } from '../src/smart-accounts/personal-account.js'
+import { instructionSpine } from '../src/smart-accounts/states.js'
 import { planInstruction } from '../src/smart-accounts/plan.js'
 import type { InstructionIntent } from '../src/smart-accounts/plan-types.js'
 
@@ -314,5 +315,43 @@ describe('warnings — things a user must see that are NOT grounds to refuse', (
     const codes = neverAsked.ok ? neverAsked.plan.warnings.map((w) => w.code) : []
     expect(codes).toContain('balance_not_read')
     expect(codes).not.toContain('balance_unknown')
+  })
+})
+
+/**
+ * The plan carries the spine (the shape `staking`/`delegation`/`governance`/`rewards` all
+ * use). Without it a host had to know the four legs itself, and the reconciler indexes off
+ * `steps.length` — so a three-step spine reconciles one leg behind for the operation's whole
+ * life with nothing to catch it. These assertions are that guard.
+ */
+describe('the plan carries the spine the reconciler indexes', () => {
+  it('emits the four legs, in the order the reconciler expects', () => {
+    const result = plan()
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.plan.steps.map((step) => step.id)).toEqual([
+      'xrpl-payment',
+      'attestation',
+      'dispatch',
+      'effect',
+    ])
+    // Every leg starts pending: a plan has observed nothing yet, and a step born `done`
+    // would claim a leg before the payment was even signed.
+    expect(result.plan.steps.every((step) => step.state === 'pending')).toBe(true)
+  })
+
+  it('is the same spine the shipped builder produces', () => {
+    // Not a copy of it. If the two ever diverged, a plan-built record and a resumed record
+    // would reconcile differently for the same instruction.
+    const result = plan()
+    expect(result.ok && result.plan.steps).toEqual(instructionSpine())
+  })
+
+  it('names steps the evidence map can find', () => {
+    // The composer's INSTRUCTION_STEP_EVIDENCE keys off these ids; a rename here silently
+    // drops every identifier off the timeline rather than failing.
+    const result = plan()
+    const ids = result.ok ? result.plan.steps.map((step) => step.id) : []
+    expect(new Set(ids).size).toBe(4)
   })
 })

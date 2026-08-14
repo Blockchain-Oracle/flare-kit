@@ -127,22 +127,23 @@ export function addressParity(networks: readonly SmartAccountNetworkView[]): Add
     : { kind: 'differs', addresses }
 }
 
-/**
- * An unread `bigint` is `—`, an observed `0` is `0`. The distinction is the point: a real
- * blank-slate account genuinely reads nonce 0, and a failed read must not wear that value.
- */
-export function unreadOr(value: bigint | undefined, suffix?: string): string {
-  if (value === undefined) return '—'
-  return suffix ? `${value} ${suffix}` : `${value}`
-}
-
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 /**
- * The pinned executor. THREE outcomes again: unread, the zero address (a real answer meaning
- * nothing is pinned) and a real executor. `None` and `—` are never the same word.
+ * The pinned executor's THREE outcomes, as one discriminated answer.
+ *
+ * It used to return `'None pinned' | undefined` where `undefined` meant BOTH "unread" and
+ * "a real executor is pinned", which left the renderer re-deriving half the tri-state for
+ * itself — the review of 2026-08-14 called that out, and a tri-state split across two files
+ * is one edit away from becoming a two-state.
  */
-export function pinnedExecutorLabel(executor: `0x${string}` | undefined): string | undefined {
-  if (executor === undefined) return undefined
-  return executor.toLowerCase() === ZERO_ADDRESS ? 'None pinned' : undefined
+export type PinnedExecutor =
+  | { readonly kind: 'unread' }
+  | { readonly kind: 'none' }
+  | { readonly kind: 'pinned'; readonly address: `0x${string}` }
+
+export function pinnedExecutorOf(executor: `0x${string}` | undefined): PinnedExecutor {
+  if (executor === undefined) return { kind: 'unread' }
+  // The zero address is a REAL answer — "nothing is pinned" — and never the unread mark.
+  return executor.toLowerCase() === ZERO_ADDRESS ? { kind: 'none' } : { kind: 'pinned', address: executor }
 }

@@ -80,6 +80,12 @@ function History(props: SmartAccountCardProps) {
                   its identifiers rather than vanishing from the history. */}
               <span className="fk-sa-history-action">{item.action ?? 'unrecognised instruction'}</span>
               <ExplorerLink value={item.transactionId} shorten="hash" className="fk-sa-history-tx" />
+              {/* The Flare transaction that dispatched it — a different identifier from the
+                  XRPL payment above, and the one a person needs to look the dispatch up.
+                  The scan populates it; not rendering it left it unreachable. */}
+              {item.transactionHash ? (
+                <ExplorerLink value={item.transactionHash} shorten="hash" className="fk-sa-history-tx" />
+              ) : null}
               <span className="fk-mono fk-sa-history-block">
                 {item.blockNumber === undefined ? '—' : `block ${item.blockNumber}`}
               </span>

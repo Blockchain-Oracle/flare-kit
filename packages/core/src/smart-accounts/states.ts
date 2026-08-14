@@ -38,6 +38,10 @@ import { advance, reconcileTo, waitSince } from '../reconcile.js'
  * catch it. `dispatch` is `flare` rather than `you`: `executeInstruction` is permissionless
  * and any indexer that sees the XRPL payment may submit the proof, which the live run
  * proved — the operator's backend dispatched the deposit before this kit could.
+ *
+ * **Hosts should use `plan.steps`, not this.** `planInstruction` fills the plan from here, so
+ * a caller that has approved a plan already holds the right spine; this stays exported for
+ * the paths that have no plan in hand — resuming a persisted record, and the mock.
  */
 export function instructionSpine(): OperationStep[] {
   return [

@@ -47,6 +47,10 @@ export const OBSERVED_SETTINGS: DeploymentSettings = {
   sourceIdRaw: '0x7465737458525000000000000000000000000000000000000000000000000000',
   proofValidityDurationSeconds: 86_400n,
   defaultInstructionFee: 1000n,
+  // READ, not assumed. `DeploymentSettings.paused` is a plain `boolean` because an unreadable
+  // pause state cannot be planned against, which left the mock no honest third value — so a
+  // `false` here that nobody had read would have been a claim in the shape of a default. The
+  // 2026-08-14 back-fill calls `isPaused` on both networks and records the answer.
   paused: false,
   // Every id fell through to the default on Coston2. Mainnet does NOT — five ids charge
   // 950 000 against a 500 000 default — which is why these are read, never assumed.
@@ -83,6 +87,8 @@ export const OBSERVED_MAINNET_SETTINGS: DeploymentSettings = {
   sourceIdRaw: '0x5852500000000000000000000000000000000000000000000000000000000000',
   proofValidityDurationSeconds: 7_200n,
   defaultInstructionFee: 500_000n,
+  // Read on mainnet in the 2026-08-14 back-fill. Coston2's was at least corroborated by a
+  // dispatch that succeeded; this one had nothing behind it until that read.
   paused: false,
   instructionFees: Object.fromEntries(
     [0x00, 0x01, 0x02, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22, 0x23].map((id) => [
@@ -141,6 +147,21 @@ export const OBSERVED_MAINNET_ACCOUNT: PersonalAccountState = {
   fassetBalance: 0n,
 }
 
+/**
+ * The account BETWEEN the two runs — the state the DEPOSIT was actually planned against.
+ *
+ * Recorded by the transfer's `verify` phase: deployed by run 1's CREATE2, holding 1 000 000
+ * after sending 1 000 000 away. Planning the deposit against the pre-run-1 account instead
+ * made the composer say "deployed by CREATE2 on this instruction" and "the account does not
+ * exist yet" about a run where neither was true — an unlabelled composite of two real
+ * moments, which the 2026-08-14 review caught in the gallery.
+ */
+export const OBSERVED_ACCOUNT_AFTER_TRANSFER: PersonalAccountState = {
+  ...OBSERVED_ACCOUNT_BLANK,
+  deployed: true,
+  fassetBalance: 1_000_000n,
+}
+
 /** The same account after both runs: deployed, holding what the deposit left behind. */
 export const OBSERVED_ACCOUNT_LIVE: PersonalAccountState = {
   ...OBSERVED_ACCOUNT_BLANK,
@@ -159,6 +180,13 @@ export const OBSERVED_TRANSFER = {
   reference: '0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a',
   xrplTransactionId: 'E4385C7AD4E316DF269BFBB96A15204CC68E549005228BB6B1808595DC04117D',
   xrplLedgerIndex: 19_881_251,
+  /**
+   * The LEDGER CLOSE the proof window is measured from, in unix seconds — the real one, read
+   * back off the XRP Ledger in the 2026-08-14 back-fill (Ripple-epoch 839960853). It was
+   * previously derived as "dispatch time minus two minutes", which is a plausible number and
+   * not an observed one; the honest-rendering review caught the comment claiming otherwise.
+   */
+  xrplCloseUnix: 1_786_645_653n,
   votingRoundId: 1_424_618n,
   dispatchHash: '0xd23a2d66eafc0de230590276794709e71eda91dee9ca687d0a46ba3fd16cabb1',
   dispatchBlock: 34_018_235n,
@@ -177,10 +205,19 @@ export const OBSERVED_DEPOSIT = {
   reference: '0x11000000000000000007a1200000000100000000000000000000000000000000',
   xrplTransactionId: 'AA78F5FBD0D4EEBA64AE4DE691A6F02E26F8BAB70F8B74FE2B8144B255860FCF',
   xrplLedgerIndex: 19_884_153,
+  /** Ripple-epoch 839970232, read back in the 2026-08-14 back-fill. */
+  xrplCloseUnix: 1_786_655_032n,
   votingRoundId: 1_424_722n,
   dispatchHash: '0x53aad8df00e90fc6bd2917a68756d2fb2de0ce5875f46f3e35a3f96851173c6d',
   dispatchBlock: 34_022_984n,
-  /** The operator's backend beat us to it. Our own dispatch reverted TransactionAlreadyExecuted. */
+  /**
+   * The operator's backend beat us to it — our own dispatch reverted TransactionAlreadyExecuted.
+   *
+   * These identifiers were hand-authored into the live evidence at first (the review caught
+   * the round-second timestamp that gave it away). They are now RE-READ off Coston2: receipt
+   * `from` is `0xca0bf4cb…4466`, block 34022984, status success, 9 logs — recorded in
+   * `2026-08-14-m13-evidence-backfill.json`.
+   */
   dispatchedByUs: false,
   dispatchedBy: '0xca0bf4cbc1cf8c4b5fd7984b42af907099084466',
   effect: { sharesIssued: 500_000n, personalAccountDelta: -500_000n },

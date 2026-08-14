@@ -45,7 +45,13 @@ describe('the mock records what the chain accepted', () => {
     // the proof first. Flipping this to `true` would claim a leg the run did not prove.
     expect(OBSERVED_TRANSFER.dispatchedByUs).toBe(true)
     expect(OBSERVED_DEPOSIT.dispatchedByUs).toBe(false)
-    expect(OBSERVED_DEPOSIT.dispatchedBy).not.toBe(OBSERVED_TRANSFER.dispatchHash)
+    // The submitter is an ADDRESS and it is not ours. The previous line here compared it to
+    // a transaction HASH — two different kinds of value that can never be equal, so the
+    // assertion was unconditionally true (found by the 2026-08-14 test review).
+    expect(OBSERVED_DEPOSIT.dispatchedBy).toMatch(/^0x[0-9a-f]{40}$/)
+    expect(OBSERVED_DEPOSIT.dispatchedBy.toLowerCase()).not.toBe(
+      '0xa4b05cdb545fa7ca12be9f866d64e8a843a31bd9',
+    )
   })
 
   it('carries the CONTROLLER vault the deposit actually landed in', () => {
@@ -163,9 +169,12 @@ describe('the portfolio position', () => {
     expect(view.status).toBe('observed')
   })
 
-  it('is unavailable on a network whose round trip is unverified', () => {
-    // Flare mainnet. The position must not be read off a path no live run confirmed.
-    expect(smartAccountPosition(OBSERVED_ACCOUNT_LIVE, false).status).toBe('unavailable')
+  it('is UNBUILT — not unavailable — on a network whose round trip is unverified', () => {
+    // Flare mainnet. The position must not be read off a path no live run confirmed, and the
+    // reason must not be dressed as a failed read: `unavailable` means "we could not look",
+    // which would blame the network for a gap in what this kit has proven.
+    expect(smartAccountPosition(OBSERVED_ACCOUNT_LIVE, false).status).toBe('unbuilt')
+    expect(smartAccountPosition(undefined, true).status).toBe('unavailable')
   })
 })
 

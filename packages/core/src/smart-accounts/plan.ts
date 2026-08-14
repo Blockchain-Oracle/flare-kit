@@ -1,6 +1,7 @@
 import { builtInInstruction, requiredVaultType } from '@flare-kit/contracts'
 import { type InstructionRow, instructionRow } from './catalogue.js'
 import { encodePaymentReference } from './payment-reference.js'
+import { instructionSpine } from './states.js'
 import type {
   InstructionIntent,
   InstructionPlanResult,
@@ -288,6 +289,9 @@ export function planInstruction(input: PlanInstructionInput): InstructionPlanRes
       proofWindowSeconds: settings.proofValidityDurationSeconds,
       dispatchValueWei,
       downstream: downstreamOf(row, intent),
+      // The spine travels WITH the plan, so approving one and recording it cannot disagree
+      // about how many legs there are — see `InstructionPlan.steps`.
+      steps: instructionSpine(),
       warnings,
     },
   }

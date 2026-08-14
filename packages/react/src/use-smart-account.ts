@@ -2,10 +2,12 @@ import {
   type DeploymentSettings,
   type InstructionRow,
   type PersonalAccountState,
+  type SmartAccountPositionView,
   type SmartAccountsDeployment,
   buildInstructionCatalogue,
   readDeploymentSettings,
   readPersonalAccount,
+  smartAccountPosition,
 } from '@flare-kit/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -44,6 +46,13 @@ export interface UseSmartAccountResult {
   readonly settings: DeploymentSettings | undefined
   /** `undefined` when the account address itself could not be derived. */
   readonly account: PersonalAccountState | undefined
+  /**
+   * The portfolio-facing projection of the same read (M13-R11), so a host does not re-derive
+   * "deployed / not deployed / unbuilt / unavailable" for itself and get one of them wrong.
+   * `use-delegation` and `use-governance` expose their positions the same way; M13 shipped
+   * `smartAccountPosition` without a caller, which the 2026-08-14 review caught.
+   */
+  readonly position: SmartAccountPositionView
   /** Always the full instruction vocabulary; availability says what is knowable. */
   readonly catalogue: readonly InstructionRow[]
   /**
@@ -122,6 +131,9 @@ export function useSmartAccount(input: UseSmartAccountInput): UseSmartAccountRes
     settings,
     account,
     catalogue,
+    // The verified flag comes from the DEPLOYMENT being read, so a host cannot point this at
+    // one network and gate it on another's flag.
+    position: smartAccountPosition(account, deployment.smartAccountsVerified),
     balanceRequested: fassetToken !== undefined,
     loading,
     loaded,
