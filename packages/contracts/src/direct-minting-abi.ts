@@ -94,6 +94,26 @@ export const directMintingAbi = [
     inputs: [XRP_PAYMENT_PROOF],
     outputs: [],
   },
+  /**
+   * The smart-account form, and the one the memo flow's `0xFE` opcode requires.
+   *
+   * It was live on Coston2 and absent from our own transcription. M13's spec recorded that
+   * absence as a protocol fact — that the kit could not supply executor data — and it was
+   * not one; it was a gap in this file. `_data` is not arbitrary: the smart-accounts side
+   * checks `keccak256(_data)` against the hash the memo committed to, and reverts
+   * `CustomInstructionHashMismatch` on a mismatch (`IDirectMinting.sol:69-70`).
+   *
+   * `NOTE: unlike executeDirectMinting, this form is only allowed for minting to smart
+   * accounts` — the interface's own words. Which of the two to call is therefore decided by
+   * the memo's opcode, never by a caller's preference.
+   */
+  {
+    type: 'function',
+    name: 'executeDirectMintingWithData',
+    stateMutability: 'payable',
+    inputs: [XRP_PAYMENT_PROOF, { name: '_data', type: 'bytes' }],
+    outputs: [],
+  },
   {
     type: 'function',
     name: 'markUnblockedDirectMintingAllowed',

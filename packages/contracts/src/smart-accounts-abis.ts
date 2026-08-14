@@ -1,4 +1,5 @@
 import { PAYMENT_PROOF } from './fdc/payment-abi.js'
+import { memoInstructionErrorsAbi, memoInstructionEventsAbi } from './memo-instructions-abi.js'
 
 /**
  * `IMasterAccountController` — the XRPL-controlled Smart Accounts surface M13 drives, and
@@ -300,6 +301,10 @@ export const masterAccountControllerAbi = [
   ...READS,
   ...WRITES,
   ...EVENTS,
+  // M14. The memo flow dispatches through this same controller; decoding a self-relayed
+  // receipt needs its events and refusals in THIS ABI, not merely exported beside it.
+  ...memoInstructionEventsAbi,
+  ...memoInstructionErrorsAbi,
   // Spread IN, not merely exported beside. `direct-minting-errors.ts` is the precedent and
   // it is spread into `assetManagerAbi` — that is what makes viem decode a revert by name.
   // Exported alone, these fragments decode nothing and an `executeInstruction` revert
