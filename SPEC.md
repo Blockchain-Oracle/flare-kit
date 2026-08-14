@@ -1158,6 +1158,13 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   accepted. The deposit is recorded with `dispatchedByUs: false` — its
   instruction executed and its effect is real, but the operator's backend
   submitted the proof first, and claiming that leg would be inventing it.
+- `packages/core/src/mock-smart-accounts-observed.ts` — M13-R8. **Deviation,
+  found in build:** the observed values, split from the reader above when the
+  two together crossed 300 lines. A record with no behaviour, beside a reader
+  that drives the real code with it. Re-exported, so the published surface is
+  unchanged. It also carries the mainnet READ-LENS probe, so the
+  identical-address property is shown from two independently-read values rather
+  than one printed twice; `smartAccountsVerified.flare` stays `false`.
 - `packages/core/scripts/probe-smart-accounts.mjs` — M13 Verification / M13-R1.
   Dev, not shipped: the keyless both-network probe (controller by name, operator
   wallets, source id, proof window, fees, vaults, agent vaults, executor, and the
@@ -1179,10 +1186,23 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   surface: XRPL controller, personal account, deployed / not deployed as a
   first-class fact, balances, memo nonce, pinned executor, fee settings, both
   networks side by side.
+- `packages/react-ui/src/SmartAccountNetwork.tsx` — M13-R10. **Deviation, found
+  in build:** one network's column, split out of the card, which reached 299
+  lines. The two halves it draws are different subjects — what this XRPL
+  address's account IS, and what the DEPLOYMENT is.
 - `packages/react-ui/src/InstructionCatalogue.tsx` — M13-R10. The discovered
   catalogue, in the `AttestationCatalogue`/`VaultCatalogue` anatomy.
-- `packages/react-ui/src/InstructionComposer.tsx` — M13-R10. The plan surface:
-  the entire chain before approval, with the proof-expiry deadline stated.
+- `packages/react-ui/src/InstructionComposer.tsx` (+
+  `packages/react-ui/src/instruction-composer-state.ts`) — M13-R10. The plan
+  surface: the entire chain before approval, with the proof-expiry deadline
+  stated.
+- `packages/react-ui/src/InstructionChain.tsx` — M13-R10. **Deviation, found in
+  build:** the four legs, split out of the composer at 320 lines. A real seam
+  rather than arithmetic: this renders a PLAN (what will happen), the composer
+  renders an OPERATION (what did), and keeping those apart is the milestone.
+- `packages/react-ui/src/instruction-visuals.ts` — M13-R10. The vocabulary the
+  three surfaces share: availability visuals, and the denomination naming that
+  keeps one 80-bit field from rendering as five different things unlabelled.
 - `packages/react-ui/src/smart-accounts.css` — M13-R10. The `fk-sa` classes,
   values from tokens only, `@import`-ed into `styles.css`.
 - `packages/react-ui/gallery/m13-smart-account-sections.tsx` — M13-AC6. The

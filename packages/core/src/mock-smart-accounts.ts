@@ -1,135 +1,41 @@
 import { smartAccountsFor } from '@flare-kit/contracts'
-import type { DeploymentSettings } from './smart-accounts/adapter.js'
+import {
+  type OperationRecord,
+  type OperationState,
+  applyTransition,
+  createOperation,
+} from './operation.js'
+import {
+  MOCK_XRPL_OWNER,
+  OBSERVED_ACCOUNT_LIVE,
+  OBSERVED_DEPOSIT,
+  OBSERVED_SETTINGS,
+  OBSERVED_TRANSFER,
+  SMART_ACCOUNT_MOCK_EPOCH,
+} from './mock-smart-accounts-observed.js'
 import { buildInstructionCatalogue } from './smart-accounts/catalogue.js'
-import type { PersonalAccountState } from './smart-accounts/personal-account.js'
 import { planInstruction } from './smart-accounts/plan.js'
 import type { InstructionIntent, InstructionPlanResult } from './smart-accounts/plan-types.js'
-import type { InstructionObservation } from './smart-accounts/states.js'
+import { type InstructionObservation, instructionSpine } from './smart-accounts/states.js'
 
 /**
  * The smart-accounts mock, written AFTER the live runs and copying what they observed.
  *
- * It is a READER the real code is driven by, not a second implementation: `mockPlan` calls
- * the real `planInstruction`, and a caller reconciles with the real `reconcileInstruction`.
- * There is no second state machine here to drift from the first one.
+ * It is a READER the real code is driven by, not a second implementation: `mockPlan` calls the
+ * real `planInstruction`, `mockInstructionRecord` walks the real state table, and a caller
+ * reconciles with the real `reconcileInstruction`. There is no second state machine here to
+ * drift from the first one.
  *
- * It REFUSES anything the live runs did not observe — an unobserved XRPL owner, an
- * instruction that was never driven, a network that was never verified. An unmocked call is
- * a loud error rather than a plausible answer, because a mock that invents a smart account
- * would be inventing the one thing this milestone exists to prove.
+ * It REFUSES anything the live runs did not observe — an unobserved XRPL owner, an instruction
+ * that was never driven, a network that was never verified. An unmocked call is a loud error
+ * rather than a plausible answer, because a mock that invents a smart account would be
+ * inventing the one thing this milestone exists to prove.
  *
- * Every value below was read from Coston2 on 2026-08-13 and is recorded in
- * `.thoughts/verification/2026-08-13-coston2-live-smart-account.json` and
- * `…-m13-probe.json`. Nothing here is composed.
- *
- * THE DEPOSIT IS DELIBERATELY NOT MODELLED AS OURS. Its instruction executed and its effect
- * is real — 500 000 shares from controller vault 1 — but the operator's backend dispatched
- * it before this kit could, so `OBSERVED_DEPOSIT.dispatchedByUs` is `false`. Rendering it as
- * a kit dispatch would be the mock claiming a leg the live run did not prove, which is the
- * M11 lesson (never flip a flag or invent a leg to make a composer look active).
+ * The observed values themselves live in `mock-smart-accounts-observed.ts` and are re-exported
+ * here, so `@flare-kit/core`'s public surface is unchanged by the split.
  */
 
-/** The Coston2 XRPL account the runs were driven from. Nothing else is mocked. */
-export const MOCK_XRPL_OWNER = 'rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio'
-
-/**
- * Wall-clock of the transfer run, so lifecycle previews sit on a real clock.
- *
- * Named distinctly from the kit-wide `MOCK_EPOCH` in `mock.ts` rather than shadowing it:
- * that one is the FAssets mock's clock and the gallery already quotes against it, so two
- * different instants under one name behind an `export *` would be a silent trap.
- */
-export const SMART_ACCOUNT_MOCK_EPOCH = Date.parse('2026-08-13T18:29:43.007Z')
-
-/** Read live from `MasterAccountController` on Coston2 — every field, no defaults. */
-export const OBSERVED_SETTINGS: DeploymentSettings = {
-  xrplProviderWallets: ['rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq'],
-  sourceId: 'testXRP',
-  sourceIdRaw: '0x7465737458525000000000000000000000000000000000000000000000000000',
-  proofValidityDurationSeconds: 86_400n,
-  defaultInstructionFee: 1000n,
-  paused: false,
-  // Every id fell through to the default on Coston2. Mainnet does NOT — five ids charge
-  // 950 000 against a 500 000 default — which is why these are read, never assumed.
-  instructionFees: Object.fromEntries(
-    [0x00, 0x01, 0x02, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22, 0x23].map((id) => [id, 1000n]),
-  ),
-  vaults: [
-    { vaultId: 4, address: '0xD91324A6e8884147F6425E9ddd60e11Aea060B5b', vaultType: 'upshift' },
-    { vaultId: 2, address: '0x9E63a5D282F2fBb7DcE822B98e363b2719D28319', vaultType: 'upshift' },
-    { vaultId: 3, address: '0x4066A1363a04ce3B23eEcB53dEfa65f94A24355E', vaultType: 'upshift' },
-    // The deposit landed here. NOT one of the kit's own `vaults.ts` Coston2 vaults.
-    { vaultId: 1, address: '0xC90D6847747b85d1fa2E07859869fb9fB72c0361', vaultType: 'firelight' },
-  ],
-  agentVaults: [{ agentVaultId: 1, address: '0x55c815260cBE6c45Fe5bFe5FF32E3C7D746f14dC' }],
-  defaultExecutor: { address: '0x103b384064ae85577127097A7cCadfd6fb13f437', fee: 100_000_000_000n },
-}
-
-/** The account BEFORE the first instruction: derived, never deployed, empty. */
-export const OBSERVED_ACCOUNT_BLANK: PersonalAccountState = {
-  xrplOwner: MOCK_XRPL_OWNER,
-  address: '0x89023176a776CDB1d339a7649116B1a6f3DeFfcb',
-  deployed: false,
-  nonce: 0n,
-  pinnedExecutor: '0x0000000000000000000000000000000000000000',
-  nativeBalance: 0n,
-  fassetBalance: 0n,
-}
-
-/**
- * The account as it stood when the transfer was planned: funded by the `fund` phase with
- * 2 000 000, and still NOT deployed — the first instruction is what deploys it. This is a
- * real observed moment, recorded in the `fund` phase, not a convenience.
- */
-export const OBSERVED_ACCOUNT_FUNDED: PersonalAccountState = {
-  ...OBSERVED_ACCOUNT_BLANK,
-  fassetBalance: 2_000_000n,
-}
-
-/** The same account after both runs: deployed, holding what the deposit left behind. */
-export const OBSERVED_ACCOUNT_LIVE: PersonalAccountState = {
-  ...OBSERVED_ACCOUNT_BLANK,
-  deployed: true,
-  fassetBalance: 500_000n,
-}
-
-/** Run 1 — the transfer, dispatched by this kit, confirmed by balance deltas. */
-export const OBSERVED_TRANSFER = {
-  intent: {
-    xrplOwner: MOCK_XRPL_OWNER,
-    instructionId: 0x01,
-    value: 1_000_000n,
-    recipient: '0xDddF991858311597bFD3D125cb342a0d4B56ea0a',
-  } satisfies InstructionIntent,
-  reference: '0x0100000000000000000f4240dddf991858311597bfd3d125cb342a0d4b56ea0a',
-  xrplTransactionId: 'E4385C7AD4E316DF269BFBB96A15204CC68E549005228BB6B1808595DC04117D',
-  xrplLedgerIndex: 19_881_251,
-  votingRoundId: 1_424_618n,
-  dispatchHash: '0xd23a2d66eafc0de230590276794709e71eda91dee9ca687d0a46ba3fd16cabb1',
-  dispatchBlock: 34_018_235n,
-  dispatchedByUs: true,
-  effect: { recipientDelta: 1_000_000n, personalAccountDelta: -1_000_000n },
-} as const
-
-/** Run 2 — the deposit. Executed and verified; dispatched by the OPERATOR, not by us. */
-export const OBSERVED_DEPOSIT = {
-  intent: {
-    xrplOwner: MOCK_XRPL_OWNER,
-    instructionId: 0x11,
-    value: 500_000n,
-    vaultId: 1,
-  } satisfies InstructionIntent,
-  reference: '0x11000000000000000007a1200000000100000000000000000000000000000000',
-  xrplTransactionId: 'AA78F5FBD0D4EEBA64AE4DE691A6F02E26F8BAB70F8B74FE2B8144B255860FCF',
-  xrplLedgerIndex: 19_884_153,
-  votingRoundId: 1_424_722n,
-  dispatchHash: '0x53aad8df00e90fc6bd2917a68756d2fb2de0ce5875f46f3e35a3f96851173c6d',
-  dispatchBlock: 34_022_984n,
-  /** The operator's backend beat us to it. Our own dispatch reverted TransactionAlreadyExecuted. */
-  dispatchedByUs: false,
-  dispatchedBy: '0xca0bf4cbc1cf8c4b5fd7984b42af907099084466',
-  effect: { sharesIssued: 500_000n, personalAccountDelta: -500_000n },
-} as const
+export * from './mock-smart-accounts-observed.js'
 
 const OBSERVED_RUNS = [OBSERVED_TRANSFER, OBSERVED_DEPOSIT] as const
 
@@ -165,6 +71,46 @@ export function mockPlan(intent: InstructionIntent, account = OBSERVED_ACCOUNT_L
     replayed: false,
     balanceRequested: true,
   })
+}
+
+/**
+ * An operation record at the point the XRPL payment has been broadcast — the state both live
+ * runs were genuinely in before anything on Flare could be known.
+ *
+ * It walks the FULL legal path rather than jumping to `submitted`, because `applyTransition`
+ * SILENTLY DROPS its patch on an illegal hop: a record that skipped `quoting` would arrive
+ * with `steps: []` and every downstream leg assertion would pass vacuously. The throw is the
+ * guard that a caller cannot forget.
+ */
+export function mockInstructionRecord(
+  intent: InstructionIntent,
+  opts: { now?: number; id?: string } = {},
+): OperationRecord<InstructionIntent> {
+  const now = opts.now ?? SMART_ACCOUNT_MOCK_EPOCH
+  let record = createOperation({
+    capability: 'smart-account-instruction',
+    network: 114,
+    intent,
+    now,
+    id: opts.id ?? 'sa-mock',
+  })
+  const hops: readonly [OperationState, Record<string, unknown>?][] = [
+    ['quoting', { steps: instructionSpine() }],
+    ['ready'],
+    ['executing'],
+    ['submitted'],
+  ]
+  for (const [to, patch] of hops) {
+    const result = applyTransition(record, patch ? { to, at: now, patch } : { to, at: now })
+    if (result.rejection) {
+      throw new Error(`mock-smart-accounts: illegal transition ${record.state} -> ${to}`)
+    }
+    record = result.record
+  }
+  if (record.state !== 'submitted' || record.steps.length !== 4) {
+    throw new Error(`mock-smart-accounts: record stranded at ${record.state}`)
+  }
+  return record
 }
 
 /**

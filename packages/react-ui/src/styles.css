@@ -36,6 +36,7 @@
 @import './delegation.css';
 @import './staking.css';
 @import './governance.css';
+@import './smart-accounts.css';
 
 @font-face {
   font-family: 'Bricolage Grotesque';

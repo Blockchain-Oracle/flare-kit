@@ -1,4 +1,4 @@
-import type { OperationRecord } from '../operation.js'
+import type { OperationRecord, OperationStep } from '../operation.js'
 import { advance, reconcileTo, waitSince } from '../reconcile.js'
 
 /**
@@ -27,6 +27,26 @@ import { advance, reconcileTo, waitSince } from '../reconcile.js'
  * the XRP has already reached the operator. The record carries where the funds are and says
  * that paying again is a NEW payment — `R-SA-008`'s "must not invite a duplicate payment".
  */
+
+/**
+ * The four steps the reconciler below walks, in order.
+ *
+ * This lives HERE, beside the reconciler, because the reconciler indexes off the record's
+ * length — `n - 3`, `n - 2`, `n - 1` — so the four legs and their order are a contract, not
+ * a presentation choice. Leaving each caller to hand-write its own spine meant a record with
+ * three steps would silently reconcile one leg behind for its whole life, with nothing to
+ * catch it. `dispatch` is `flare` rather than `you`: `executeInstruction` is permissionless
+ * and any indexer that sees the XRPL payment may submit the proof, which the live run
+ * proved — the operator's backend dispatched the deposit before this kit could.
+ */
+export function instructionSpine(): OperationStep[] {
+  return [
+    { id: 'xrpl-payment', type: 'pay_operator', actor: 'your_wallet', state: 'pending', attempts: 0 },
+    { id: 'attestation', type: 'await_fdc_proof', actor: 'fdc', state: 'pending', attempts: 0 },
+    { id: 'dispatch', type: 'execute_instruction', actor: 'flare', state: 'pending', attempts: 0 },
+    { id: 'effect', type: 'await_instruction_effect', actor: 'flare', state: 'pending', attempts: 0 },
+  ]
+}
 
 export interface InstructionObservation {
   /** The XRPL payment, once it is validated on the ledger. */

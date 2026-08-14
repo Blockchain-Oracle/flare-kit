@@ -4,6 +4,8 @@ import {
   OBSERVED_ACCOUNT_FUNDED,
   OBSERVED_ACCOUNT_LIVE,
   OBSERVED_DEPOSIT,
+  OBSERVED_MAINNET_ACCOUNT,
+  OBSERVED_MAINNET_SETTINGS,
   OBSERVED_SETTINGS,
   OBSERVED_TRANSFER,
   SMART_ACCOUNT_MOCK_EPOCH,
@@ -11,8 +13,11 @@ import {
   mockObservation,
   mockPlan,
 } from '../src/mock-smart-accounts.js'
+import { smartAccountsFor } from '@flare-kit/contracts'
 import { smartAccountPosition } from '../src/portfolio.js'
+import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'
 import { encodePaymentReference } from '../src/smart-accounts/payment-reference.js'
+import { planInstruction } from '../src/smart-accounts/plan.js'
 import { reconcileInstruction } from '../src/smart-accounts/states.js'
 import { submittedInstructionRecord } from './smart-account-fixtures.js'
 
@@ -161,5 +166,47 @@ describe('the portfolio position', () => {
   it('is unavailable on a network whose round trip is unverified', () => {
     // Flare mainnet. The position must not be read off a path no live run confirmed.
     expect(smartAccountPosition(OBSERVED_ACCOUNT_LIVE, false).status).toBe('unavailable')
+  })
+})
+
+/**
+ * The mainnet READ LENS. Its values are probed, not verified — the distinction this whole
+ * milestone runs on — so they may be shown and must never be planned against.
+ */
+describe('the mainnet read lens', () => {
+  it('derives the SAME personal account as Coston2, from two separate reads', () => {
+    // The property SmartAccountCard exists to show. Recorded as two independently-read
+    // values that agree, so a future deployment that broke it would fail here rather than
+    // be discovered in a screenshot.
+    expect(OBSERVED_MAINNET_ACCOUNT.address).toBe(OBSERVED_ACCOUNT_BLANK.address)
+    expect(OBSERVED_MAINNET_ACCOUNT.deployed).toBe(false)
+  })
+
+  it('charges 950000 for five ids against a 500000 default', () => {
+    // The fact the no-fallback rule rests on. If these ever equalled the default, the test
+    // that proves substituting the default is wrong would pass vacuously.
+    expect(OBSERVED_MAINNET_SETTINGS.defaultInstructionFee).toBe(500_000n)
+    for (const id of [0x00, 0x02, 0x10, 0x20, 0x23]) {
+      expect(OBSERVED_MAINNET_SETTINGS.instructionFees[id], `fee 0x${id.toString(16)}`).toBe(950_000n)
+    }
+    for (const id of [0x01, 0x11, 0x12, 0x13, 0x21, 0x22]) {
+      expect(OBSERVED_MAINNET_SETTINGS.instructionFees[id], `fee 0x${id.toString(16)}`).toBe(500_000n)
+    }
+  })
+
+  it('refuses to plan on mainnet even with every read in hand', () => {
+    // The verified gate runs FIRST, so a fully-readable deployment still yields no plan.
+    // Nothing about this milestone writes to mainnet.
+    const result = planInstruction({
+      deployment: smartAccountsFor('flare'),
+      settings: OBSERVED_MAINNET_SETTINGS,
+      catalogue: buildInstructionCatalogue(OBSERVED_MAINNET_SETTINGS),
+      personalAccount: OBSERVED_MAINNET_ACCOUNT,
+      intent: OBSERVED_TRANSFER.intent,
+      replayed: false,
+      balanceRequested: true,
+    })
+    expect(result.ok).toBe(false)
+    expect(!result.ok && result.refusal.code).toBe('unverified')
   })
 })
