@@ -46,7 +46,7 @@
 
   <!-- ── the lifecycle ── -->
   <rect class="band" x="44" y="178" width="992" height="186" rx="14"/>
-  <text class="h" x="68" y="208">ONE OPERATION LIFECYCLE  ·  @flare-kit/core</text>
+  <text class="h" x="68" y="208">ONE OPERATION LIFECYCLE  ·  @flarekit-dev/core</text>
 
   <g>
     <rect class="chip" x="68"  y="226" width="126" height="42" rx="9"/><text class="m" x="88"  y="252">intent</text>
@@ -70,7 +70,7 @@
   <text class="d" x="556" y="390">reads and writes</text>
 
   <!-- ── protocols ── -->
-  <text class="h" x="44" y="438">FLARE PROTOCOLS  ·  resolved from @flare-kit/contracts</text>
+  <text class="h" x="44" y="438">FLARE PROTOCOLS  ·  resolved from @flarekit-dev/contracts</text>
   <rect class="band" x="44" y="454" width="992" height="76" rx="12"/>
   <g class="m" font-size="12.5">
     <text x="72"  y="483">FAssets</text><text x="72"  y="507" class="d">mint · redeem</text>

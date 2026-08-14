@@ -56,6 +56,32 @@ describe('the tab icon', () => {
 })
 
 /**
+ * The brand diagrams name packages in live `<text>`, so they are the one place
+ * a package rename cannot be caught by a compiler. The @flarekit-dev rename
+ * missed them: both diagrams still drew `@flare-kit/*`, which is a scope that
+ * no longer exists, on assets served from the README and npm.
+ *
+ * The live scope is derived from a package rather than written here, so a
+ * future rename either updates the diagrams or fails.
+ */
+describe('the brand diagrams name packages that exist', () => {
+  const SCOPE = (
+    JSON.parse(readFileSync('../../packages/core/package.json', 'utf8')) as { name: string }
+  ).name.split('/')[0]
+
+  const diagrams = ['architecture.svg', 'packages.svg'] as const
+
+  for (const file of diagrams) {
+    it(`${file} names no scope but ${'the live one'}`, () => {
+      const svg = readFileSync(`../../brand/${file}`, 'utf8')
+      const scopes = [...svg.matchAll(/(@[a-z0-9][a-z0-9-]*)\//g)].map((m) => m[1])
+      const wrong = [...new Set(scopes)].filter((s) => s !== SCOPE)
+      expect(wrong).toEqual([])
+    })
+  }
+})
+
+/**
  * "Ship Flare operations that recover." was never an approved motto — the spec
  * records that it was only a hero line in one specimen render, and that a motto
  * remains Abu's open choice. It survived in the root metadata, which is the

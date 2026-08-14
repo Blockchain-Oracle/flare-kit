@@ -1,0 +1,168 @@
+---
+title: GovernanceCard
+description: The governance-delegation composer — move all of an account's governance vote power to one representative, and reach Done only from the read-back that proves it.
+breadcrumb: ['Docs', 'Components', 'GovernanceCard']
+importLine: "import { GovernanceCard } from '@flarekit-dev/react-ui'"
+---
+
+`GovernanceCard` is the single-target governance composer: the account's
+governance vote power and current delegate, one address field, the eligibility
+readout, and the delegate/undelegate lifecycle on the shared spine.
+
+It looks like [DelegationCard](/docs/components/delegation-card) and is not the
+same thing. FTSO delegation splits WNat vote power across up to two providers in
+bips; governance vote power lives on a **different contract** —
+`GovernanceVotePower`, which WNat carries — and moves **all-or-nothing to one
+address** through `delegate(to)` / `undelegate()`. There is no share field and
+no second row, because the protocol has neither.
+
+## Live
+
+The preview runs the gallery's own states, built from the governance round trip
+observed on Coston2 on `2026-08-13`. The two settled cases are produced by
+feeding the observed read-back into the real `reconcileGovernance`, so the same
+submitted record yields `awaiting` under a read that has not caught up and
+`succeeded` only under the one that has.
+
+<GovernanceCardDemo />
+
+## Usage
+
+Drive it from `useGovernance`: `position` is the state panel, `plan` is the
+refusal, and `delegate` / `undelegate` sign through the wallet client you
+injected into the hook. The deployment comes from `@flarekit-dev/contracts` —
+`governanceFor(network)` — never a literal in your screen.
+
+```tsx
+import { createMockGovernanceAdapter } from '@flarekit-dev/core'
+import { useGovernance } from '@flarekit-dev/react'
+import { GovernanceCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const { client, deployment } = createMockGovernanceAdapter()
+
+export function Governance({ account }) {
+  const [targetText, setTargetText] = useState('')
+  const { position, eligibility, operation, plan, delegate, undelegate } = useGovernance({
+    deployment,
+    account,
+    publicClient: client,
+  })
+  const planResult = plan({ kind: 'delegate', to: targetText })
+
+  return (
+    <GovernanceCard
+      position={position}
+      eligibility={eligibility}
+      operation={operation}
+      planResult={planResult}
+      targetText={targetText}
+      networkLabel="Coston2"
+      onTargetChange={setTargetText}
+      onDelegate={() => delegate(targetText)}
+      onUndelegate={undelegate}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'position', type: 'GovernancePositionView', required: true, description: "The governance vote power and current delegate from `useGovernance`. It carries its own status: `observed` renders the values — including a real `0 VP` and a zero-address delegate, which is what a blank-slate account genuinely reads — and `unavailable` renders `—`. There is no way to hand this component a confident zero it did not read." },
+  { name: 'operation', type: 'GovernanceOperation', description: 'The in-flight delegate or undelegate. Its state owns the card: while it is in flight the composer locks and the lifecycle spine appears, and the intent decides which of the two legs the copy names.' },
+  { name: 'planResult', type: 'GovernancePlanResult', description: 'The result of the hook\'s `plan`. A plan enables the submit; an error is rendered as the refusal that names it, before any call is built. Omitted entirely, the card treats the verified gate as unevaluated and offers no live submit.' },
+  { name: 'eligibility', type: 'Eligibility', description: 'The keyless proposer / can-propose / management-member read. `isMember` is `boolean | undefined` and `undefined` renders `—`, never `No` — the on-chain call reverts for a non-member, which is silence, not a denial.' },
+  { name: 'targetText', type: 'string', description: 'The single delegate address as typed, in the mono face. Controlled by the host, so the field survives a re-render mid-entry. Empty means the submit stays disabled, whatever the plan says.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip on the panel header. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network the position was read on, shown on the header. Network is configuration, so this is a label, not a switch.' },
+  { name: 'onTargetChange', type: '(text: string) => void', description: 'Called with the delegate address as typed. Omit it and the field is read-only.' },
+  { name: 'onDelegate', type: '() => void', description: "Called when the reader submits the composed delegate. The card holds no key and broadcasts nothing; signing is the hook's injected wallet client." },
+  { name: 'onUndelegate', type: '() => void', description: 'Called when the reader clears the current delegation. The control appears only when an observed non-zero delegate exists — there is nothing to clear otherwise.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel holding four things: the governance position (vote power at full
+precision in the mono face, and the delegate — a shortened address, or `None`
+for the zero address), the single-target composer with its address field and the
+undelegate control, the eligibility readout, and — once an operation is in
+flight — the shared `OperationTimeline` spine. A note stating that creating a
+proposal is not built here sits above the submit permanently; it is scope, not a
+disabled button.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **compose** — the observed blank slate: `0.000000000000000000 VP` and no
+  delegate. A read that landed and returned nothing held.
+- **compose-with-target** — a valid single target, with the real `planGovernance`
+  emitting its one `delegate` call.
+- **delegated** — the observed post-round-trip position: still `0 VP`, with a
+  real delegate. `delegate(to)` moves a **pointer**, not weight, so an account
+  that held no vote power still holds none after delegating. The screen shows
+  what was read rather than filling the number in.
+- **unverified** — Flare mainnet, whose `governanceVerified` is `false`. Mainnet
+  is a proposal read lens, never a write target this milestone, so no signable
+  plan exists there and the card says so.
+- **self-delegation** — `to` equals the account: a no-op the protocol would
+  silently accept, refused before a call is built.
+- **invalid-target** — the zero address, a burn-to-nowhere delegate, refused
+  before a call is built.
+- **no-delegate** — undelegate against the observed zero delegate, refused
+  rather than burning gas on a no-op.
+- **delegating** — the wallet call in flight, pre-broadcast. No transaction id,
+  and the position still blank.
+- **submitted** — broadcast, carrying the real Coston2 transaction hash. The
+  `getDelegateOfAtNow` read has not run again, so this is not success.
+- **awaiting** — the real reconciler under a read that does not yet reflect the
+  intent: Flare is recording the delegation.
+- **succeeded** — the real reconciler under the observed read-back
+  (`getDelegateOfAtNow === target`). That read is the only path to Done; the
+  submission never produces it.
+- **undelegating** — the clearing call in flight. The spine carries the
+  `undelegate` call, not the delegate one.
+- **undelegate-succeeded** — the read-back returned the zero address, so the
+  round trip closed with no residual delegation.
+- **unavailable** — the last read did not land. Vote power and delegate both
+  render `—`: the position is unknown, not zero, and this is never collapsed
+  into the observed blank slate.
+
+Two further states are reachable from props but absent above, because the live
+run never produced them: `already-delegated` (re-delegating to the current
+delegate — refused at the plan, since the read-back would match from
+pre-existing state and reconcile to success regardless of whether the
+transaction landed) and `partially-succeeded`, which the governance reconciler
+never emits but a host driving the card from its own record could hand it.
+
+## Mock to live
+
+The card is prop-driven, so moving from the mock to a live network swaps what
+`useGovernance` reads through, not the screen. The mock pairs a labelled fake
+client with the real deployment from `@flarekit-dev/contracts`, so
+`governanceVerified` is exactly what the live flip left it and the mock cannot
+make an unverified network look signable.
+
+```tsx
+// From this…
+const { client, deployment } = createMockGovernanceAdapter()
+
+// …to this. The component does not change.
+const client = createPublicClient({ transport: http(FLARE_NETWORKS.coston2.rpcUrl) })
+const deployment = governanceFor('coston2')
+```
+
+## What it will not do
+
+It will not render an unavailable read as zero vote power, and it will not turn
+an `isMember` call that reverted into a `No`. It will not offer a share field or
+a second delegate, because governance vote power does not split. It will not
+reach Done from a broadcast — only from the `getDelegateOfAtNow` read that
+reflects the intent. And it will not submit a proposal or cast a vote: both are
+declared unbuilt here, stated in words rather than shown as controls that
+quietly do nothing.

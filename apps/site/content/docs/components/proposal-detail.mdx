@@ -1,0 +1,143 @@
+---
+title: ProposalDetail
+description: One governance proposal in full — tallies at full precision, the fields its contract shape does not carry rendered as "—" with the reason, and a vote path declared carried rather than mimed.
+breadcrumb: ['Docs', 'Components', 'ProposalDetail']
+importLine: "import { ProposalDetail } from '@flarekit-dev/react-ui'"
+---
+
+`ProposalDetail` renders one proposal: its tallies, its quorum and majority
+thresholds, and the per-account voting record — where the contract exposes one.
+
+The two governance surfaces are two different shapes, not one shape with
+optional fields. The deployed FTSO proposal carries no vote-power block, no
+`hasVoted` and no per-account `getVotes`, so those rows render `—` **with the
+reason stated**, rather than a fabricated block number or a confident `No`. The
+trailing total is labelled per source for the same reason: the FTSO contract's
+is a best-effort vote-power total, while the foundation governor names its own
+`circulatingSupply`, and rendering one under the other's label would relabel a
+named field as something it is not.
+
+## Live
+
+The preview runs the gallery's own states, built from the mainnet proposal read
+observed on `2026-08-13`. The one real proposal ever discovered live is mainnet
+FTSO id `1`, `Defeated` — for `2354.308387975507843417 VP` against
+`0.000000000000000000 VP`, quorum `6600 BIPS`, majority `5000 BIPS`. No
+foundation proposal was discoverable on either network, so none is shown.
+
+<ProposalDetailDemo />
+
+## Usage
+
+Drive it from `useProposals`: `detailOf(id, source)` returns the full view, the
+honest `unknown` shape when the detail read failed, or `undefined` before
+anything landed — and all three are things this component renders. The
+carried-vote reason comes from core's `planCastVote` and only from there, so
+there is exactly one authority on why the vote path is carried.
+
+```tsx
+import { createMockGovernanceAdapter, planCastVote } from '@flarekit-dev/core'
+import { useGovernance, useProposals } from '@flarekit-dev/react'
+import { ProposalDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const { client, deployment } = createMockGovernanceAdapter({}, 'flare')
+
+export function Proposal({ account, id, source }) {
+  const { proposals, detailOf } = useProposals({
+    readDeployment: deployment,
+    publicClient: client,
+    account,
+  })
+  const { reads } = useGovernance({ deployment, account, publicClient: client })
+  const summary = proposals?.find((p) => p.id === id && p.source === source)
+  if (!summary || !reads) return null
+
+  return (
+    <ProposalDetail
+      detail={detailOf(id, source)}
+      networkLabel="Flare mainnet"
+      carriedVoteReason={planCastVote({ proposal: summary, reads }).error.reason}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'carriedVoteReason', type: 'string', required: true, description: "Why the vote path is carried, from core's `planCastVote`. Required rather than defaulted: `planCastVote` is the one authority on that claim, and a second copy living in this component's own prose would eventually diverge from it." },
+  { name: 'detail', type: 'ProposalDetailView | ProposalUnknown', description: "The proposal's full detail, or the honest `unknown` shape a failed detail read returns. Omitted entirely means nothing has been read yet — a third state, rendered as its own sentence rather than as an empty result." },
+  { name: 'proposalId', type: 'bigint', description: 'The proposal id for the header when `detail` is absent, so a panel opened before any read still says which proposal it is about. Ignored once `detail` carries its own id.' },
+  { name: 'source', type: "'ftso' | 'foundation'", description: 'The contract surface this proposal belongs to, for the header when `detail` is absent. It also decides how the trailing total is labelled — the two shapes are not interchangeable.' },
+  { name: 'networkLabel', type: 'string', defaultValue: "'Flare mainnet'", description: 'The chain this proposal was read from, shown in the panel subtitle. Proposals are a cross-network read lens, so the label rides on the panel rather than being assumed by the app.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the panel follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel titled with the proposal id in the mono face, its source and network as
+the subtitle, and its state as a chip carrying a glyph and a word. Under that,
+two groups of rows.
+
+**Tallies and thresholds** — votes for and against at full precision in the mono
+face, the quorum threshold and the majority in BIPS each with a plain-English
+sub-line, and the trailing total under the label its own source earns: *Total
+vote power* for an FTSO proposal, carrying the note that it is not a definitive
+circulating supply, or *Circulating supply* for a foundation one, which is the
+contract's own field name.
+
+**Voting record** — the vote-power block, whether you voted, and your vote
+power. On the FTSO shape all three are `—`, each with a sub-line naming the
+field the contract does not expose.
+
+Below them sits the `Cast vote` control, present and disabled, and the note
+explaining why.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **defeated** — the real mainnet proposal in full: for
+  `2354.308387975507843417 VP`, against `0.000000000000000000 VP`, quorum
+  `6600 BIPS`, majority `5000 BIPS`, and `5217.782567582675528275 VP` as the
+  FTSO contract's own total, carrying its disclaimer. The three FTSO-absent
+  fields render `—` with their reasons.
+- **unknown** — the detail read failed, so the proposal arrives as the
+  `ProposalUnknown` shape. Every tally renders `—`; none is fabricated, and the
+  state chip reads `Unknown` rather than a verdict.
+- **nothing-read** — the panel opened before any read landed. Identity only, and
+  a note saying so — an empty panel would read as a proposal with no votes.
+
+## Mock to live
+
+The panel is prop-driven, so moving from the mock to a live network swaps what
+`useProposals` reads through, not the screen. The mock answers only for the one
+proposal that was actually discovered; any other id, or a foundation-shaped
+read, refuses rather than inventing a proposal.
+
+```tsx
+// From this…
+const { client, deployment } = createMockGovernanceAdapter({}, 'flare')
+
+// …to this. The component does not change.
+const client = createPublicClient({ transport: http(FLARE_NETWORKS.flare.rpcUrl) })
+const deployment = governanceFor('flare')
+```
+
+## What it will not do
+
+It will not fabricate a tally for a proposal whose detail could not be read, and
+it will not fill an absent FTSO field with a zero, a block number or a `No`. It
+will not relabel one contract's trailing total as the other's.
+
+And it will not cast a vote. `castVote` is **carried** this milestone: the path
+is built and gated in core, but no branch ever returns an executable plan — the
+write-and-verify network hosts no proposal, no `Active` proposal is reachable
+anywhere, and the account holds no mainnet governance vote power. The control is
+visible and disabled, the reason on screen is `planCastVote`'s own, and no
+"voted" or success state is reachable from any prop. `propose` and `execute` are
+carried on the same terms, and are not offered here at all.

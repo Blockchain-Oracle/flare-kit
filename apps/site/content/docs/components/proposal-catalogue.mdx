@@ -1,0 +1,134 @@
+---
+title: ProposalCatalogue
+description: The governance proposal lens, read from Flare mainnet — with "the read failed", "the read succeeded and found none" and "nothing has been asked yet" kept as three different answers.
+breadcrumb: ['Docs', 'Components', 'ProposalCatalogue']
+importLine: "import { ProposalCatalogue } from '@flarekit-dev/react-ui'"
+---
+
+`ProposalCatalogue` lists the governance proposals a deployment hosts. It is a
+read lens, not an operation surface: real proposals live on **Flare mainnet**,
+while the delegation the rest of governance drives is verified on Coston2 — so
+every row carries its own network label rather than the surface claiming one
+chain for the whole app.
+
+The three non-rows outcomes stay three. A discovery read that **failed**, a
+discovery read that **succeeded and found none**, and a catalogue **nothing has
+been asked of** are different claims, and collapsing the first into the second
+would turn an RPC outage into a confident statement about the chain.
+
+## Live
+
+The preview runs the gallery's own states, built from the proposal discovery
+observed on `2026-08-13`. One real proposal was ever found live — mainnet FTSO
+id `1`, `Defeated` — and it is the only row here. Coston2 is shown as the
+confirmed-empty read it actually is; no proposal is invented for it, and no
+`Active` proposal exists anywhere to invent.
+
+<ProposalCatalogueDemo />
+
+## Usage
+
+Drive it from `useProposals`, whose `proposals` is `ProposalSummary[] |
+undefined` and whose `error` is what tells the two `undefined` cases apart. Pass
+both straight through: the component makes the distinction, so a host that
+flattened it first would have thrown the answer away.
+
+```tsx
+import { createMockGovernanceAdapter } from '@flarekit-dev/core'
+import { useProposals } from '@flarekit-dev/react'
+import { ProposalCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+// Proposals are read from Flare mainnet — Coston2 hosts none.
+const { client, deployment } = createMockGovernanceAdapter({}, 'flare')
+
+export function Proposals({ account, onOpen }) {
+  const { proposals, loading, error } = useProposals({
+    readDeployment: deployment,
+    publicClient: client,
+    account,
+  })
+
+  return (
+    <ProposalCatalogue
+      proposals={proposals}
+      loading={loading}
+      error={error}
+      networkLabel="Flare mainnet"
+      onSelect={(id, source) => onOpen(id, source)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'proposals', type: 'ProposalSummary[] | undefined', required: true, description: 'The discovery result. `undefined` is pending or failed — read alongside `error` and `loading` — and `[]` is a confirmed-empty discovery, which only a successful read ever produces. The prop is required rather than optional precisely so a host cannot omit the answer and have the table guess one.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while a discovery read is in flight. It outranks whatever rows are still held: rows carry no provenance of their own, so showing them beside a new read would stamp the previous network\'s proposals with the new label.' },
+  { name: 'error', type: 'string | undefined', description: 'The failed read\'s reason, stated in the note. With no rows it produces the unavailable state; with rows still held it marks them as previously-read rather than a fresh result.' },
+  { name: 'networkLabel', type: 'string', defaultValue: "'Flare mainnet'", description: 'The chain this listing was read from. It stamps every row, titles the notes and names the table for a screen reader — a Coston2 catalogue announced as mainnet would make exactly the whole-surface claim the per-row labels exist to avoid.' },
+  { name: 'onSelect', type: '(id: bigint, source: ProposalSource) => void', description: 'Called with the proposal id and its source when a row is chosen. Both, because ids are only unique within a source — the two governance contracts number their proposals independently. Omit it and the ids render as plain text.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the table follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+Three columns — the proposal id in the mono face with its source underneath
+(`FTSO management proposal` or `Foundation governor proposal`), the state, and
+the network. State is never colour alone: each one carries a glyph and a word,
+including `Unknown` for a `state` read that did not land. The network cell is a
+neutral chip carrying the word alone — it is a label, not an outcome.
+
+Below the table sit the notes: the failure with its reason, the previously-read
+warning when a refresh failed over held rows, and, on a listed catalogue, the
+note explaining that these rows are a cross-network read.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the discovery read is in flight. Skeleton rows; neither an empty
+  list nor a failure is claimed yet.
+- **listed** — the one real proposal discovered live: mainnet FTSO id `1`,
+  `Defeated`. That state comes from the FTSO enum, where index `3` is Defeated —
+  the foundation enum reads the same index as Succeeded, so the mapping is
+  dispatched on source rather than shared.
+- **confirmed-empty** — Coston2. The discovery read succeeded and came back
+  empty, and the row says so in those words: nothing failed.
+- **unavailable** — the discovery read failed. Stated as unreadable, never
+  wearing the shape of an empty catalogue.
+- **stale** — a later refresh failed while a good read is still held. The rows
+  stay on screen, stated as previously-read rather than as a fresh result.
+
+One further state is reachable from props but absent above: `not-read` —
+`proposals` is `undefined` with neither a load in flight nor an error, which
+`useProposals` cannot produce but a host driving the table from its own read
+can. It states that nothing has been asked of the chain, because a blank table
+with no sentence reads as "none".
+
+## Mock to live
+
+The catalogue is prop-driven, so moving from the mock to a live network swaps
+what `useProposals` reads through, not the table. The mock holds only the one
+proposal that was actually discovered; asking it for any other id refuses rather
+than inventing one.
+
+```tsx
+// From this…
+const { client, deployment } = createMockGovernanceAdapter({}, 'flare')
+
+// …to this. The component does not change.
+const client = createPublicClient({ transport: http(FLARE_NETWORKS.flare.rpcUrl) })
+const deployment = governanceFor('flare')
+```
+
+## What it will not do
+
+It will not render a failed discovery as an empty catalogue, and it will not
+render held rows as a fresh result under a network they were not read from. It
+will not fabricate a row, and it will not leave a table blank and let the
+absence speak — every non-rows outcome says which one it is.

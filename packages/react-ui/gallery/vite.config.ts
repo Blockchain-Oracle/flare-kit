@@ -15,7 +15,7 @@ export default defineConfig({
       // so editing src still hot-reloads without a build. Exact match only:
       // '@flarekit-dev/react-ui/styles.css' must keep resolving via exports.
       {
-        find: /^@flare-kit\/react-ui$/,
+        find: /^@flarekit-dev\/react-ui$/,
         replacement: fileURLToPath(new URL('../src/index.ts', import.meta.url)),
       },
     ],

@@ -57,6 +57,9 @@ export const READING_ORDER: readonly string[] = [
   '/docs/components/delegation-card',
   '/docs/components/claim-card',
   '/docs/components/stake-card',
+  '/docs/components/governance-card',
+  '/docs/components/proposal-catalogue',
+  '/docs/components/proposal-detail',
   '/docs/components/primitives',
 
   // Hooks

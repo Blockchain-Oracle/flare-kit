@@ -12,22 +12,25 @@
   </style>
   <rect width="1080" height="430" fill="#fdfcf9"/>
 
-  <text class="h" x="44" y="46">PUBLISHED TO NPM</text>
+  <!-- The scope is stated once here. Each card names only its package: the
+       cards are 208px of usable width and the scope no longer fits inside one,
+       which is why …/react-ui was already elided before the rename. -->
+  <text class="h" x="44" y="46">PUBLISHED TO NPM  ·  @flarekit-dev</text>
 
   <!-- the four published packages, in dependency order -->
   <g>
     <rect class="card" x="44"  y="66" width="228" height="104" rx="12"/>
-    <text class="t" x="64" y="100">@flare-kit/contracts</text>
+    <text class="t" x="64" y="100">…/contracts</text>
     <text class="d" x="64" y="124">Addresses, typed ABIs and</text>
     <text class="d" x="64" y="143">per-capability verified flags.</text>
 
     <rect class="card" x="316" y="66" width="228" height="104" rx="12"/>
-    <text class="t" x="336" y="100">@flare-kit/core</text>
+    <text class="t" x="336" y="100">…/core</text>
     <text class="d" x="336" y="124">The operation lifecycle,</text>
     <text class="d" x="336" y="143">adapters, mock mode.</text>
 
     <rect class="card" x="588" y="66" width="228" height="104" rx="12"/>
-    <text class="t" x="608" y="100">@flare-kit/react</text>
+    <text class="t" x="608" y="100">…/react</text>
     <text class="d" x="608" y="124">Provider and one hook</text>
     <text class="d" x="608" y="143">per capability.</text>
 
