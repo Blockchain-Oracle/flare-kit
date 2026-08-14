@@ -206,6 +206,14 @@ export type SmartAccountPositionView =
       /** `undefined` where the balance read failed — never a zero standing in for it. */
       readonly fassetBalance: bigint | undefined
       readonly nonce: bigint | undefined
+      /**
+       * `true` when the contract was seen on chain, `undefined` when the code read FAILED.
+       *
+       * Carried because `observed` is reached by both, and a consumer that could not tell
+       * them apart would assume a contract is there — the same flattening this type's own
+       * doc warns about two states up. `false` never appears here: that is `not-deployed`.
+       */
+      readonly deployed: true | undefined
     }
   | {
       /** Derived, and demonstrably not deployed yet. The first instruction deploys it. */
@@ -245,6 +253,7 @@ export function smartAccountPosition(
     xrplOwner: account.xrplOwner,
     fassetBalance: account.fassetBalance,
     nonce: account.nonce,
+    deployed: account.deployed === true ? true : undefined,
   }
 }
 

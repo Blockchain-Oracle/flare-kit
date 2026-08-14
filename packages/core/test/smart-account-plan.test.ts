@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import type { DeploymentSettings } from '../src/smart-accounts/adapter.js'
 import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'
 import type { PersonalAccountState } from '../src/smart-accounts/personal-account.js'
-import { instructionSpine } from '../src/smart-accounts/states.js'
+import { mockInstructionRecord } from '../src/mock-smart-accounts.js'
 import { planInstruction } from '../src/smart-accounts/plan.js'
 import type { InstructionIntent } from '../src/smart-accounts/plan-types.js'
 
@@ -340,18 +340,15 @@ describe('the plan carries the spine the reconciler indexes', () => {
     expect(result.plan.steps.every((step) => step.state === 'pending')).toBe(true)
   })
 
-  it('is the same spine the shipped builder produces', () => {
-    // Not a copy of it. If the two ever diverged, a plan-built record and a resumed record
-    // would reconcile differently for the same instruction.
+  it('agrees with the record builder, which is a DIFFERENT producer', () => {
+    // Deliberately not `toEqual(instructionSpine())`: `plan.ts` calls that function, so both
+    // sides of such a comparison move together under every mutation of it and the assertion
+    // proves only that the call still happens. `mockInstructionRecord` is the other producer
+    // — the resume/no-plan path — and the two must not drift, or a plan-built record and a
+    // resumed one reconcile differently for the same instruction. (The 2026-08-14 test
+    // review caught the self-referential version.)
     const result = plan()
-    expect(result.ok && result.plan.steps).toEqual(instructionSpine())
-  })
-
-  it('names steps the evidence map can find', () => {
-    // The composer's INSTRUCTION_STEP_EVIDENCE keys off these ids; a rename here silently
-    // drops every identifier off the timeline rather than failing.
-    const result = plan()
-    const ids = result.ok ? result.plan.steps.map((step) => step.id) : []
-    expect(new Set(ids).size).toBe(4)
+    const recordSteps = mockInstructionRecord(TRANSFER).steps.map((step) => step.id)
+    expect(result.ok && result.plan.steps.map((step) => step.id)).toEqual(recordSteps)
   })
 })

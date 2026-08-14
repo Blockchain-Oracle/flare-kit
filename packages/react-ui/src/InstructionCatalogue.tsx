@@ -117,7 +117,7 @@ function Row({
       <td>
         <span className="fk-mono">{denominationNoun(instruction.denomination)}</span>
       </td>
-      {/* An unread fee is `—`. It is NOT the default fee: on mainnet five ids charge 950000
+      {/* An unread fee is `—`. It is NOT the default fee: on mainnet four ids charge 950000
           against a 500000 default, so substituting it would quote a payment the controller
           refuses — with the XRP already gone. */}
       <td data-numeric="true">

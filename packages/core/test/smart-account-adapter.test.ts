@@ -269,7 +269,7 @@ describe('the catalogue is discovered from deployment state', () => {
   it('never substitutes the default fee for an unread per-instruction fee', async () => {
     // Found by the M13 review gate. The default and the per-id fee are DIFFERENT numbers on
     // a live deployment: the 2026-08-13 probe read Flare mainnet's default at 500000 drops
-    // while ids 0x00/0x02/0x10/0x20/0x23 charge 950000. Quoting the default for an unread
+    // while ids 0x00/0x02/0x10/0x20 charge 950000. Quoting the default for an unread
     // fee would have a user sign a payment 450000 drops short, the controller would refuse
     // the proof forever, and the XRP would already be at the operator.
     const settings = await readDeploymentSettings(

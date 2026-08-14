@@ -23,6 +23,7 @@ import { describe, expect, it } from 'vitest'
 import { InstructionCatalogue } from '../src/InstructionCatalogue.js'
 import { InstructionComposer } from '../src/InstructionComposer.js'
 import { SmartAccountCard } from '../src/SmartAccountCard.js'
+import { INSTRUCTION_STEP_EVIDENCE } from '../src/instruction-composer-state.js'
 import type { SmartAccountNetworkView } from '../src/smart-account-card-state.js'
 
 /**
@@ -308,16 +309,20 @@ describe('InstructionCatalogue — availability is read, and its three negatives
   })
 
   it('renders the deployment’s own per-id fee, not its default', () => {
-    // The READ half of the no-fallback rule. Mainnet charges 950000 for five ids against a
+    // The READ half of the no-fallback rule. Mainnet charges 950000 for four ids against a
     // 500000 default, so a renderer quoting the default would under-pay by 450000 drops —
     // and the payment is already gone when the controller refuses the proof.
     const { container } = render(<InstructionCatalogue rows={buildInstructionCatalogue(OBSERVED_MAINNET_SETTINGS)} />)
     expect(container.querySelector('[data-instruction="0x00"] .fk-sa-row-fee')?.textContent).toBe('950000 drops')
     expect(container.querySelector('[data-instruction="0x01"] .fk-sa-row-fee')?.textContent).toBe('500000 drops')
+    // `0x23` specifically: the mock had it at 950 000 and the probe says 500 000. The earlier
+    // version of this test asserted the fabricated number, so the test was pinning the bug in
+    // place. Rendering it here means the screen and the probe have to agree.
+    expect(container.querySelector('[data-instruction="0x23"] .fk-sa-row-fee')?.textContent).toBe('500000 drops')
   })
 
   it('renders an unread fee as — rather than the default fee', () => {
-    // Mainnet proves why this matters: five ids charge 950000 against a 500000 default, so a
+    // Mainnet proves why this matters: four ids charge 950000 against a 500000 default, so a
     // substituted default is a wrong price, not a harmless placeholder.
     const rows = buildInstructionCatalogue({ ...OBSERVED_MAINNET_SETTINGS, instructionFees: {} })
     const { container } = render(<InstructionCatalogue rows={rows} />)
@@ -373,14 +378,24 @@ describe('InstructionCatalogue — availability is read, and its three negatives
 describe('InstructionComposer — the whole chain, before an irreversible payment', () => {
   const plan = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)
 
+  it('keys its evidence map off the spine the plan actually produces', () => {
+    // Across the package boundary, which is where this can rot silently: core pins the four
+    // ids, but `OperationTimeline` yields `[]` for a key it cannot find — so renaming a leg
+    // in core and updating only core's assertions drops every identifier off the timeline
+    // with a green suite. Nothing else compares these two lists.
+    const ids = plan.ok ? [...plan.plan.steps.map((step) => step.id)].sort() : []
+    expect(ids).toHaveLength(4)
+    expect(Object.keys(INSTRUCTION_STEP_EVIDENCE).sort()).toEqual(ids)
+  })
+
   it('shows all 32 memo bytes, untruncated, and states the destination-tag prohibition', () => {
-    const { container } = render(<InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} />)
+    const { container } = render(<InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />)
     expect(container.textContent).toContain(OBSERVED_TRANSFER.reference)
     expect(container.textContent).toContain('No destination tag')
   })
 
   it('shows no deadline before the payment lands, and a wall-clock instant after', () => {
-    const before = render(<InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} />)
+    const before = render(<InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />)
     expect(before.container.textContent).toContain('The proof window starts when the payment lands')
 
     const paid = mockObservation(OBSERVED_TRANSFER, 'paid')
@@ -391,6 +406,7 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
         record={reconcileInstruction(mockInstructionRecord(OBSERVED_TRANSFER.intent), paid, CLOCK)}
         proofDeadline={deadline}
         now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(after.container.textContent).toContain('Usable until')
@@ -406,7 +422,7 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
       replayed: false,
       balanceRequested: true,
     })
-    const { container } = render(<InstructionComposer planResult={refused} now={SMART_ACCOUNT_MOCK_EPOCH} />)
+    const { container } = render(<InstructionComposer planResult={refused} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />)
     expect(container.querySelector('.fk-unbuilt')).toBeTruthy()
     expect(container.querySelector('.fk-panel-action')).toBeFalsy()
   })
@@ -419,7 +435,7 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
     const refused = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_LIVE)
     expect(!refused.ok && refused.refusal.code).toBe('recipient_unfunded')
 
-    const { container } = render(<InstructionComposer planResult={refused} now={SMART_ACCOUNT_MOCK_EPOCH} />)
+    const { container } = render(<InstructionComposer planResult={refused} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />)
     expect(container.querySelector('[data-refusal="recipient_unfunded"]')).toBeTruthy()
     expect(container.textContent).toContain('The account cannot cover this')
     // The planner's OWN message survives the note's framing — it carries the balance and the
@@ -436,7 +452,7 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
     // The plan carries `account_undeployed`; core asserts the warning exists, and this is
     // what asserts it reaches the screen. Deleting the map was invisible to the suite.
     const { container } = render(
-      <InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} />,
+      <InstructionComposer planResult={plan} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />,
     )
     expect(container.textContent).toContain('The account does not exist yet')
   })
@@ -448,7 +464,7 @@ describe('InstructionComposer — the whole chain, before an irreversible paymen
       CLOCK,
     )
     const { container } = render(
-      <InstructionComposer planResult={plan} record={submitted} now={SMART_ACCOUNT_MOCK_EPOCH} />,
+      <InstructionComposer planResult={plan} record={submitted} now={SMART_ACCOUNT_MOCK_EPOCH} nativeSymbol="C2FLR" />,
     )
     expect(container.querySelector('[data-op-state="awaiting_external"]')).toBeTruthy()
     // The chip is where a success claim would surface first, so it is asserted on directly
@@ -473,6 +489,7 @@ describe('InstructionComposer — a dead operation invites nothing', () => {
         record={expired}
         proofDeadline={deadline}
         now={deadline + 60_000}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(expired.state).toBe('expired')
@@ -493,10 +510,45 @@ describe('InstructionComposer — a dead operation invites nothing', () => {
         record={expired}
         proofDeadline={deadline}
         now={deadline + 60_000}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(container.querySelector('.fk-countdown')).toBeFalsy()
     expect(container.textContent).not.toContain('Ready')
+  })
+
+  it('drives the recovery panel from the injected clock, not the wall clock', () => {
+    // `OperationTimeline` used to render `RecoveryPanel` without `nowMs`, so the panel fell
+    // back to `Date.now()` and this surface's determinism promise ended at that boundary.
+    // The bug is invisible until a record carries a time-gated action, which is exactly why
+    // this test constructs one: at the injected `now` the action is not yet available, and
+    // only a real clock could make it say anything else.
+    const gated = {
+      ...reconcileInstruction(mockInstructionRecord(OBSERVED_TRANSFER.intent), paid, CLOCK),
+      recovery: [
+        {
+          id: 're-request',
+          label: 'Re-request the proof',
+          effect: 'Asks the Data Connector for the proof again.',
+          movesNewValue: false,
+          preconditions: [],
+          signs: false,
+          broadcasts: false,
+          nextState: 'awaiting_external' as const,
+          availableAt: SMART_ACCOUNT_MOCK_EPOCH + 3_600_000,
+        },
+      ],
+    }
+    const { container } = render(
+      <InstructionComposer
+        planResult={mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)}
+        record={gated}
+        now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
+      />,
+    )
+    expect(container.textContent).toContain('Not yet')
+    expect(container.textContent).toContain('Re-request the proof')
   })
 
   it('does not claim the operation is progressing safely on its own', () => {
@@ -508,6 +560,7 @@ describe('InstructionComposer — a dead operation invites nothing', () => {
         record={expired}
         proofDeadline={deadline}
         now={deadline + 60_000}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(container.textContent).not.toContain('nothing is at risk')
@@ -525,6 +578,7 @@ describe('InstructionComposer — who dispatched is a separate fact from whether
         dispatchedByUs={OBSERVED_DEPOSIT.dispatchedByUs}
         dispatchedBy={OBSERVED_DEPOSIT.dispatchedBy}
         now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(record.state).toBe('succeeded')
@@ -542,6 +596,7 @@ describe('InstructionComposer — who dispatched is a separate fact from whether
         record={settledOf(OBSERVED_TRANSFER)}
         dispatchedByUs={OBSERVED_TRANSFER.dispatchedByUs}
         now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(OBSERVED_TRANSFER.dispatchedByUs).toBe(true)
@@ -554,6 +609,7 @@ describe('InstructionComposer — who dispatched is a separate fact from whether
         planResult={mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)}
         record={settledOf(OBSERVED_TRANSFER)}
         now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(container.textContent).not.toContain('Dispatched by another submitter')
@@ -571,6 +627,7 @@ describe('InstructionComposer — who dispatched is a separate fact from whether
         record={submitted}
         reconciling={false}
         now={SMART_ACCOUNT_MOCK_EPOCH}
+        nativeSymbol="C2FLR"
       />,
     )
     expect(container.textContent).toContain('Nothing is watching this right now')

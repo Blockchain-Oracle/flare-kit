@@ -52,8 +52,15 @@ export interface InstructionComposerProps {
   readonly now: number
   /** The FDC request fee in wei, read at request time. `—` until it is read. */
   readonly fdcRequestFee?: bigint
-  /** Native symbol for the dispatch value and the FDC fee. */
-  readonly nativeSymbol?: string
+  /**
+   * The native currency symbol for the dispatch value and the FDC request fee.
+   *
+   * REQUIRED, like `SmartAccountNetworkView.nativeSymbol`. It used to default to `'FLR'`,
+   * which meant a host rendering the composer for Coston2 without it labelled both values
+   * with MAINNET's currency — an asset nobody read, on the one network this milestone writes
+   * to. Caught by the 2026-08-14 correctness review.
+   */
+  readonly nativeSymbol: string
   /**
    * Whether anything is actually reconciling. `false` while in flight means NOTHING is
    * looking, and the leg copy would otherwise imply the kit is watching when it is not.
@@ -78,7 +85,7 @@ export interface InstructionComposerProps {
 }
 
 export function InstructionComposer(props: InstructionComposerProps) {
-  const { planResult, record, now, theme, nativeSymbol = 'FLR' } = props
+  const { planResult, record, now, theme, nativeSymbol } = props
   const cta = ctaForInstruction({ planResult, record })
   const plan = planResult?.ok ? planResult.plan : undefined
   const refusal = planResult && !planResult.ok ? planResult.refusal : undefined

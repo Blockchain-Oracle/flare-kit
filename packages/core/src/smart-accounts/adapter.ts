@@ -74,8 +74,10 @@ export interface DeploymentSettings {
    * Per instruction id, in drops. `undefined` for an id whose fee READ FAILED.
    *
    * It must not fall back to `defaultInstructionFee`, and the deployment proves why: on
-   * Flare mainnet the default is 500 000 drops while ids 0x00, 0x02, 0x10, 0x20 and 0x23
-   * charge 950 000 (probe, 2026-08-13). `getInstructionFee` already resolves the override
+   * Flare mainnet the default is 500 000 drops while ids 0x00, 0x02, 0x10 and 0x20 charge
+   * 950 000 (probe, 2026-08-13 — `0x23` is 500 000; this sentence used to list it among the
+   * 950 000s and the mock copied the sentence rather than the probe, which is how a wrong
+   * comment became a wrong rendered number). `getInstructionFee` already resolves the override
    * internally, so a SUCCESSFUL read never yields `undefined` — the only meaning left for
    * it is "we could not read the fee", and quoting the default there would ask a user to
    * sign a payment 450 000 drops short of what the controller requires. The proof would be

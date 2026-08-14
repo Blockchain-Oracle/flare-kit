@@ -167,6 +167,12 @@ describe('the portfolio position', () => {
     const view = smartAccountPosition({ ...OBSERVED_ACCOUNT_LIVE, deployed: undefined }, true)
     expect(view.status).not.toBe('not-deployed')
     expect(view.status).toBe('observed')
+    // …and `observed` does not flatten the two ways it is reached. A consumer can still tell
+    // "the contract is there" from "the code read failed" — otherwise the third value the
+    // card keeps would be lost at this seam.
+    expect(view.status === 'observed' && view.deployed).toBeUndefined()
+    const seen = smartAccountPosition(OBSERVED_ACCOUNT_LIVE, true)
+    expect(seen.status === 'observed' && seen.deployed).toBe(true)
   })
 
   it('is UNBUILT — not unavailable — on a network whose round trip is unverified', () => {
@@ -195,10 +201,10 @@ describe('the mainnet read lens', () => {
     // The fact the no-fallback rule rests on. If these ever equalled the default, the test
     // that proves substituting the default is wrong would pass vacuously.
     expect(OBSERVED_MAINNET_SETTINGS.defaultInstructionFee).toBe(500_000n)
-    for (const id of [0x00, 0x02, 0x10, 0x20, 0x23]) {
+    for (const id of [0x00, 0x02, 0x10, 0x20]) {
       expect(OBSERVED_MAINNET_SETTINGS.instructionFees[id], `fee 0x${id.toString(16)}`).toBe(950_000n)
     }
-    for (const id of [0x01, 0x11, 0x12, 0x13, 0x21, 0x22]) {
+    for (const id of [0x01, 0x11, 0x12, 0x13, 0x21, 0x22, 0x23]) {
       expect(OBSERVED_MAINNET_SETTINGS.instructionFees[id], `fee 0x${id.toString(16)}`).toBe(500_000n)
     }
   })

@@ -52,7 +52,7 @@ export const OBSERVED_SETTINGS: DeploymentSettings = {
   // `false` here that nobody had read would have been a claim in the shape of a default. The
   // 2026-08-14 back-fill calls `isPaused` on both networks and records the answer.
   paused: false,
-  // Every id fell through to the default on Coston2. Mainnet does NOT — five ids charge
+  // Every id fell through to the default on Coston2. Mainnet does NOT — four ids charge
   // 950 000 against a 500 000 default — which is why these are read, never assumed.
   instructionFees: Object.fromEntries(
     [0x00, 0x01, 0x02, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22, 0x23].map((id) => [id, 1000n]),
@@ -77,9 +77,9 @@ export const OBSERVED_SETTINGS: DeploymentSettings = {
  * real `unverified` refusal. It exists because mainnet is the milestone's READ LENS, and the
  * identical-address property cannot be shown from one network alone.
  *
- * It also carries the fee fact the whole no-fallback rule rests on: five ids charge 950 000
- * against a 500 000 default. A surface that substituted the default here would quote a
- * payment 450 000 drops short of what the controller requires.
+ * It also carries the fee fact the whole no-fallback rule rests on: FOUR ids (0x00, 0x02,
+ * 0x10, 0x20) charge 950 000 against a 500 000 default. A surface that substituted the default
+ * for one of those would quote a payment 450 000 drops short of what the controller requires.
  */
 export const OBSERVED_MAINNET_SETTINGS: DeploymentSettings = {
   xrplProviderWallets: ['rM2LEysS4isvAJkZFfxKDL5z4aTfWcBTXV'],
@@ -93,7 +93,11 @@ export const OBSERVED_MAINNET_SETTINGS: DeploymentSettings = {
   instructionFees: Object.fromEntries(
     [0x00, 0x01, 0x02, 0x10, 0x11, 0x12, 0x13, 0x20, 0x21, 0x22, 0x23].map((id) => [
       id,
-      [0x00, 0x02, 0x10, 0x20, 0x23].includes(id) ? 950_000n : 500_000n,
+      // FOUR ids, and the list is the probe's, not a remembered one. `0x23` was recorded
+      // here as 950 000 and the probe says 500 000 — a fabricated chain read, caught by the
+      // 2026-08-14 correctness review. It began as a wrong doc comment in `adapter.ts` and
+      // became wrong DATA when this file copied the sentence instead of the JSON.
+      [0x00, 0x02, 0x10, 0x20].includes(id) ? 950_000n : 500_000n,
     ]),
   ),
   vaults: [
