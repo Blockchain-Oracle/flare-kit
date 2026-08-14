@@ -22,6 +22,28 @@ describe('the rail', () => {
     expect(screen.getByRole('link', { name: 'Chat' })).toBeInTheDocument()
   })
 
+  /**
+   * R-APP-001: the families, and BELOW A DIVIDER, the reserved seams. Without
+   * the rule the seams read as ordinary capabilities sitting between Pools and
+   * Vaults, which is the opposite of declaring them unbuilt.
+   */
+  it('puts a divider between the capability families and the reserved seams', () => {
+    render(<Rail currentId="swap" />)
+    const nav = screen.getByRole('navigation', { name: /capabilities/i })
+    const divider = within(nav).getByRole('separator')
+
+    const isBelowDivider = (label: string) =>
+      Boolean(
+        divider.compareDocumentPosition(within(nav).getByRole('link', { name: label })) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      )
+
+    for (const family of FAMILIES) {
+      const below = family.status.kind === 'unbuilt'
+      expect(isBelowDivider(family.label), `${family.label} sits on the wrong side`).toBe(below)
+    }
+  })
+
   it('marks an unbuilt family as unbuilt in its accessible name', () => {
     render(<Rail currentId="swap" />)
     const chat = screen.getByRole('link', { name: 'Chat' })

@@ -55,6 +55,14 @@ body {
 .app-rail-link[data-unbuilt='true'] {
   color: var(--fk-text-faint);
 }
+/* R-APP-001: the reserved seams sit below a divider, so they never read as
+   ordinary capabilities. */
+.app-rail-divider {
+  height: 1px;
+  margin: 10px 12px;
+  background: var(--fk-border);
+}
+
 .app-topbar {
   display: flex;
   align-items: center;
@@ -64,4 +72,56 @@ body {
 }
 .app-account {
   margin-left: auto;
+}
+
+/* ---------- Network selector ---------- */
+/* The kit has no select primitive, so the control is dressed here with kit
+   tokens rather than by inventing a component inside the app. The chevron is
+   drawn with borders: a background-image would need a colour literal, and the
+   page sheet consumes tokens. */
+.app-network {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.app-network-label {
+  font-size: 0.78rem;
+  color: var(--fk-text-muted);
+}
+.app-network select {
+  appearance: none;
+  padding: 6px 32px 6px 11px;
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  background: transparent;
+  color: var(--fk-text);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.app-network select:hover {
+  border-color: var(--fk-text-muted);
+}
+.app-network::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--fk-text-muted);
+  pointer-events: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--fk-primary);
+  outline-offset: 2px;
+}
+
+/* The declared-unbuilt panel is a statement, not a workspace: it reads at a
+   text measure rather than stretching the full stage. */
+.app-unbuilt {
+  max-width: 560px;
 }

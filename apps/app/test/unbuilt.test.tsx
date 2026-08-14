@@ -21,6 +21,24 @@ describe('the declared-unbuilt panel', () => {
     expect(screen.getByText(/compose any of these operations/i)).toBeInTheDocument()
   })
 
+  /**
+   * "Reuse, do not re-code. Never build a card, badge, pill, chip or spine
+   * inline inside a screen." A hand-rolled section-and-paragraphs panel is a
+   * card, and it drifts from every other surface the moment the kit's does.
+   */
+  it('assembles the kit panel rather than re-coding one in the screen', () => {
+    const { container } = render(<Unbuilt family={chat} />)
+    expect(
+      container.querySelector('.fk-panel'),
+      'the panel must come from @flarekit-dev/react-ui',
+    ).not.toBeNull()
+  })
+
+  it('states the unbuilt condition on a kit chip, not in bare markup', () => {
+    const { container } = render(<Unbuilt family={chat} />)
+    expect(container.querySelector('.fk-chip')).not.toBeNull()
+  })
+
   it('shows no fabricated preview of the unbuilt capability', () => {
     const { container } = render(<Unbuilt family={chat} />)
     expect(container.querySelector('table')).toBeNull()
