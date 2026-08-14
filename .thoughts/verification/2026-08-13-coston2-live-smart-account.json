@@ -1,9 +1,9 @@
 {
-  "milestone": "M13 \u2014 XRPL-controlled Smart Accounts",
+  "milestone": "M13 — XRPL-controlled Smart Accounts",
   "network": "coston2",
   "phases": {
     "preflight": {
-      "at": "2026-08-13T21:03:24.530Z",
+      "at": "2026-08-13T21:53:37.401Z",
       "smartAccountsVerified": true,
       "controller": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
       "operatorWallet": "rEyj8nsHLdgt79KJWzXR5BgF7ZbaohbXwq",
@@ -20,17 +20,17 @@
         "address": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb",
         "deployed": true,
         "nonce": "0",
-        "fassetBalance": "1000000",
-        "needsFunding": false
+        "fassetBalance": "500000",
+        "needsFunding": true
       },
       "signer": {
         "address": "0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9",
         "fassetBalance": "19796258",
-        "nativeBalance": "146014756236830559487"
+        "nativeBalance": "145960608636830558487"
       },
       "xrplOwner": {
         "address": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
-        "balanceDrops": "94889026"
+        "balanceDrops": "94888014"
       },
       "plannedChain": [
         "fund the personal account with 2000000 units of FTestXRP (EVM transfer)",
@@ -112,7 +112,7 @@
     },
     "dispatchDeposit": {
       "at": "2026-08-13T21:07:00Z",
-      "outcome": "REVERTED \u2014 TransactionAlreadyExecuted()",
+      "outcome": "REVERTED — TransactionAlreadyExecuted()",
       "dispatchedByUs": false,
       "dispatchedBy": "0xca0bf4cbc1cf8c4b5fd7984b42af907099084466",
       "dispatchTx": "0x53aad8df00e90fc6bd2917a68756d2fb2de0ce5875f46f3e35a3f96851173c6d",
@@ -123,12 +123,12 @@
         "personalAccountSharesBefore": 0,
         "personalAccountSharesAfter": 500000
       },
-      "reading": "The deposit instruction EXECUTED and its effect is real, but this kit did not dispatch it. executeInstruction is permissionless, so the operator's own backend \u2014 which watches the wallet the payment went to \u2014 submitted the proof first, and ours reached a payment already consumed. Recorded as a PROTOCOL round trip proven and a KIT dispatch leg carried for this instruction; run 1 (the transfer) proved the dispatch leg with our own transaction."
+      "reading": "The deposit instruction EXECUTED and its effect is real, but this kit did not dispatch it. executeInstruction is permissionless, so the operator's own backend — which watches the wallet the payment went to — submitted the proof first, and ours reached a payment already consumed. Recorded as a PROTOCOL round trip proven and a KIT dispatch leg carried for this instruction; run 1 (the transfer) proved the dispatch leg with our own transaction."
     }
   },
   "summary": {
-    "run1_transfer": "COMPLETE, ours end to end \u2014 XRPL E4385C7A\u2026117D -> FDC round 1424618 -> our dispatch 0xd23a2d66\u2026abb1 -> recipient +1000000 / personal account -1000000, exact.",
-    "run2_deposit": "Instruction executed and effect verified (500000 shares from controller vault 1, firelight, 0xC90D\u20260361), but dispatched by 0xca0bf4cb\u20264466, not by this kit.",
+    "run1_transfer": "COMPLETE, ours end to end — XRPL E4385C7A…117D -> FDC round 1424618 -> our dispatch 0xd23a2d66…abb1 -> recipient +1000000 / personal account -1000000, exact.",
+    "run2_deposit": "Instruction executed and effect verified (500000 shares from controller vault 1, firelight, 0xC90D…0361), but dispatched by 0xca0bf4cb…4466, not by this kit.",
     "smartAccountsVerified": "coston2 true (from run 1), flare false"
   }
 }
