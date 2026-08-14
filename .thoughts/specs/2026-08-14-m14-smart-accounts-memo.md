@@ -160,11 +160,26 @@ loses money that a plausible-looking implementation would not prevent.
   builds `executeUserOp(Call[])` batches, where `Call = {target, value, data}` and a failure
   reverts `CallFailed(i, result)` with the failing index — **partial batches are impossible**.
 
-- **M14-R4 — deployment and account reads for this flow.** The per-account nonce, the pinned
-  executor, `isTransactionIdUsed`, and the replacement fee — the last through
-  `getReplacementFee`, **never the raw slot**, which stores `newFee + 1` so that `0` can mean
-  unset (`MemoInstructions.sol:152`). A reader returning the slot raw is one drop high forever.
-  `undefined` on a failed read, as M13.
+- **M14-R4 — account reads for this flow. DEVIATION, FOUND IN BUILD: three of the four already
+  exist, and the fourth cannot be read at all.** The per-account nonce and pinned executor are
+  already read by M13's `personal-account.ts` and the used-transaction-id by its `adapter.ts` —
+  those three are `IMemoInstructionsFacet` functions M13 was already calling. No new module;
+  `memo-reads.ts` is dropped from the manifest rather than built as a wrapper around existing
+  reads.
+
+  The replacement fee is **not externally readable**. `getReplacementFee` is an `internal`
+  library function (`library/MemoInstructions.sol:166`) consumed only inside
+  `_resolveExecutorFee` (`MemoInstructionsFacet.sol:150`); it is on no facet interface and has
+  no external getter anywhere in the vendored tree. The spec asked for a read that does not
+  exist.
+
+  What the kit may honestly say instead: a replacement fee is observed from the
+  **`ReplacementFeeSet(personalAccount, targetTxId, newFee)` event** of the `0xE2` transaction,
+  which carries the true fee (the `+1` is a storage sentinel, not in the event —
+  `MemoInstructions.sol:152-153`). And it is **one-shot**: `_resolveExecutorFee` deletes the
+  override the moment it is used (`MemoInstructionsFacet.sol:152-153`). So a surface may say
+  "a replacement fee was set at ⟨tx⟩", and must **not** claim one is currently pending — the
+  chain will not tell us whether it has since been consumed.
 
 - **M14-R5 — the fee and amount computation, before signing.**
   `mintingFeeUBA = max(net * feeBIPS / 10000, minimumFeeUBA)`;

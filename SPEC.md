@@ -1227,9 +1227,13 @@ instruction runs as a consequence of a direct mint the kit self-relays.
   `PackedUserOperation` builder and `executeUserOp(Call[])` batches. Only
   `sender`, `nonce` and `callData` are validated on chain and nothing is
   signature-checked; the rest is zero-filled.
-- `packages/core/src/smart-accounts/memo-reads.ts` — M14-R4. Nonce, pinned
-  executor, used-transaction-id and the replacement fee — the last through the
-  accessor, never the raw slot, which stores `newFee + 1`.
+- ~~`packages/core/src/smart-accounts/memo-reads.ts`~~ — M14-R4. **Dropped,
+  found in build.** Three of its four reads already exist: `getNonce` and
+  `getExecutor` in M13's `personal-account.ts` and `isTransactionIdUsed` in its
+  `adapter.ts` — all three are `IMemoInstructionsFacet` functions M13 already
+  called. The fourth, the replacement fee, has **no external getter anywhere**
+  (`getReplacementFee` is `internal`), so it is observed from the
+  `ReplacementFeeSet` event instead and never claimed as current state.
 - `packages/core/src/smart-accounts/direct-mint-fees.ts` — M14-R5. The
   minting-fee, minimum and executor-fee computation, refusing an amount that
   would burn to the fee receiver.
