@@ -100,15 +100,40 @@ describe('refusals — each one is a payment that would have been lost', () => {
     // The burn happens when a payment lands under the minimum minting fee: everything goes to
     // the fee receiver, nothing is minted, the memo never runs, and there is no recovery.
     //
-    // This plan takes the NET the user wants credited and computes the total, so the total
-    // always clears the minimum — even for an absurdly small net. That is a stronger
-    // protection than a refusal, and this test pins it as a property. (The refusal remains in
-    // the planner as defence for any future caller that supplies a total directly.)
+    // On the NET framing the plan computes the total itself, so it always clears the minimum
+    // — even for an absurdly small net. That is a stronger protection than a refusal, and
+    // this test pins it as a property.
+    //
+    // The refusal is no longer merely defensive: the payer framing (`totalUBA`) reaches it,
+    // and the two tests below exercise it. Both framings ship because they answer different
+    // questions — "credit me this much" cannot express "this is the payment I am signing",
+    // and AC7 is about the second.
     const result = plan({ intent: { calls: [call()], netUBA: 1n, nonce: 4n } })
     expect(result.ok).toBe(true)
     if (!result.ok) return
     expect(result.plan.totalUBA).toBeGreaterThan(FEES.minimumFeeUBA)
     expect(result.plan.creditedUBA).toBeGreaterThanOrEqual(1n)
+  })
+
+  it('refuses a payer-named total below the minimum minting fee (AC7)', () => {
+    // The payer's own framing: "this is the payment I am about to sign." Below the minimum
+    // the protocol converts ALL of it into fee and mints nothing to them — the loss is total
+    // and no recovery opcode reaches it, so this is a hard block rather than a warning.
+    const result = plan({ intent: { calls: [call()], totalUBA: FEES.minimumFeeUBA - 1n, nonce: 4n } })
+    expect(!result.ok && result.refusal.code).toBe('payment_too_small')
+  })
+
+  it('states the exact minimum in the refusal, so it can be acted on', () => {
+    const result = plan({ intent: { calls: [call()], totalUBA: 1n, nonce: 4n } })
+    expect(!result.ok && result.refusal.message).toContain(String(FEES.minimumFeeUBA))
+  })
+
+  it('uses a payer-named total exactly as given, never nudged up to clear the minimum', () => {
+    // Raising it silently would spend more of their money than they said AND erase the one
+    // condition the check exists to catch.
+    const total = FEES.minimumFeeUBA * 10_000n
+    const result = plan({ intent: { calls: [call()], totalUBA: total, nonce: 4n } })
+    expect(result.ok && result.plan.totalUBA).toBe(total)
   })
 
   it('refuses a memo executor fee above the AssetManager’s own default', () => {

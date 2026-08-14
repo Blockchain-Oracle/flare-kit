@@ -1,0 +1,121 @@
+/* The M14 memo-flow surfaces. Values from tokens only.
+
+   MemoInstructionComposer reuses `.fk-sa-compose` wholesale — its chain, legs and
+   spine are M13's, because the milestone's rule is that this flow adds no new
+   spine. What lives here is the one surface M13 had no equivalent of: the
+   recovery composer. */
+
+/* ---------- RecoveryComposer (M14-R11) ---------- */
+.fk.fk-sa-recover {
+  max-width: 560px;
+}
+
+.fk-sa-recover .fk-sa-recover-list {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fk-sa-recover .fk-sa-recover-item {
+  display: block;
+}
+
+/* Each path is one control, not a row with a control in it: the whole card is
+   the target, so the effect and the limit are inside the hit area rather than
+   beside it. A user choosing a recovery is choosing to spend money, and the
+   sentence explaining what it will not do must not be somewhere they can click
+   past. */
+.fk-sa-recover .fk-sa-recover-path {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  text-align: left;
+  background: var(--fk-card);
+  border: 1px solid var(--fk-border-control);
+  border-radius: var(--fk-r-md);
+  cursor: pointer;
+  font: inherit;
+  color: var(--fk-text);
+}
+
+.fk-sa-recover .fk-sa-recover-path:hover {
+  border-color: var(--fk-primary-line);
+}
+
+/* Focus is visible on the control itself, not merely inherited from the browser
+   default that the background can swallow. AC6 is keyboard-first. */
+.fk-sa-recover .fk-sa-recover-path:focus-visible {
+  outline: 2px solid var(--fk-primary);
+  outline-offset: 2px;
+}
+
+.fk-sa-recover .fk-sa-recover-path[aria-pressed='true'] {
+  border-color: var(--fk-primary);
+  background: var(--fk-primary-soft);
+}
+
+.fk-sa-recover .fk-sa-recover-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fk-sa-recover .fk-sa-recover-op {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fk-text-faint);
+}
+
+.fk-sa-recover .fk-sa-recover-title {
+  font-family: var(--fk-font-display);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* The ordering is a protocol rule — if the payment never minted, 0xE0 recovers
+   the money and anything else abandons it. The badge carries that in the visual
+   the same way the list order carries it in the DOM. */
+.fk-sa-recover .fk-sa-recover-lead {
+  font-family: var(--fk-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-attention-soft);
+  color: var(--fk-attention);
+}
+
+.fk-sa-recover .fk-sa-recover-effect {
+  max-width: 56ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--fk-text);
+}
+
+/* The half a user assumes wrongly. Muted but NOT faint: it is the sentence that
+   stops someone spending a payment on a recovery that cannot help them. */
+.fk-sa-recover .fk-sa-recover-limit {
+  max-width: 56ch;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fk-text-muted);
+}
+
+.fk-sa-recover .fk-sa-recover-notes {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 56ch;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fk-text-muted);
+}

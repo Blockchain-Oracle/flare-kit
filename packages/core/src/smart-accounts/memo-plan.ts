@@ -49,10 +49,26 @@ export interface MemoPlanWarning {
   readonly message: string
 }
 
-export interface MemoIntent {
+/**
+ * How much the payment is, said in one of the only two ways a caller can honestly mean it.
+ *
+ * `netUBA` is the composer's framing — "credit my account this much" — and the total is
+ * derived from the contract's own forward model, so it lands above the minimum by
+ * construction.
+ *
+ * `totalUBA` is the PAYER's framing: "this is the payment I am about to sign." It is used as
+ * given, and it is the only one of the two that can be below the minimum minting fee. AC7
+ * lives on this branch: a below-minimum payment is converted entirely into fee and mints
+ * nothing to the payer, the loss is total and unrecoverable, and it must be blocked before a
+ * signature is requested. Deriving the total from `netUBA` can never reproduce that, which is
+ * why offering only that framing left the refusal unreachable.
+ */
+export type MemoAmount =
+  | { readonly netUBA: bigint; readonly totalUBA?: undefined }
+  | { readonly totalUBA: bigint; readonly netUBA?: undefined }
+
+export type MemoIntent = MemoAmount & {
   readonly calls: readonly PersonalAccountCall[]
-  /** What the personal account should be credited, in UBA. */
-  readonly netUBA: bigint
   /** The account's CURRENT nonce, read once for this payment. */
   readonly nonce: bigint
   /** Paid to whoever relays, out of the minted FAsset. Defaults to 0. */
@@ -172,12 +188,18 @@ export function planMemoInstruction(input: PlanMemoInstructionInput): MemoPlanRe
 
   // 5. The amount. Below the minimum minting fee the payment is burned entirely and the memo
   //    never runs, so this is checked against the CONTRACT's forward model, not an estimate.
-  const totalUBA = totalForNetCredit({
-    netUBA: intent.netUBA,
-    memoExecutorFeeUBA,
-    feeBIPS: fees.feeBIPS,
-    minimumFeeUBA: fees.minimumFeeUBA,
-  })
+  // A payer-named total is used AS GIVEN. Nudging it up to clear the minimum would silently
+  // spend more of their money than they said, and quietly clearing the one condition this
+  // check exists to catch.
+  const totalUBA =
+    intent.totalUBA !== undefined
+      ? intent.totalUBA
+      : totalForNetCredit({
+          netUBA: intent.netUBA,
+          memoExecutorFeeUBA,
+          feeBIPS: fees.feeBIPS,
+          minimumFeeUBA: fees.minimumFeeUBA,
+        })
   const credit = creditForTotal({
     totalUBA,
     memoExecutorFeeUBA,
