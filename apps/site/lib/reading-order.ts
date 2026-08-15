@@ -60,6 +60,9 @@ export const READING_ORDER: readonly string[] = [
   '/docs/components/governance-card',
   '/docs/components/proposal-catalogue',
   '/docs/components/proposal-detail',
+  '/docs/components/smart-account-card',
+  '/docs/components/instruction-catalogue',
+  '/docs/components/instruction-composer',
   '/docs/components/primitives',
 
   // Hooks
@@ -87,6 +90,8 @@ export const READING_ORDER: readonly string[] = [
   '/docs/hooks/use-staking',
   '/docs/hooks/use-governance',
   '/docs/hooks/use-proposals',
+  '/docs/hooks/use-smart-account',
+  '/docs/hooks/use-instruction',
   '/docs/hooks/operation-store',
 
   // Headless

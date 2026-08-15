@@ -1,0 +1,127 @@
+---
+title: useSmartAccount
+description: The keyless identity read for one XRPL address on one network — the derived personal account, the deployment's own mutable settings, and the instruction catalogue derived from them.
+breadcrumb: ['Docs', 'Hooks', 'useSmartAccount']
+importLine: "import { useSmartAccount } from '@flarekit-dev/react'"
+---
+
+`useSmartAccount` reads what one **XRP Ledger address's** Flare account is, and
+what the deployment it lives on is. It polls both, derives the instruction
+catalogue from the second, and hands a host everything
+[SmartAccountCard](/docs/components/smart-account-card) and
+[InstructionCatalogue](/docs/components/instruction-catalogue) render.
+
+It is **entirely keyless**, and that is the milestone's most unusual property.
+The subject is an XRPL address; nothing about reading its personal account
+requires an EVM account, a wallet or a signature. An agent, a block explorer or a
+read-only visitor can inspect any XRPL address's Flare account. Signing enters
+only at the instruction path, which is [useInstruction](/docs/hooks/use-instruction).
+
+## Live
+
+The readout below is the hook's actual return value on this render — running
+against a reader that answers nothing, because a documentation page has no
+network attached.
+
+That is what makes it worth reading. Every absence here is a read that failed,
+and none of them is a zero: `settings` is `undefined` rather than an empty
+settings object, `account` is `undefined` rather than an account that does not
+exist, and `position` is `unavailable` rather than a blank-slate holding. The
+values a landed read returns are on the
+[SmartAccountCard](/docs/components/smart-account-card) preview, which renders
+what the live probe of both networks actually observed.
+
+`catalogue` is the one thing that survives: eleven rows, every availability
+`unknown`. An empty catalogue would say the protocol has no such instructions
+rather than that this page could not look.
+
+<UseSmartAccountDemo />
+
+## Usage
+
+```tsx
+import { smartAccountsFor } from '@flarekit-dev/contracts'
+import { useSmartAccount } from '@flarekit-dev/react'
+import { SmartAccountCard } from '@flarekit-dev/react-ui'
+
+const deployment = smartAccountsFor('coston2')
+
+function Account({ xrplOwner, publicClient, fassetToken }) {
+  const { settings, account, position, catalogue, balanceRequested } = useSmartAccount({
+    deployment,
+    xrplOwner,    // an XRPL address — never an EVM one
+    publicClient, // every read is keyless: no wallet and no signature anywhere
+    fassetToken,  // optional; without it the FAsset balance is never asked for
+  })
+
+  return (
+    <SmartAccountCard
+      xrplOwner={xrplOwner}
+      networks={[{ deployment, networkLabel: 'Coston2', nativeSymbol: 'C2FLR', settings, account }]}
+    />
+  )
+}
+```
+
+## Parameters
+
+`deployment` is the smart-accounts deployment from `@flarekit-dev/contracts`
+(`smartAccountsFor(network)`), never a literal address — and the verified flag
+comes from the deployment being read, so a host cannot point this at one network
+and gate it on another's. `xrplOwner` is the XRPL address whose account to read.
+`publicClient` performs every read and needs no key. `fassetToken` is optional and
+is the only way the FAsset balance is asked for at all. `pollMs` defaults to 30
+seconds — this is identity state, not an in-flight operation.
+
+Changing the subject — the deployment or the XRPL owner — clears the previous
+answers immediately, because holding them while the new read is in flight would
+show one XRPL owner's personal-account **address** under another's name, and that
+is an address someone can send funds to. A manual `refresh()` does not clear
+anything.
+
+## Return type
+
+`settings` is the deployment's operator-mutable state: the operator XRPL wallets,
+the FDC source id, the proof window, the default and per-id instruction fees, the
+registered vaults and agent vaults, the default executor and whether dispatch is
+paused. It is `undefined` while loading **and** when the controller could not be
+read — never an empty settings object, because "no wallets registered" and "we
+could not ask" are different facts and the surfaces render them differently.
+
+`account` is the personal account: the CREATE2 address, whether the contract is
+actually deployed, the memo nonce, the pinned executor and the balances. It is
+`undefined` only when the address itself could not be derived; every other field
+carries its own `undefined`, because an account whose balance is unreadable still
+has a real and useful address.
+
+`position` is the portfolio-facing projection of the same read, so a host does
+not re-derive it and get one of its four answers wrong:
+
+- `observed` — the account was read. `deployed` is `true`, or `undefined` when
+  the code read failed; it is never `false` here.
+- `not-deployed` — derived, and demonstrably not deployed yet. The first
+  instruction deploys it, at exactly that address.
+- `unbuilt` — this network has no live-verified round trip, so no position is
+  read off it. On Flare mainnet this is the answer even when every read
+  succeeded: the reads are real, and the gate withholds the position rather than
+  blaming the network for a gap in what the kit has proven.
+- `unavailable` — the read did not land.
+
+`catalogue` is always the full eleven-instruction vocabulary, with availability
+saying what is knowable. `balanceRequested` reports whether a FAsset balance was
+asked for at all — without it a planner cannot tell an unread balance from one
+that was never requested, and would report the second as a failed read. Only this
+hook knows, because only it sees `fassetToken`.
+
+`loading` is true while a read cycle is in flight; `loaded` turns true once one
+has completed, so "still loading" and "landed, and unavailable" never blur.
+`refresh()` drives one read cycle immediately.
+
+## What it will not do
+
+It will not sign, hold a key or acquire one — there is no signing seam on this
+hook at all. It will not render an unread balance, nonce or executor as a zero,
+or a failed code read as "not deployed". It will not return an empty settings
+object for a controller it could not read, or an empty catalogue for a deployment
+it could not read. And it will not report a position on a network whose round
+trip no live run has confirmed, however well the reads went.

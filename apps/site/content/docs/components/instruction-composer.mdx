@@ -1,0 +1,238 @@
+---
+title: InstructionComposer
+description: The whole chain an XRPL instruction commits you to, shown before the payment that cannot be taken back — and a lifecycle where "it executed" and "we sent it" stay two separate facts.
+breadcrumb: ['Docs', 'Components', 'InstructionComposer']
+importLine: "import { InstructionComposer } from '@flarekit-dev/react-ui'"
+---
+
+`InstructionComposer` is a plan surface with an unusually long tail. Approving it
+commits the user to an **XRP Ledger payment that leaves their wallet before
+anything on Flare is knowable**.
+
+That asymmetry is why this component looks the way it does. Every other card in
+this kit plans a transaction that reverts harmlessly when it is wrong; here a
+wrong instruction costs the payment, and the only way forward is a new one. So
+the whole chain is drawn before approval — the exact payment, the attestation,
+the permissionless dispatch and the call the personal account will make — rather
+than a summary that becomes a surprise three legs later. Each refusal it renders
+names a revert the controller would raise **after** the XRP has reached the
+operator.
+
+## Live
+
+The preview runs the gallery's own states, built from the two Coston2 runs of
+`2026-08-13`. The plans come from the real `planInstruction`; the lifecycle
+states come from the real `reconcileInstruction` fed the observations those runs
+produced, so `succeeded` is a state the run genuinely reached — XRPL payment
+`E4385C7A…117D` → FDC round `1424618` → dispatch `0xd23a2d66…abb1`, confirmed by
+exact balance deltas on both sides.
+
+<InstructionComposerDemo />
+
+## Usage
+
+Drive it from `useInstruction`, whose plan comes from the deployment reads
+`useSmartAccount` already performs. The kit holds no XRPL seed, so `onSign` hands
+the built payment to the wallet that does.
+
+```tsx
+import { smartAccountsFor } from '@flarekit-dev/contracts'
+import { useInstruction, useSmartAccount } from '@flarekit-dev/react'
+import { InstructionComposer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const deployment = smartAccountsFor('coston2')
+
+export function Compose({ xrplOwner, publicClient, intent, observe, onSign }) {
+  const { settings, catalogue, account, balanceRequested } = useSmartAccount({
+    deployment,
+    xrplOwner,
+    publicClient,
+  })
+  const { plan, record, proofDeadline, reconciling } = useInstruction({
+    deployment,
+    settings,
+    catalogue,
+    personalAccount: account,
+    intent,
+    balanceRequested,
+    observe,
+  })
+
+  return (
+    <InstructionComposer
+      planResult={plan}
+      record={record}
+      proofDeadline={proofDeadline}
+      now={Date.now()}
+      nativeSymbol="C2FLR"
+      reconciling={reconciling}
+      networkLabel="Coston2"
+      onSign={onSign}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'now', type: 'number', required: true, description: 'The host clock in milliseconds. A prop rather than `Date.now()`, so the same props always render the same panel — and it travels all the way down to the lifecycle spine.' },
+  { name: 'nativeSymbol', type: 'string', required: true, description: "The native currency for the dispatch value and the FDC request fee. Required rather than defaulted: a default of `'FLR'` labelled Coston2's values with mainnet's currency, on the one network this milestone writes to." },
+  { name: 'planResult', type: 'InstructionPlanResult', description: "The planner's own result. A refusal is a state to render, never an error to throw: the note names what would have gone wrong and carries the planner's own specific message. Omitted entirely, the control reads `Choose an instruction`." },
+  { name: 'record', type: 'OperationRecord<InstructionIntent>', description: 'The durable operation. Its state owns the panel: the state chip, the lifecycle spine and the control all come from it, and its steps show how far the observation actually evidenced — never further.' },
+  { name: 'proofDeadline', type: 'number', description: 'When the proof stops being usable, in ms. `undefined` before the XRPL payment lands — the window is measured from the ledger block timestamp, so before then there is no instant to show and printing one would assume the payment validates now.' },
+  { name: 'fdcRequestFee', type: 'bigint', description: 'The FDC request fee in wei, read at request time. `—` until it is read; it is what one attestation request cost, not a constant.' },
+  { name: 'reconciling', type: 'boolean', description: 'Whether anything is actually reading. `false` while in flight means nothing is watching, and the panel says so — the leg copy would otherwise imply the kit is polling when no loop is running.' },
+  { name: 'dispatchedByUs', type: 'boolean', description: "Whether THIS kit sent the `executeInstruction` transaction. A separate fact from the operation's state, because dispatch is permissionless. `false` draws a stated note; `undefined` claims nothing either way." },
+  { name: 'dispatchedBy', type: 'string', description: 'The address that actually dispatched, where it was read. Rendered inside the note above, in the mono face.' },
+  { name: 'networkLabel', type: 'string', description: 'The network the plan was built against, shown in the header.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip on the panel header. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'onSign', type: '() => void', description: 'Called when the reader approves the plan. The component holds no key and broadcasts nothing: the payment is an XRPL transaction, so an XRPL wallet signs it.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel headed by the instruction being composed, the network, and — once an
+operation exists — its state chip. Inside it: the four-leg chain (below), the
+refusal note when the planner refused, the terminal note when the proof window
+has closed, the dispatched-by-another note when someone else submitted, the
+shared `OperationTimeline` spine once the operation is under way — it stays after
+it settles, and appears on an expired one too — and one control.
+
+The control is honest about who signs: **Sign the XRPL payment**. It becomes
+`Cannot compose this` on a refusal, `In flight…` while the operation moves,
+`Instruction executed` on success, and — deliberately, on an expired operation —
+`Window closed`, disabled. It never reads *Retry*: a retry button here would
+invite a second payment for an instruction that can never execute.
+
+On a network with no live-verified round trip the panel renders a declared-unbuilt
+block carrying the planner's reason, and **no control at all**.
+
+### InstructionChain
+
+The chain is exported too, for showing a plan without the operation around it:
+
+```tsx
+import { InstructionChain } from '@flarekit-dev/react-ui'
+```
+
+It takes `plan: InstructionPlan`, the host `now`, the `nativeSymbol`, an
+`expired` flag, and optionally `proofDeadline` and `fdcRequestFee`. It is a
+separate component because it renders a **plan** — what will happen, from the
+planner's own numbers — while the composer renders an **operation**, which is
+what actually happened; keeping those two apart is most of what this milestone
+spends its effort on. It has no page of its own because it has no state the
+composer's own preview does not already drive: every case in the switcher above
+renders it.
+
+Its four legs are:
+
+1. **You pay the operator on the XRP Ledger** — the destination (a registered
+   operator wallet, read live), the amount in drops with its XRP equivalent, the
+   instruction fee read from the controller, and all 32 memo bytes in full. The
+   memo is not truncated, because those bytes *are* the instruction and a
+   shortened one cannot be checked against what was intended. The reference
+   travels as the first memo's `MemoData`, and the payment carries **no
+   destination tag, ever** — the controller resolves the account from the
+   payment's source address, and a registered tag makes FAssets credit the
+   tag-holder instead.
+2. **The Flare Data Connector attests the payment** — the source id, the request
+   fee in wei where it has been read, and the voting round stated as *not
+   assigned yet*, because the round is fixed by the ledger close the payment
+   lands in and quoting one at plan time would be a guess.
+3. **Anyone submits `executeInstruction`** — the dispatch value carried as
+   `msg.value` (zero for most instructions, and the executor fee for a redeem,
+   which reverts without it), the personal account and whether this instruction
+   will deploy it. Dispatch is **permissionless**: the entry point gates only on
+   the controller not being paused, so any indexer that sees the attested payment
+   may submit the proof. flare-kit dispatches for itself and depends on no
+   third-party backend, indexer or executor to do it — and equally cannot stop
+   one from getting there first.
+4. **Your account acts on Flare** — the planner's own sentence naming the value,
+   the recipient or the vault.
+
+Beneath them sits the deadline. Before the payment lands it states the window in
+seconds and where its clock starts; once it lands it shows the wall-clock instant
+with a countdown; once it has passed it shows the instant in past tense with no
+countdown at all. Then come the plan's warnings — an unread replay flag, an
+unread or incomparable balance, an account that does not exist yet — each of
+which is something the planner could not establish and none of which is grounds
+to refuse, because refusing would assert something the kit does not know.
+
+## Two facts, not one
+
+The most useful result of the live runs is the second one. The vault deposit
+**executed** and its effect is real — 500 000 shares issued by controller vault
+`1` — but an operator's backend presented the proof first, and this kit's own
+dispatch reverted `TransactionAlreadyExecuted`.
+
+So *"the instruction executed"* and *"this kit sent it"* are two independent
+facts, and this component renders them separately. `dispatchedByUs={false}` draws
+a note naming the submitter that actually dispatched, and states that this is the
+protocol working as designed. It is neither a success of the kit's own nor a
+failure — the true third thing, and reading "we dispatched it" off `succeeded`
+would be an inference the chain does not support.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **plan** — the full chain for the transfer the run drove: the exact payment, all
+  32 memo bytes, the no-destination-tag rule, the downstream call, and no
+  deadline yet.
+- **plan-deposit** — the vault deposit, planned against the account as it stood
+  when that run happened, targeting **controller** vault id `1`
+  (`0xC90D…0361`) — which is not the kit's own vault registry.
+- **unverified** — the honest Flare mainnet gate. Every read landed, and there is
+  still no signable plan on a network no live run has confirmed.
+- **refused** — the post-run account holds `500000` drops and this moves
+  `1000000`. Refused before signing, because the inner call would revert and roll
+  the whole instruction back with the payment spent.
+- **leg 1 — paid** — the XRPL payment is on the ledger, so the deadline is now a
+  real wall-clock instant with a countdown.
+- **leg 2 — proved** — the attestation round finalized and the proof was
+  retrieved. Nothing has been dispatched.
+- **leg 3 — submitted** — `executeInstruction` is broadcast, carrying the real
+  transaction hash, and is still **not** success.
+- **leg 4 — dispatched** — the `InstructionExecuted` event has been read back and
+  the effect has not. The event alone never completes the operation.
+- **succeeded** — the effect observed: recipient `+1000000`, personal account
+  `−1000000`, exact on both sides. That read is the only path to Done.
+- **succeeded-by-another** — the deposit: executed, effect real, dispatched by
+  `0xca0bf4cb…4466` and not by this kit. Not our success, and not a failure.
+- **expired** — the same paid observation under a clock past the window.
+  Terminal, says where the XRP is, and carries no retry affordance.
+- **not-watched** — in flight while nothing is reconciling. The leg shown is the
+  last thing observed rather than the current state, and the panel says so.
+
+## Mock to live
+
+The preview's plans come from the real planner over the deployment settings the
+live read returned, and its records from the real reconciler over the
+observations the runs produced. Going live changes what feeds them, not the
+component:
+
+```tsx
+// From this…
+const planResult = mockPlan(OBSERVED_TRANSFER.intent, OBSERVED_ACCOUNT_FUNDED)
+
+// …to this. The component does not change.
+const { plan: planResult } = useInstruction({ deployment, settings, catalogue, ... })
+```
+
+## What it will not do
+
+It will not show a deadline before there is a block timestamp to measure one
+from, and it will not offer a retry — or any enabled control — on an expired
+operation. It will not reach Done from a broadcast, or from the dispatch event
+alone: only the instruction's observed consequence completes it. It will not
+report that this kit dispatched something it did not, and it will not let an
+in-flight leg imply that something is watching when nothing is.
+
+It also does not sign. The payment is an XRP Ledger transaction, so the signer is
+an XRPL wallet; core builds it unsigned and the host submits it.

@@ -3,6 +3,7 @@
 import { type FlareNetworkKey, FLARE_NETWORKS, dexFor } from '@flarekit-dev/contracts'
 import { createSwap } from '@flarekit-dev/core'
 import { useSwap } from '@flarekit-dev/react'
+import { useSelectedNetwork } from '../../lib/selected-network'
 import { SwapCard, TokenSelector } from '@flarekit-dev/react-ui'
 import { useMemo, useState } from 'react'
 import { publicClientFor } from '../../lib/kit'
@@ -19,7 +20,17 @@ import { type Side, draftIntent, tokenChoices } from '../../lib/swap-panel-state
  * no pool returns `no_route` rather than a number. The refusal is the quote
  * result itself, and this panel renders it rather than inventing a gate.
  */
-export function SwapPanel({ network = 'coston2' }: { network?: FlareNetworkKey } = {}) {
+/**
+ * `network` is READ from the shell's selection, not defaulted. A panel that
+ * defaults renders one network's assets under another network's name the moment
+ * the selector moves — which is what this did: Flare Mainnet in the top bar,
+ * Coston2's `FTestXRP` in the card. The override exists for tests only.
+ */
+export function SwapPanel({ network: override }: { network?: FlareNetworkKey } = {}) {
+  // Called unconditionally: `override ?? useSelectedNetwork()` would short-circuit
+  // past the hook whenever the prop is supplied, which is a conditional hook call.
+  const selected = useSelectedNetwork()
+  const network = override ?? selected
   const chain = FLARE_NETWORKS[network]
   const dex = dexFor(chain.id)
   const [fromKey, setFromKey] = useState(dex.canonicalPair[0])

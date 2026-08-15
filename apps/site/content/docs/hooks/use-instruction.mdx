@@ -1,0 +1,178 @@
+---
+title: useInstruction
+description: The keyless plan for one XRPL instruction and the durable four-leg lifecycle that follows it, where succeeded is reached only from the instruction's observed consequence.
+breadcrumb: ['Docs', 'Hooks', 'useInstruction']
+importLine: "import { useInstruction } from '@flarekit-dev/react'"
+---
+
+`useInstruction` does two things: it plans one instruction, and it walks the
+operation that instruction becomes.
+
+Planning is **keyless and pure**. It needs the deployment reads
+[useSmartAccount](/docs/hooks/use-smart-account) already performs, and produces
+either a plan or a typed refusal. It never signs and never sends.
+
+Signing is the **host's** job, and deliberately not this hook's. The payment is
+an XRP Ledger transaction, so the signer is an XRPL wallet — core builds it
+unsigned and the host submits it. A hook that took an XRPL seed would put key
+material in the render tree for no gain.
+
+Every refusal exists because of one asymmetry: on Flare a bad transaction reverts
+and costs gas, but a bad instruction costs **the payment**. The XRP has already
+reached the operator by the time the controller sees anything, and the only way
+forward is a new payment.
+
+## Live
+
+The readout below is the hook's actual return value on this render, running over
+what the Coston2 transfer run of `2026-08-13` observed.
+
+Nothing in it is asserted. `plan` is the real `planInstruction`'s output for that
+run's intent against the account as it stood when it was planned — funded with
+`2000000` drops and not yet deployed — so it carries the real 32-byte reference,
+the operator wallet read off the controller, the fee the controller charges, and
+the `account_undeployed` warning that moment earned. `record` is walked by the
+real `reconcileInstruction` under that run's own observation, and reaches
+`succeeded` **only** because the observation carries `effectObserved: true`. Drop
+that one field and the same record stays in flight.
+
+`proofDeadline` is the run's own XRPL ledger close plus the proof window read off
+the deployment — a real instant, and one that has since passed.
+
+<UseInstructionDemo />
+
+## Usage
+
+```tsx
+import { smartAccountsFor } from '@flarekit-dev/contracts'
+import { useInstruction, useSmartAccount } from '@flarekit-dev/react'
+import { InstructionComposer } from '@flarekit-dev/react-ui'
+
+const deployment = smartAccountsFor('coston2')
+
+function Instruction({ xrplOwner, publicClient, intent, observe, saved }) {
+  const { settings, catalogue, account, balanceRequested } = useSmartAccount({
+    deployment,
+    xrplOwner,
+    publicClient,
+  })
+  const { plan, record, proofDeadline, reconciling } = useInstruction({
+    deployment,
+    settings,         // undefined = unreadable controller; the planner refuses on it
+    catalogue,
+    personalAccount: account,
+    intent,           // undefined until an instruction has been chosen
+    balanceRequested,
+    operation: saved, // a persisted record resumes reconciling on mount
+    observe,          // what you can currently see of the four legs
+  })
+
+  return (
+    <InstructionComposer
+      planResult={plan}
+      record={record}
+      proofDeadline={proofDeadline}
+      now={Date.now()}
+      nativeSymbol="C2FLR"
+      reconciling={reconciling}
+    />
+  )
+}
+```
+
+## Parameters
+
+`deployment`, `settings`, `catalogue` and `personalAccount` are what
+`useSmartAccount` returns, passed straight through — the planner refuses rather
+than plan off reads that did not land. `intent` is the instruction to plan, and
+`undefined` until one has been chosen.
+
+`replayed` comes from `readTransactionIdUsed`. `undefined` means unread and is
+never read as `false`: only a confirmed `true` refuses, and an unread flag is a
+warning, because planning off a wrong `false` means submitting a proof the
+controller will reject. `balanceRequested` distinguishes a balance that was never
+asked for from one whose read failed — without it the planner reports the first
+as a failure.
+
+`operation` is a persisted record to resume reconciling on mount, so an
+instruction that dispatched while the app was closed settles when it opens.
+There is no Resume button. `observe()` reports what the caller can currently see
+of the four legs, on a `pollMs` cadence that defaults to 15 seconds; absent legs
+stay `undefined`.
+
+## Return type
+
+`plan` is `undefined` until an intent is supplied, and otherwise a result — a
+plan or a refusal. A refusal is a result, not an error: fifteen refusal codes
+name a revert the controller would raise after the XRP was spent, from the
+unverified network gate that runs first, through an unreadable controller, a
+paused one, an instruction this deployment cannot serve, a payment under the fee,
+a fee that could not be read, a vault that is not registered or is the wrong
+type, an account that cannot cover the transfer, and a payment that has already
+dispatched.
+
+Two things are deliberately **not** refusals, because refusing would assert
+something unknown: an unreadable replay flag, and an unknown personal-account
+balance — refusing on the second would block the legitimate "fund the account,
+then instruct it" order, which is how a first-ever instruction necessarily works.
+Both arrive as warnings on the plan instead.
+
+`record` is the durable operation. `proofDeadline` is when the proof stops being
+usable, and `undefined` until the XRPL payment has landed — before that there is
+no block timestamp to measure from, and assuming "now" would quietly invent a
+deadline.
+
+`reconciling` reports whether the poll is actually running. `false` while an
+operation is in flight means **nothing is looking**: the record keeps rendering
+its last leg, so a surface has to say so rather than let the wait speak for
+itself. `reconcileNow()` drives one reconcile immediately.
+
+## States
+
+The instruction walks four legs, and only one of them is Done:
+
+```
+xrpl payment ─► fdc round + proof ─► executeInstruction ─► the effect
+   validates       finality             submitted           actually happened
+```
+
+`succeeded` requires **both** the decoded `InstructionExecuted` event and the
+instruction's own observable consequence — the recipient's balance for a
+transfer, the share balance for a deposit. The event alone says the controller
+dispatched, not that what was asked for is real, so a caller that cannot yet
+observe the consequence reports `effectObserved: undefined` and the operation
+stays in flight rather than being dressed as done.
+
+Proof expiry is a **first-class terminal state**, not a failure to retry. Past
+the XRPL block timestamp plus the proof window the controller refuses the proof
+forever, while the XRP is already the operator's. Expiry holds off while the
+outcome is merely unknown — a dispatch that was submitted but whose event has not
+been read back, or a dispatch read that failed, is an unknown outcome and never a
+dead one.
+
+A failed look is not an outcome either. When `observe()` throws, the record keeps
+its state and the poll retries; it never advances to `failed` on the strength of
+a read that did not answer.
+
+## Who dispatches
+
+`executeInstruction` carries only a `notPaused` modifier, so **dispatch is
+permissionless**. flare-kit is therefore its own operator — it builds the XRPL
+payment, requests the FDC attestation and submits the proof itself, and no
+third-party operator backend, indexer or executor is a dependency.
+
+It also cannot stop someone else from getting there first, and in the live vault
+deposit somebody did: the instruction executed, its effect is real, and an
+operator's backend presented the proof before this kit could. *"It executed"* and
+*"we sent it"* are two independent facts. This hook reports the first; the second
+is `dispatchedByUs`, which
+[InstructionComposer](/docs/components/instruction-composer) renders separately.
+
+## What it will not do
+
+It will not sign, hold an XRPL seed, or acquire one. It will not report
+`succeeded` from a broadcast or from the dispatch event alone. It will not treat
+an unread replay flag as `false`, quote an unread fee, or plan against reads that
+did not land. It will not mark an operation `failed` because a read failed, and
+it will not offer a retry on an expired one — composing the same instruction
+again means making a new payment.

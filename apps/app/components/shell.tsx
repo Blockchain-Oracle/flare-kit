@@ -5,6 +5,7 @@ import { FlareProvider } from '@flarekit-dev/react'
 import { usePathname } from 'next/navigation'
 import { type ReactNode, useEffect, useState } from 'react'
 import { useAppKit } from '../lib/kit'
+import { SelectedNetwork } from '../lib/selected-network'
 import { readStoredNetwork, storeNetwork } from '../lib/network'
 import { AccountArea } from './account-area'
 import { Rail } from './rail'
@@ -44,7 +45,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           onNetworkChange={changeNetwork}
           account={<AccountArea kit={kit} network={network} />}
         />
-        <div className="app-panel">{children}</div>
+        {/* Panels READ the selection: `[family]/page.tsx` is a server component,
+            so it cannot be handed the client shell's state as a prop. */}
+        <div className="app-panel">
+          <SelectedNetwork network={network}>{children}</SelectedNetwork>
+        </div>
       </div>
     </div>
   )
