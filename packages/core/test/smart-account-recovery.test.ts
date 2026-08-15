@@ -121,3 +121,17 @@ describe('the ordering rule, which the docs state and a surface must not invert'
     expect(order[0]).toBe('fast-forward-nonce')
   })
 })
+
+describe('0xD0 pin — the refusal the review gate found untested', () => {
+  it('refuses the zero address, which the controller rejects with AddressZero', () => {
+    // Costs a whole XRPL payment to discover on chain, so it is refused before signing.
+    const result = planMemoRecovery({ kind: 'pin-executor', executor: `0x${'00'.repeat(20)}` })
+    expect(!result.ok && result.refusal.code).toBe('invalid_executor')
+  })
+
+  it('accepts a real executor address', () => {
+    const result = planMemoRecovery({ kind: 'pin-executor', executor: EXECUTOR })
+    expect(result.ok).toBe(true)
+    expect(result.ok && (result.plan.memo.length - 2) / 2).toBe(30)
+  })
+})

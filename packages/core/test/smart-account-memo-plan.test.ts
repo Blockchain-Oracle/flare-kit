@@ -190,3 +190,45 @@ describe('the value the relay attaches', () => {
     expect(result.ok && result.plan.attachValueWei).toBe(12n)
   })
 })
+
+/**
+ * The refusals the M14 review gate found had NO test at all.
+ *
+ * Every one of these is a revert the controller would raise after the XRPL payment has
+ * settled, so an untested branch here is a refusal nobody has ever seen fire. Four of the five
+ * turned out to be genuinely reachable; the fifth is documented unreachable and is pinned as
+ * such rather than left ambiguous.
+ */
+describe('the untested refusals, now reached on purpose', () => {
+  it('refuses when the personal account could not be derived', () => {
+    const result = plan({ personalAccount: undefined })
+    expect(!result.ok && result.refusal.code).toBe('account_unknown')
+  })
+
+  it('refuses a user operation with no calls', () => {
+    const result = plan({ intent: { calls: [], netUBA: 1_000_000n, nonce: 4n } })
+    expect(!result.ok && result.refusal.code).toBe('no_calls')
+  })
+
+  it('refuses when the mint would not cover the memo’s own executor fee', () => {
+    // A payer-named total that clears the minimum minting fee but leaves less than the memo
+    // promises the relayer. `require(_amount >= _executorFee)` reverts AFTER settlement.
+    const result = plan({
+      fees: { ...FEES, assetManagerExecutorFeeUBA: 10_000_000n },
+      intent: { calls: [call()], totalUBA: FEES.minimumFeeUBA + 10n, nonce: 4n, executorFeeUBA: 5_000_000n },
+    })
+    expect(!result.ok && result.refusal.code).toBe('executor_fee_unaffordable')
+  })
+
+  it('pins memo_too_large as UNREACHABLE rather than leaving it ambiguous', () => {
+    // 0xFE is a constant 42 bytes, so an oversized batch always falls back to something that
+    // fits. If a future change makes this reachable, the branch is already there — but no
+    // input available today produces it, and pretending otherwise would be a fake test.
+    const many = Array.from({ length: 40 }, () => call())
+    const result = plan({ intent: { calls: many, netUBA: 1_000_000n, nonce: 4n } })
+    expect(result.ok).toBe(true)
+    expect(result.ok && (result.plan.memo.length - 2) / 2).toBeLessThanOrEqual(1024)
+    // It went by hash, which is why the ceiling was never reached.
+    expect(result.ok && result.plan.executorData).toBeDefined()
+  })
+})
