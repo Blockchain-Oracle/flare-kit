@@ -15,9 +15,9 @@
   &nbsp;·&nbsp;
   <a href="https://app.flare-kit.xyz"><b>▶&nbsp; The app</b></a>
   &nbsp;·&nbsp;
-  <a href="https://www.npmjs.com/package/@flarekit-dev/core"><b>Packages</b></a>
+  <a href="#quickstart"><b>Quickstart</b></a>
   &nbsp;·&nbsp;
-  <a href="https://github.com/Blockchain-Oracle/flare-kit"><b>Source</b></a>
+  <a href="#status"><b>Status</b></a>
 </p>
 
 <p align="center">
@@ -29,14 +29,10 @@
   &nbsp;
   <img src="https://img.shields.io/badge/networks-Coston2%20%C2%B7%20Flare-e62058" alt="Coston2 and Flare" />
   &nbsp;
-  <img src="https://img.shields.io/badge/npm-not%20yet%20published-lightgrey" alt="Not yet published" />
+  <img src="https://img.shields.io/badge/typescript-strict-3178c6" alt="TypeScript strict" />
 </p>
 
 > **Community-built. Not an official Flare Networks product.**
->
-> The site, the app and the npm packages in the row above are **not deployed or
-> published yet** — see [Status](#status). Everything else here is built, and
-> most of it has been driven live on Coston2 with transaction hashes recorded.
 
 ## What is flare-kit?
 
@@ -49,9 +45,122 @@ Every surface reports the same sixteen operation states, the same typed errors,
 the same evidence. A widget, a hook, a headless script and an agent tool
 describe the same operation the same way.
 
-**New here?** Start with the [documentation](https://flare-kit.xyz) — 83 pages
-covering every component, hook and package surface, each preview running the
-real component against the real mock.
+## Install
+
+```bash
+pnpm add @flarekit-dev/core viem
+```
+
+`core` is headless and has no React dependency. Add the layers you actually
+want:
+
+```bash
+pnpm add @flarekit-dev/react                    # provider + one hook per capability
+pnpm add @flarekit-dev/react-ui                 # styled, embeddable widgets
+pnpm add @flarekit-dev/contracts                # addresses and typed ABIs, standalone
+```
+
+`viem` and `react` are **peer** dependencies — the kit never bundles its own
+copy of either. Node >= 21.
+
+## Quickstart
+
+The fastest honest thing you can run is the mock. It reproduces the entire
+state machine — including the delayed, action-required and recovered paths —
+with no wallet, no key and no network.
+
+```tsx
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { MintFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const kit = createMockKit()
+
+export function App() {
+  return (
+    <FlareProvider kit={kit}>
+      <MintFXRP
+        recipient="0xYourEvmAddress"
+        xrplAccount="rYourXrplAccount"
+        defaultAmountXrp="20"
+      />
+    </FlareProvider>
+  )
+}
+```
+
+That widget is not a placeholder. It quotes against the real fee model, refuses
+below the protocol minimum, and walks the same sixteen states a live mint does.
+
+> **Mock mode is explicit, labelled, and never a fallback.** A kit that cannot
+> reach the chain reports that it cannot, rather than silently degrading into
+> fiction.
+
+### Going live
+
+Network is configuration. There is no source rewrite between testnet and
+mainnet, and no address is literal outside `@flarekit-dev/contracts`.
+
+```ts
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { createFlareKit } from '@flarekit-dev/core'
+import { createPublicClient, http } from 'viem'
+
+const network = FLARE_NETWORKS.coston2 // or FLARE_NETWORKS.flare
+
+const kit = await createFlareKit({
+  client: createPublicClient({ transport: http(network.rpcUrl) }),
+  chainId: network.id,
+})
+```
+
+`createFlareKit` is genuinely async and genuinely fails: it reads protocol
+state before it will hand back a kit. Handle the rejection — do not fall back
+to the mock.
+
+### Headless
+
+No React required. The lifecycle is the product; the hooks are a thin binding.
+
+```ts
+import { createMockKit } from '@flarekit-dev/core'
+
+const kit = createMockKit()
+
+const intent = {
+  amountXrp: '20', // an exact decimal string, never a float
+  recipient: '0xYourEvmAddress',
+  xrplAccount: 'rYourXrplAccount',
+}
+
+const quote = kit.quote(intent)
+console.log(quote.mintedEstimate, quote.mintingFee, quote.minimumPayment)
+
+let operation = kit.start(intent)
+operation = await kit.reconcile(operation)
+console.log(operation.state) // 'draft' → … → 'succeeded'
+```
+
+The same four calls — `quote`, `start`, `reconcile`, and the redemption mirror
+`quoteRedeem` / `startRedeem` / `reconcileRedeem` — are the entire kit surface.
+A live kit and the mock implement the identical interface, which is why no
+component anywhere branches on which one it was handed.
+
+### With hooks
+
+One hook per capability, each returning the same shape: a quote function, a
+start function, the live operation, a typed error, and the account binding the
+quote was made against.
+
+```tsx
+import { useRedeem } from '@flarekit-dev/react'
+
+function Redeem() {
+  const { quote, start, operation, error, isSettled } = useRedeem()
+  // operation.state is one of the sixteen; error is typed, never a bare string
+}
+```
 
 ## Packages
 
@@ -73,6 +182,11 @@ real component against the real mock.
 </p>
 
 ## The lifecycle
+
+Sixteen states: `draft`, `discovering`, `quoting`, `awaiting_input`,
+`awaiting_approval`, `ready`, `executing`, `submitted`, `confirming`,
+`awaiting_external`, `action_required`, `partially_succeeded`, `succeeded`,
+`failed`, `cancelled`, `expired`. The common path through them:
 
 ```mermaid
 stateDiagram-v2
@@ -97,10 +211,17 @@ genuinely unknown, and is never rendered as `failed`. `action_required` means
 the protocol is waiting on the user — an XRP Ledger payment inside a deadline,
 for example. `partially_succeeded` means exactly that.
 
+Operations are non-blocking and self-reconciling. Submitting never locks the
+UI, every operation persists its state and evidence, and it reconciles against
+the chain when the app reopens. There is no Resume button.
+
 ## Status
 
-**Built and driven live on Coston2**, with transaction hashes and explorer links
-recorded as evidence in [`.thoughts/verification/`](.thoughts/verification):
+This project publishes what it has actually done and declares the rest unbuilt.
+Nothing below is aspirational.
+
+**Built and driven live on Coston2**, with transaction hashes and explorer
+links recorded as evidence:
 
 FAssets mint and redeem · accounts, portfolio and activity · Flare Data
 Connector across four attestation families · FTSO feeds, history, secure random
@@ -109,22 +230,17 @@ and fast-update incentives · swaps · liquidity · vaults · cross-chain bridge
 HTTP-402 · delegation · reward claims · governance delegation · XRPL-controlled
 smart accounts.
 
-**Built, not yet deployed:** the documentation site (83 pages) and the
-application shell.
-
 **Carried, and declared unbuilt** — nothing here is dropped, and anything that
 cannot be built to the bar ships declared unbuilt rather than built badly:
 
 | Surface | State |
 | --- | --- |
-| Agent tools, MCP server, CLI | Specified, not built — [spec](.thoughts/specs/2026-08-14-chat-and-mcp.md) |
+| Agent tools, MCP server, CLI | Specified, not built |
 | Scaffolder (`create-flare-kit-app`) | Not built |
 | Flare Confidential Compute | Not built |
 | Operator release and claim | Not built |
 | Staking broadcast | Reads are live; the value-locking broadcast has not been made, so `stakeVerified` is `false` rather than assumed |
 | Governance `castVote` / `propose` / `execute` | Carried |
-| npm packages | Publish-ready, **not published** |
-| `flare-kit.xyz`, `app.flare-kit.xyz` | **Not deployed** |
 
 ## Development
 
@@ -141,17 +257,39 @@ pnpm --filter @flarekit-dev/react-ui gallery
 ```
 
 pnpm workspaces with Turborepo. `packages/*` publish; `apps/*` and `services/*`
-deploy. Releases are driven by changesets.
+deploy. Releases are driven by changesets. Packages ship dual ESM/CJS and must
+pass `publint`.
+
+### Repository layout
+
+```
+packages/    contracts, core, react, react-ui — the published kit
+apps/        site (flare-kit.xyz), app (app.flare-kit.xyz)
+services/    relayer, x402-server — reference backends
+brand/       marks, banners, diagrams
+```
+
+## Principles
+
+These are enforced, not aspirational.
+
+- **Never fake protocol reality.** No invented balances, transaction hashes,
+  proof results, executor outcomes or provider health. An unknown outcome is
+  never rendered as failed.
+- **Network is configuration.** Testnet first, mainnet-capable, no source
+  rewrite to switch.
+- **Public values are constants, not environment variables.** RPC URLs, chain
+  IDs and contract addresses are exported constants. The only secrets are
+  signing keys, and they are never committed, logged or included in receipts.
+- **Exact values render in the mono face** with tabular numerals, carrying
+  their asset and full precision.
+- **Reuse, do not re-code.** One shared component per pattern.
 
 ## Reading further
 
-- [`SPEC.md`](SPEC.md) — the current milestone and the repository file manifest
 - [`DESIGN.md`](DESIGN.md) — the token contract, which outranks every default
   and component library
-- [`.thoughts/specs/`](.thoughts/specs) — product requirements
-- [`.thoughts/decisions/`](.thoughts/decisions) — accepted decisions and why
-- [`.thoughts/verification/`](.thoughts/verification) — live-run evidence per
-  milestone
+- [`CLAUDE.md`](CLAUDE.md) — the engineering rules this repository is held to
 
 ## License
 
