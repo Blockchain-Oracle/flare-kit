@@ -9,6 +9,7 @@ import {
   encodeSetExecutor,
   encodeSetNonce,
 } from '../src/smart-accounts/memo.js'
+import { buildMemoPayment } from '../src/smart-accounts/payment.js'
 
 /**
  * The memo codec, pinned to the CONTRACT's own `require` lengths.
@@ -111,5 +112,42 @@ describe('the codec round-trips what it wrote', () => {
 describe('the ledger ceiling', () => {
   it('states the XRPL memo maximum the plan gates against', () => {
     expect(MEMO_MAX_BYTES).toBe(1024)
+  })
+})
+
+describe('the memo-flow XRPL payment', () => {
+  const base = {
+    account: 'rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio',
+    // The Core Vault's underlying address, read live on Coston2 — NOT an operator wallet.
+    // A memo instruction paid to an operator wallet goes somewhere that will never mint.
+    destination: 'rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p',
+    amountDrops: 2_000_000n,
+    sequence: 19_619_782,
+    lastLedgerSequence: 19_620_000,
+    ledgerFeeDrops: 12n,
+  }
+
+  it('carries the memo as the first MemoData, upper-cased, and no destination tag', () => {
+    const memo = encodeRemoveExecutor({})
+    const payment = buildMemoPayment({ ...base, memo })
+    expect(payment.Memos[0]!.Memo.MemoData).toBe(memo.slice(2).toUpperCase())
+    expect(payment.Memos).toHaveLength(1)
+    // Absolute on this path: a registered tag redirects the whole mint to the tag holder and
+    // the protocol discards the memo. There is no parameter for one.
+    expect('DestinationTag' in payment).toBe(false)
+  })
+
+  it('refuses a memo whose length is wrong for its opcode, before anything is signed', () => {
+    expect(() => buildMemoPayment({ ...base, memo: '0xd1000000000000000000ff' })).toThrow()
+  })
+
+  it('refuses an opcode the controller does not dispatch', () => {
+    expect(() => buildMemoPayment({ ...base, memo: '0xaa00000000000000000000' })).toThrow()
+  })
+
+  it('refuses a non-positive payment', () => {
+    expect(() =>
+      buildMemoPayment({ ...base, memo: encodeRemoveExecutor({}), amountDrops: 0n }),
+    ).toThrow()
   })
 })

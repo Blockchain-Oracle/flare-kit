@@ -255,7 +255,12 @@ export function planMemoInstruction(input: PlanMemoInstructionInput): MemoPlanRe
     return refuse(
       'simulation_reverted',
       `The inner call reverts when simulated against the chain now: ${input.simulation.reason}. ` +
-        'Signing would spend the payment and roll the instruction back.',
+        'Signing would spend the payment and roll the instruction back — UNLESS this operation ' +
+        'spends the mint it is arriving with. The simulation runs against the account as it ' +
+        'stands BEFORE the payment, while on chain the credit lands first ' +
+        '(`_distributeFAssets` precedes `MemoInstructions.execute`), so "mint and immediately ' +
+        'move it" fails here and would still succeed. If that is this operation, plan it ' +
+        'without a simulation and weigh the warning instead.',
     )
   }
 

@@ -1,5 +1,6 @@
 import { FlareKitError } from '../errors.js'
 import type { UnsignedXrplPayment } from '../xrpl.js'
+import { MEMO_MAX_BYTES, decodeMemo } from './memo.js'
 
 /**
  * The unsigned XRPL `Payment` that carries an instruction to the operator.
@@ -85,5 +86,75 @@ export function buildInstructionPayment(
     LastLedgerSequence: input.lastLedgerSequence,
     Memos: [{ Memo: { MemoData: input.reference.slice(2).toUpperCase() } }],
     // No DestinationTag. See the file comment — this is a safety property, not a default.
+  }
+}
+
+/**
+ * The M14 memo-flow payment: to the CORE VAULT, carrying a memo instruction (M14-R11).
+ *
+ * A third builder rather than a parameter on either of the other two, on the reasoning this
+ * file already records: what differs between these builders is precisely what carries the
+ * safety. Three destinations, three memo formats, three validations.
+ *
+ * - the destination is `directMintingPaymentAddress()` — the Core Vault's underlying
+ *   address — NOT an operator wallet. Paying an operator wallet with a memo instruction
+ *   sends it somewhere that will never mint;
+ * - the memo is variable-length and self-describing, so it is DECODED rather than
+ *   length-checked. `decodeMemo` enforces the controller's exact lengths per opcode, which
+ *   are equalities and not minimums: a memo one byte off is refused after the payment has
+ *   settled and there is no recovery for it;
+ * - and the amount is the whole payment, from which the protocol takes its minting fee. It
+ *   is NOT an instruction fee, which is why the field is named for what it is.
+ *
+ * The destination-tag rule is the same and is again absolute: a registered tag redirects the
+ * entire mint to the tag holder and the protocol discards the memo. There is no parameter for
+ * one because there is no legitimate use for one here.
+ */
+export interface BuildMemoPaymentInput {
+  /** The XRPL address that controls the personal account, and signs this payment. */
+  readonly account: string
+  /** The Core Vault's underlying address, from `directMintingPaymentAddress()`. */
+  readonly destination: string
+  /** The whole payment, in drops. The protocol's minting fee comes out of this. */
+  readonly amountDrops: bigint
+  /** The encoded memo instruction, from `planMemoInstruction` or `planMemoRecovery`. */
+  readonly memo: `0x${string}`
+  readonly sequence: number
+  readonly lastLedgerSequence: number
+  /** The XRPL NETWORK fee — what the ledger charges to include the transaction. */
+  readonly ledgerFeeDrops: bigint
+}
+
+export function buildMemoPayment(input: BuildMemoPaymentInput): UnsignedXrplPayment {
+  if (input.amountDrops <= 0n) {
+    throw new FlareKitError('INVALID_AMOUNT', {
+      domain: 'input',
+      message: `A payment must be for a positive number of drops, received ${input.amountDrops}.`,
+      recovery: 'terminal',
+      valueMoved: 'no',
+    })
+  }
+  // Throws on an unknown opcode or a wrong length for a known one — before signing, which is
+  // the only side of the payment where either is fixable.
+  decodeMemo(input.memo)
+  if ((input.memo.length - 2) / 2 > MEMO_MAX_BYTES) {
+    throw new FlareKitError('INVALID_MEMO', {
+      domain: 'input',
+      message: `A memo may not exceed ${MEMO_MAX_BYTES} bytes; the ledger would truncate it and the controller would refuse what arrived.`,
+      recovery: 'terminal',
+      valueMoved: 'no',
+    })
+  }
+
+  return {
+    TransactionType: 'Payment',
+    Account: input.account,
+    Destination: input.destination,
+    Amount: input.amountDrops.toString(),
+    Fee: input.ledgerFeeDrops.toString(),
+    Sequence: input.sequence,
+    LastLedgerSequence: input.lastLedgerSequence,
+    Memos: [{ Memo: { MemoData: input.memo.slice(2).toUpperCase() } }],
+    // No DestinationTag. Absolute on this path — see the doc comment above.
   }
 }

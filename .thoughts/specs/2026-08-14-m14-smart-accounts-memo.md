@@ -51,8 +51,22 @@ operator-run executor service we do not run? **It does not.**
 
 That last point is not merely permitted, it is the honest choice. The reference flow sends the
 XRPL payment and then *watches for an event*, hoping somebody else's relayer finalises it. A
-kit that self-relays **knows** the outcome instead of inferring it from an event that may never
-arrive — which is this project's rule, not a preference.
+kit that self-relays does not **depend** on that relayer existing.
+
+> **Corrected by the live run, 2026-08-15.** This paragraph originally claimed a self-relaying
+> kit **knows** the outcome instead of inferring it. That is too strong, and AC4 disproved it in
+> under three minutes. `proofOwner` binds **the proof**, not **the payment**: the XRPL
+> transaction is public, so a third party can request its *own* attestation of it under its own
+> `proofOwner` and submit that. One did — `0x103b3840…f437`, ~2 minutes after our payment
+> validated and ~1 minute after we requested our attestation, before our voting round could
+> finalize. **We cannot win that race on Coston2 by construction**, because our request can only
+> start once the payment validates and must then wait for round finality and indexing.
+>
+> What self-relay actually buys is **independence, not exclusivity**: the flow never requires a
+> relayer to exist, and nobody else can use the proof we paid for. R10's absorption of
+> `PaymentAlreadyConfirmed` is therefore the expected path on Coston2, not the rare one — which
+> is why it was built as a normal condition rather than an error.
+> Evidence: `.thoughts/verification/2026-08-15-m14-coston2-live-memo.md`.
 
 ## The honesty it forces
 

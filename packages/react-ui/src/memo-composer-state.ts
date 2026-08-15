@@ -105,8 +105,11 @@ const REFUSAL_NOTE: Record<MemoRefusalCode, { title: string; body: string; tone:
     simulation_reverted: {
       title: 'The inner call reverts when simulated now',
       body:
-        'Signing would spend the payment and roll the instruction back. The simulation exists to ' +
-        'move exactly this revert from after settlement to before signing.',
+        'The simulation exists to move exactly this revert from after settlement to before ' +
+        'signing. One case it gets wrong in the safe direction: it runs against your account as ' +
+        'it stands NOW, before this payment mints, while on chain the credit lands before the ' +
+        'instruction runs — so an operation that spends the mint it arrives with fails here and ' +
+        'would have succeeded.',
       tone: 'att',
     },
     no_calls: {
