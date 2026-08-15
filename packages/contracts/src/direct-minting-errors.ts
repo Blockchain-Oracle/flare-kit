@@ -45,6 +45,24 @@ export const directMintingErrorsAbi = [
   /** An ordinary direct mint must carry no native value. */
   { type: 'error', name: 'NoValueExpected', inputs: [] },
   { type: 'error', name: 'NoDataExpectedForDirectMinting', inputs: [] },
+
+  // The proof-verification refusals, from `TransactionAttestation.sol:26-29`. They are
+  // declared in a library rather than the facet, but they revert OUT of the AssetManager
+  // and so must decode from its ABI like any other.
+  /**
+   * `_proofOwner == address(0) || _proofOwner == msg.sender` (`:46`). This is the whole
+   * mechanism self-relay rests on: binding `proofOwner` to our own EOA at request time means
+   * only that EOA can ever submit the proof. The cost of the guarantee is that submitting
+   * from any other account reverts here — which is checkable before spending gas, and is
+   * checked, because by the time it reverts the XRP has long since settled.
+   */
+  { type: 'error', name: 'OnlyProofOwner', inputs: [] },
+  /** `responseBody.status != 0`. The XRPL payment itself did not succeed. */
+  { type: 'error', name: 'PaymentFailed', inputs: [] },
+  /** The proof attests a different chain from the AssetManager's configured one. */
+  { type: 'error', name: 'InvalidChain', inputs: [] },
+  /** `FdcVerification` returned false: these bytes are not a proof this network accepts. */
+  { type: 'error', name: 'LegalPaymentNotProven', inputs: [] },
 ] as const
 
 export type DirectMintingErrorName = (typeof directMintingErrorsAbi)[number]['name']

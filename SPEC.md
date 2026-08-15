@@ -1231,6 +1231,73 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
 - `packages/react-ui/gallery/m13-smart-account-sections.tsx` — M13-AC6. The
   state matrix, both themes, observed states only.
 
+### M14 — Smart Accounts part two, the direct-minting memo flow
+
+Spec: `.thoughts/specs/2026-08-14-m14-smart-accounts-memo.md`. The kit never calls
+the controller on this path — `handleMintedFAssets` is `OnlyAssetManager`, so the
+instruction runs as a consequence of a direct mint the kit self-relays.
+
+- `packages/contracts/src/memo-instructions-abi.ts` — M14-R1. The
+  `IMemoInstructionsFacet` events and refusals, spread into
+  `masterAccountControllerAbi`. **A new file, not an extension of
+  `smart-accounts-abis.ts` as this entry first said** — that file was already at
+  310 lines, so growing it would have broken the size rule to satisfy a manifest
+  line. Its three reads stay where M13 put them: `getNonce`, `getExecutor` and
+  `isTransactionIdUsed` are already in `smart-accounts-abis.ts`, and restating
+  them would put two fragments for one function into one ABI.
+- `packages/contracts/src/direct-minting-abi.ts` — M14-R1. Add
+  `executeDirectMintingWithData`, which is live on Coston2 and missing from our
+  own transcription; M13's spec recorded that absence as a protocol fact and it
+  is not one.
+- `packages/contracts/src/direct-minting-errors.ts` — M14-R1. The four
+  `TransactionAttestation` refusals, `OnlyProofOwner` chief among them: it is the
+  mechanism self-relay rests on, and it reverts out of the AssetManager, so it
+  must decode from that ABI.
+- `packages/core/src/smart-accounts/memo.ts` — M14-R2. The seven-opcode memo
+  codec: one 10-byte header, exact lengths (42/42/50/30/10 and `0xFF` variable),
+  raw-width concatenation — an ABI-padded `0xD0` address is 42 bytes and reverts.
+- `packages/core/src/smart-accounts/user-operation.ts` — M14-R3. The
+  `PackedUserOperation` builder and `executeUserOp(Call[])` batches. Only
+  `sender`, `nonce` and `callData` are validated on chain and nothing is
+  signature-checked; the rest is zero-filled.
+- ~~`packages/core/src/smart-accounts/memo-reads.ts`~~ — M14-R4. **Dropped,
+  found in build.** Three of its four reads already exist: `getNonce` and
+  `getExecutor` in M13's `personal-account.ts` and `isTransactionIdUsed` in its
+  `adapter.ts` — all three are `IMemoInstructionsFacet` functions M13 already
+  called. The fourth, the replacement fee, has **no external getter anywhere**
+  (`getReplacementFee` is `internal`), so it is observed from the
+  `ReplacementFeeSet` event instead and never claimed as current state.
+- `packages/core/src/smart-accounts/direct-mint-fees.ts` — M14-R5. The
+  minting-fee, minimum and executor-fee computation, refusing an amount that
+  would burn to the fee receiver.
+- `packages/core/src/smart-accounts/memo-plan.ts` — M14-R6/R7. The plan gate and
+  the pre-signature simulation of the inner call.
+- `packages/core/src/smart-accounts/memo-states.ts` — M14-R8. The lifecycle,
+  including `delayed` as a state that is neither success nor failure.
+- `packages/core/src/smart-accounts/recovery.ts` — M14-R9. The five recovery
+  opcodes as first-class operations, with their ordering rules.
+- `packages/core/src/smart-accounts/self-relay.ts` — M14-R10. `proofOwner`-bound
+  attestation request, and the pre-flight gate that refuses everything the
+  AssetManager would revert on — `OnlyProofOwner` above all, since binding the
+  proof to our EOA is what buys the guarantee and what excludes every other
+  submitter. Which function to call is derived from the memo's opcode.
+- `packages/core/src/smart-accounts/self-relay-outcome.ts` — M14-R10. Reading
+  what the submission did: `PaymentAlreadyConfirmed` absorbed as a normal
+  condition that settles the payment WITHOUT claiming the instruction ran, and a
+  mined receipt read from its events rather than its status. Split from
+  `self-relay.ts` on the size rule. Every chain timestamp converts from seconds
+  to the milliseconds core's clocks use.
+- `packages/core/src/mock-smart-accounts-memo.ts` — M14-R12.
+- `packages/core/scripts/probe-memo-flow.mjs` — M14-AC3. Keyless.
+- `packages/core/scripts/live-memo-instruction.mjs` — M14-AC4. Gated, double
+  broadcast guard, testnet only.
+- `packages/react/src/use-memo-instruction.ts` — M14-R11.
+- `packages/react-ui/src/MemoInstructionComposer.tsx` — M14-R11.
+- `packages/react-ui/src/RecoveryComposer.tsx` — M14-R11. The five recovery
+  paths, leading with `0xE0` because it is the only one that works on a memo too
+  malformed to parse.
+- `packages/react-ui/gallery/m14-memo-sections.tsx` — M14-AC6.
+
 ## Integrations
 
 | Surface | Classification | Note |
@@ -1241,7 +1308,7 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
 | `packages/core/src/fdc/client.ts` | REAL_MVP | real attestation request, proof retrieval and on-chain verification, generic over the family. Replaces `packages/core/src/fdc.ts`, deleted in M3. |
 | `packages/core/src/fdc/round.ts` | REAL_MVP | round derivation and finality. Verified live 2026-08-04: `firstVotingRoundStartTs()` and `votingEpochDurationSeconds()` are declared on `IRelay` in the periphery package but REVERT on the deployed Relay — they are implemented on `FlareSystemsManager`. Only `isFinalized` is on Relay. |
 | `packages/core/src/fdc/fee.ts` | REAL_MVP | `getRequestFee` for the exact bytes. Measured 2026-08-04: 1000 wei on Coston2, 20 FLR on Flare mainnet, 3 FLR for `ConfirmedBlockHeightExists`. A constant would be wrong on one of the two networks. |
-| Executor execution | REAL_LATER | third-party executor availability on Coston2 is unverified; until confirmed, the timeline shows the honest awaiting-external state and manual retry drives execution |
+| Executor execution | REAL_MVP | **Verified 2026-08-15 (M14-AC4).** A third-party relayer is live on Coston2: `0x103b384064ae85577127097a7ccadfd6fb13f437` executed a direct mint within ~2 minutes of the XRPL payment validating, faster than our own attestation round could finalize. It was `REAL_LATER` while availability was unverified; the honest awaiting-external state remains correct as the fallback, but it is no longer the expected path. Self-relay buys independence from this relayer, not exclusivity over the payment — see `.thoughts/verification/2026-08-15-m14-coston2-live-memo.md`. |
 | `packages/core/src/mock.ts` | SIMULATED_DEMO_ONLY | labelled mock kit, powers docs, tests and demo mock mode; never a failure fallback |
 | Wallet connection | REAL_MVP | injected EVM wallet plus an XRPL wallet adapter |
 | `apps/demo` live mode | REAL_MVP | real testnet; falls back to read-only or mock with the reason stated |

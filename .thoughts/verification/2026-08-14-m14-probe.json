@@ -1,0 +1,237 @@
+{
+  "probe": "M14-AC3 — direct-minting memo flow, keyless",
+  "ranAt": "2026-08-14T20:15:03.556Z",
+  "xrplOwner": "rGEgtYVznwNWsrtLoT5AWkPS6qyxvxdHio",
+  "knownTransactionId": "0x3f8394997fd81d36c6da3b626b4ce6d1fa594911fe97c150977b14e5b6ab6c03",
+  "networks": [
+    {
+      "network": "coston2",
+      "chainId": 114,
+      "rpcUrl": "https://coston2-api.flare.network/ext/C/rpc",
+      "masterAccountController": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "assetManager": "0xc1Ca88b937d0b528842F95d5731ffB586f4fbDFA",
+      "smartAccountsVerified": true,
+      "fees": {
+        "feeBIPS": {
+          "label": "getDirectMintingFeeBIPS",
+          "ok": true,
+          "value": "25"
+        },
+        "minimumFeeUBA": {
+          "label": "getDirectMintingMinimumFeeUBA",
+          "ok": true,
+          "value": "100000"
+        },
+        "executorFeeUBA": {
+          "label": "getDirectMintingExecutorFeeUBA",
+          "ok": true,
+          "value": "100000"
+        },
+        "coreVaultAddress": {
+          "label": "directMintingPaymentAddress",
+          "ok": true,
+          "value": "rDhpmiPq4BVBDWMVdSrmkgt8thKyRzGV1p"
+        },
+        "delayState": {
+          "label": "directMintingDelayState(known tx)",
+          "ok": true,
+          "value": [
+            0,
+            "0",
+            "0"
+          ]
+        }
+      },
+      "selectorsOnDiamond": {
+        "executeDirectMintingWithData": {
+          "label": "facetAddress(executeDirectMintingWithData)",
+          "ok": true,
+          "value": {
+            "selector": "0xa7556da6",
+            "facet": "0x4aFaEda2AC4442cD10Ac601622Eee0dF5DF78eeF",
+            "present": true
+          }
+        },
+        "executeDirectMinting": {
+          "label": "facetAddress(executeDirectMinting)",
+          "ok": true,
+          "value": {
+            "selector": "0x78d0299e",
+            "facet": "0x4aFaEda2AC4442cD10Ac601622Eee0dF5DF78eeF",
+            "present": true
+          }
+        },
+        "markUnblockedDirectMintingAllowed": {
+          "label": "facetAddress(markUnblockedDirectMintingAllowed)",
+          "ok": true,
+          "value": {
+            "selector": "0x72eb06c2",
+            "facet": "0x4aFaEda2AC4442cD10Ac601622Eee0dF5DF78eeF",
+            "present": true
+          }
+        }
+      },
+      "executeDirectMintingWithData": {
+        "label": "executeDirectMintingWithData",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "executeDirectMinting": {
+        "label": "executeDirectMinting",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "personalAccount": {
+        "label": "getPersonalAccount",
+        "ok": true,
+        "value": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb"
+      },
+      "memoReads": {
+        "getNonce": {
+          "label": "getNonce",
+          "ok": true,
+          "value": "0"
+        },
+        "getExecutor": {
+          "label": "getExecutor",
+          "ok": true,
+          "value": "0x0000000000000000000000000000000000000000"
+        },
+        "isTransactionIdUsed": {
+          "label": "isTransactionIdUsed",
+          "ok": true,
+          "value": false
+        }
+      },
+      "replacementFeeGetter": {
+        "label": "getReplacementFee (expected ABSENT)",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "verifier": {
+        "label": "XRPPayment prepareRequest route",
+        "ok": true,
+        "value": {
+          "status": 400,
+          "body": "{\"message\":[\"property sourceId of value (null) is not 0x/0X prefixed or unprefixed hexadecimal string representing 32 bytes\"],\"error\":\"Bad Request\",\"statusCode\":400}"
+        }
+      }
+    },
+    {
+      "network": "flare",
+      "chainId": 14,
+      "rpcUrl": "https://flare-api.flare.network/ext/C/rpc",
+      "masterAccountController": "0x434936d47503353f06750Db1A444DBDC5F0AD37c",
+      "assetManager": "0x2a3Fe068cD92178554cabcf7c95ADf49B4B0B6A8",
+      "smartAccountsVerified": false,
+      "fees": {
+        "feeBIPS": {
+          "label": "getDirectMintingFeeBIPS",
+          "ok": true,
+          "value": "10"
+        },
+        "minimumFeeUBA": {
+          "label": "getDirectMintingMinimumFeeUBA",
+          "ok": true,
+          "value": "100000"
+        },
+        "executorFeeUBA": {
+          "label": "getDirectMintingExecutorFeeUBA",
+          "ok": true,
+          "value": "200000"
+        },
+        "coreVaultAddress": {
+          "label": "directMintingPaymentAddress",
+          "ok": true,
+          "value": "rfkXSaCZKTg1EZzec2rLDyrWHxRVJdtVXj"
+        },
+        "delayState": {
+          "label": "directMintingDelayState(known tx)",
+          "ok": true,
+          "value": [
+            0,
+            "0",
+            "0"
+          ]
+        }
+      },
+      "selectorsOnDiamond": {
+        "executeDirectMintingWithData": {
+          "label": "facetAddress(executeDirectMintingWithData)",
+          "ok": true,
+          "value": {
+            "selector": "0xa7556da6",
+            "facet": "0x2aa3E1d8ff2C1E2826A92bbe60Fe073241Ab6282",
+            "present": true
+          }
+        },
+        "executeDirectMinting": {
+          "label": "facetAddress(executeDirectMinting)",
+          "ok": true,
+          "value": {
+            "selector": "0x78d0299e",
+            "facet": "0x2aa3E1d8ff2C1E2826A92bbe60Fe073241Ab6282",
+            "present": true
+          }
+        },
+        "markUnblockedDirectMintingAllowed": {
+          "label": "facetAddress(markUnblockedDirectMintingAllowed)",
+          "ok": true,
+          "value": {
+            "selector": "0x72eb06c2",
+            "facet": "0x2aa3E1d8ff2C1E2826A92bbe60Fe073241Ab6282",
+            "present": true
+          }
+        }
+      },
+      "executeDirectMintingWithData": {
+        "label": "executeDirectMintingWithData",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "executeDirectMinting": {
+        "label": "executeDirectMinting",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "personalAccount": {
+        "label": "getPersonalAccount",
+        "ok": true,
+        "value": "0x89023176a776CDB1d339a7649116B1a6f3DeFfcb"
+      },
+      "memoReads": {
+        "getNonce": {
+          "label": "getNonce",
+          "ok": true,
+          "value": "0"
+        },
+        "getExecutor": {
+          "label": "getExecutor",
+          "ok": true,
+          "value": "0x0000000000000000000000000000000000000000"
+        },
+        "isTransactionIdUsed": {
+          "label": "isTransactionIdUsed",
+          "ok": true,
+          "value": false
+        }
+      },
+      "replacementFeeGetter": {
+        "label": "getReplacementFee (expected ABSENT)",
+        "ok": false,
+        "error": "Execution reverted for an unknown reason."
+      },
+      "verifier": {
+        "label": "XRPPayment prepareRequest route",
+        "ok": false,
+        "error": "fetch failed"
+      }
+    }
+  ],
+  "notes": [
+    "KEYLESS: no key or seed was read; every write-shaped call is an eth_call.",
+    "A read that threw is recorded as {ok:false,error} and never coerced to a zero.",
+    "executeDirectMintingWithData is confirmed by the DIAMOND LOUPE, not by trusting our ABI and not by reading a revert — M13 recorded its absence as a protocol fact and that was wrong. The eth_call beside it is corroboration only: it cannot tell a rejecting facet from a missing selector, which the first run of this probe demonstrated.",
+    "getReplacementFee has no external getter (MemoInstructions.sol:166, internal view). SPEC.md AC3 asked for it to read back through an accessor; there is none, so the ReplacementFeeSet event is the only observable and AC3 is corrected accordingly."
+  ]
+}

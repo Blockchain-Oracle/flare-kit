@@ -65,6 +65,13 @@ export const FAMILIES: readonly Family[] = [
     'InstructionCatalogue',
     'InstructionComposer',
     'InstructionChain',
+    // M14, the direct-minting memo flow. Same family: a memo instruction and a
+    // proof instruction are two ways to drive one personal account, not two
+    // capabilities. RecoveryComposer belongs here too — the recovery opcodes
+    // act on the account, not on some separate recovery surface.
+    'MemoInstructionComposer',
+    'MemoChain',
+    'RecoveryComposer',
   ]),
   built('feeds', 'Feeds', [
     'FeedCatalogue',
