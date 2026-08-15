@@ -61,6 +61,11 @@ export function Preview({
         aria-labelledby="tab-preview"
         className="preview-stage"
         hidden={pane !== 'preview'}
+        // Focusable because it scrolls: a component wider than the column — the
+        // M13 composers are — must be reachable by keyboard, not only by mouse
+        // (axe: scrollable-region-focusable). The code window beside it does the
+        // same thing for the same reason.
+        tabIndex={0}
       >
         {children}
       </div>

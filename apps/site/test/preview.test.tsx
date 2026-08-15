@@ -17,6 +17,24 @@ describe('Preview', () => {
     expect(screen.getByText(/mock kit/i)).toBeInTheDocument()
   })
 
+  /**
+   * The M13 composers are wider than any column this layout gives — measured at
+   * a 1728px viewport with the widened shell, `InstructionComposer` needs 1291px
+   * against a 1106px column. The stage had `overflow-x: visible`, so the part
+   * that did not fit was simply unreachable: not scrolled, not clipped with an
+   * affordance, just gone.
+   *
+   * DESIGN.md's rule is that the PAGE never scrolls horizontally, and the
+   * sanctioned answer is a container that scrolls itself. The code window next
+   * to it already does exactly this, including the focusability an
+   * axe-scrollable-region-focusable pass requires — a region a mouse can scroll
+   * and a keyboard cannot reach is not reachable.
+   */
+  it('lets a component wider than the column scroll, and a keyboard reach it', () => {
+    render(<Preview code="const a = 1">stage</Preview>)
+    expect(screen.getByRole('tabpanel', { name: 'Preview' })).toHaveAttribute('tabindex', '0')
+  })
+
   it('offers both panes, with preview selected first', () => {
     render(<Preview code="const a = 1">stage</Preview>)
     expect(screen.getByRole('tab', { name: 'Preview' })).toHaveAttribute('aria-selected', 'true')

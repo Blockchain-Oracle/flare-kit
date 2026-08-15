@@ -251,6 +251,11 @@ h4:hover .hash,
 }
 .preview-stage {
   padding: 26px 22px;
+  /* Scrolls itself. Some components — the M13 composers — are wider than any
+     column this layout gives, and DESIGN.md forbids the PAGE scrolling
+     horizontally at any width. With `visible` the overflow was simply
+     unreachable. The stage carries tabIndex so a keyboard can reach the scroll. */
+  overflow-x: auto;
   /* The dotted-grid well from the accepted specimen — a live preview reads as
      a stage the component sits on, not just a padded box. */
   background-image: radial-gradient(var(--fk-border) 1px, transparent 1px);
