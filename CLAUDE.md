@@ -4,10 +4,15 @@ The developer toolkit for Flare: one operation lifecycle across headless
 TypeScript, React hooks, embeddable widgets and agent tools. Community-built,
 not an official Flare Networks product.
 
-Read `SPEC.md` for the current milestone and `DESIGN.md` for the token
-contract. `DESIGN.md` outranks every default, taste skill and component
-library. Product requirements live in `.thoughts/specs/`; decisions in
-`.thoughts/decisions/`.
+Read `DESIGN.md` for the token contract. It outranks every default, taste
+skill and component library.
+
+The engineering record — `SPEC.md`, and `.thoughts/` with its specs,
+decisions, research, verification evidence and handoffs — is kept locally and
+is **not** in the repository (Abu, 2026-08-15). It is still the authority on
+scope and on what has been accepted; a working copy just has to be present to
+read it. Paths in backticks throughout this file and `DESIGN.md` refer to it
+and will not resolve from a fresh clone.
 
 ## Surfaces
 

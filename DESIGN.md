@@ -133,6 +133,11 @@ Accepted screens this file is derived from:
 `.thoughts/design/fable5-direction-return/docs.html` (component documentation),
 captured under `renders/`. Lineage: cdr-kit, plus Flare's own brand token.
 
+> **On the `.thoughts/` paths cited throughout this file.** They are provenance,
+> recording which accepted screen a token came from. That record is kept locally
+> and is not published with the repository, so the paths will not resolve from a
+> fresh clone. The token values below are self-contained and remain the contract.
+
 **Re-cut 2026-08-09.** Abu accepted a re-cut toward Uniswap/Jupiter *interaction
 conventions* — real bundled asset marks, Swap/Limit tabs, a token selector, and
 a connect flow that names both chains — on the same palette, against

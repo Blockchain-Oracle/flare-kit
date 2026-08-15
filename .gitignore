@@ -18,14 +18,27 @@ developer-hub
 
 .playwright-mcp/
 
-# Agent-harness tooling, not project source. .claude/skills and .agents/skills
-# are byte-identical copies of the same 71 skills — 13 MB of duplicated
-# machine-local tooling. .claude itself is NOT ignored, so a future
-# .claude/settings.json still commits.
-.claude/skills/
-.claude/agent-memory/
-.agents/skills/
+# Agent-harness tooling, not project source. None of it describes how the
+# product works, so none of it belongs in a public repository.
+.claude/
+.agents/
 .superpowers/
+.harness.json
+
+# The engineering record: specs, decisions, research, plans, handoffs and
+# design commissions. It is how this project was built rather than what was
+# built, it is written agent-to-agent, and it stays local (Abu, 2026-08-15).
+.thoughts/
+SPEC.md
+
+# Vendored reference material read during research, never ours. reference/ is a
+# Hardhat project holding upstream protocol contracts; uniswap/ holds recut
+# source and brand marks pulled in for the M5 direction study.
+reference/
+uniswap/
+
+# Loose console capture from the M1 live run.
+m1-console.txt
 
 # Linked worktrees live inside the project root and must never be committed
 # back into it.
