@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { M14_MEMO_SECTIONS } from './m14-memo-sections.js'
 import { M13_SMART_ACCOUNT_SECTIONS } from './m13-smart-account-sections.js'
 import { M12_GOVERNANCE_SECTIONS } from './m12-governance-sections.js'
 import { M11_STAKING_SECTIONS } from './m11-staking-sections.js'
@@ -39,7 +40,7 @@ export function Gallery() {
       <header className="g-head">
         <h1>flare-kit — state gallery</h1>
         <p>
-          Every required state of every surface the kit ships, newest milestone first: M13
+          Every required state of every surface the kit ships, newest milestone first: M14 the direct-minting memo flow, M13
           XRPL-controlled smart accounts, M12 governance, M11 staking, M10 delegation and claims, M9 gasless and x402, M8 bridge, M7
           vault, M6 liquidity, M5 swap, the re-cut shell, M4 FTSO, M3 FDC, the M2 surfaces and
           M1's four composed screens. Every value is driven from props or a labelled mock —
@@ -51,6 +52,7 @@ export function Gallery() {
       </header>
 
       {[
+        ...M14_MEMO_SECTIONS,
         ...M13_SMART_ACCOUNT_SECTIONS,
         ...M12_GOVERNANCE_SECTIONS,
         ...M11_STAKING_SECTIONS,
