@@ -57,9 +57,17 @@ their asset and full precision. A number in the body face is a bug.
 
 ## Verification
 
-Never claim UI is done from a typecheck. Drive it in a browser, screenshot it,
-and look at the screenshot. Never claim anything passes without showing the
-command and its output.
+Never claim UI is done from a typecheck. Never claim anything passes without
+showing the command and its output.
+
+**UI verification is ASSERTED, not screenshotted** (Abu, 2026-08-15 — the
+screenshot loop was costing more time than it was finding). Load the page once
+and assert against the live DOM: computed contrast in both themes, `:focus-visible`,
+target sizes, `scrollWidth` vs `clientWidth` for overflow, and the exact strings a
+state must and must not contain. That is what has actually caught defects — the
+kit-wide dark-theme button contrast failure was found by measuring, not by looking.
+Take a screenshot only when a layout is genuinely suspect and the assertion cannot
+express why. Do not narrate a screenshot back; read it and move on.
 
 ```bash
 pnpm build && pnpm typecheck && pnpm lint && pnpm test
