@@ -121,6 +121,58 @@ export interface UnsignedXrplPayment {
   readonly DestinationTag?: number
 }
 
+/**
+ * The XRPL `Payment` envelope both builders share.
+ *
+ * Exported for `smart-accounts/payment.ts` only — the two public builders stay
+ * separate because they are different operations (one COMPUTES a mint memo from
+ * a target; the other carries an opaque 32-byte reference it merely validates)
+ * and because their fee arguments mean different things. Merging them into one
+ * signature would need a discriminated union and an `if (kind === 'mint')`
+ * body: a switch wearing reuse as a costume, and one parameter list serving two
+ * meanings is how a silent underpayment gets written.
+ *
+ * The ENVELOPE is genuinely one thing, so it is written once.
+ *
+ * `ledgerFeeDrops` is named for what it is — what the ledger charges to include
+ * the transaction — never for the controller's instruction fee, which travels
+ * inside `amountDrops`.
+ */
+export function assembleXrplPayment(input: {
+  account: string
+  destination: string
+  amountDrops: bigint
+  ledgerFeeDrops: bigint
+  sequence: number
+  lastLedgerSequence: number
+  /** Already hex, unprefixed and uppercase — the ledger's own memo encoding. */
+  memoData: string
+}): UnsignedXrplPayment {
+  if (input.amountDrops <= 0n) {
+    throw new FlareKitError('INVALID_AMOUNT', {
+      domain: 'input',
+      message: `A payment must be for a positive number of drops, received ${input.amountDrops}.`,
+      recovery: 'terminal',
+      valueMoved: 'no',
+    })
+  }
+
+  return {
+    TransactionType: 'Payment',
+    Account: input.account,
+    Destination: input.destination,
+    Amount: input.amountDrops.toString(),
+    Fee: input.ledgerFeeDrops.toString(),
+    Sequence: input.sequence,
+    // Bounds the payment: past this ledger it can never be applied, so a
+    // payment that is not found by then is definitively not going to land.
+    LastLedgerSequence: input.lastLedgerSequence,
+    Memos: [{ Memo: { MemoData: input.memoData } }],
+    // No DestinationTag, in either builder. A registered tag makes FAssets
+    // credit the tag-holder, which would let an unrelated party be paid.
+  }
+}
+
 export interface BuildDirectMintPaymentInput extends DirectMintTarget {
   account: string
   /** The core vault's underlying address, from `directMintingPaymentAddress()`. */
@@ -134,27 +186,16 @@ export interface BuildDirectMintPaymentInput extends DirectMintTarget {
 export function buildDirectMintPayment(
   input: BuildDirectMintPaymentInput,
 ): UnsignedXrplPayment {
-  if (input.amountDrops <= 0n) {
-    throw new FlareKitError('INVALID_AMOUNT', {
-      domain: 'input',
-      message: `A payment must be for a positive number of drops, received ${input.amountDrops}.`,
-      recovery: 'terminal',
-      valueMoved: 'no',
-    })
-  }
-  const memo = encodeDirectMintMemo(input)
-  return {
-    TransactionType: 'Payment',
-    Account: input.account,
-    Destination: input.destination,
-    Amount: input.amountDrops.toString(),
-    Fee: input.feeDrops.toString(),
-    Sequence: input.sequence,
-    // Bounds the payment: past this ledger it can never be applied, so a
-    // payment that is not found by then is definitively not going to land.
-    LastLedgerSequence: input.lastLedgerSequence,
-    Memos: [{ Memo: { MemoData: memo.slice(2).toUpperCase() } }],
-    // No DestinationTag: a registered tag resolves a different target and would
-    // override the memo.
-  }
+  return assembleXrplPayment({
+    account: input.account,
+    destination: input.destination,
+    amountDrops: input.amountDrops,
+    // This builder's caller names the ledger fee `feeDrops`: it predates the
+    // instruction path, where a second drops-denominated fee made the longer
+    // name necessary.
+    ledgerFeeDrops: input.feeDrops,
+    sequence: input.sequence,
+    lastLedgerSequence: input.lastLedgerSequence,
+    memoData: encodeDirectMintMemo(input).slice(2).toUpperCase(),
+  })
 }
