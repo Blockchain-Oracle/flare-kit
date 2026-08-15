@@ -1,0 +1,33 @@
+# Vercel uploads the whole monorepo so pnpm can resolve workspace packages, but
+# the deploy only needs source. Without this the upload exceeds Vercel's 15,000
+# file limit on the vendored protocol clones alone.
+
+# Vendored protocol source and upstream docs, read during research, never built.
+sources
+developer-hub
+
+# Vendored reference material and the local engineering record.
+reference
+uniswap
+.thoughts
+_bmad
+_bmad-output
+SPEC.md
+
+# Build output and caches — Vercel rebuilds from source.
+node_modules
+.next
+dist
+.turbo
+.source
+coverage
+*.tsbuildinfo
+
+# Local-only.
+.git
+.worktrees
+.secrets
+.claude
+.agents
+.superpowers
+.playwright-mcp
