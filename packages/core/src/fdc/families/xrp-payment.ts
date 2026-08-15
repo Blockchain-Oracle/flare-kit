@@ -1,4 +1,4 @@
-import { familyFor } from '@flare-kit/contracts'
+import { familyFor } from '@flarekit-dev/contracts'
 import type { FdcClient } from '../client.js'
 import {
   type AttestationFamily,

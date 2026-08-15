@@ -1,4 +1,4 @@
-import type { ChainFamily } from '@flare-kit/core'
+import type { ChainFamily } from '@flarekit-dev/core'
 
 /**
  * NetworkLogo — the real mark for a chain family, so a person recognises the

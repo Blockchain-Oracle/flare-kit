@@ -1,6 +1,6 @@
 // packages/core/src/mock-delegation.ts
 import type { Address, Hex, PublicClient } from 'viem'
-import { type FlareNetworkKey, delegationFor } from '@flare-kit/contracts'
+import { type FlareNetworkKey, delegationFor } from '@flarekit-dev/contracts'
 import { type DelegationAdapter, type DelegationMode, makeDelegationAdapter } from './delegation-adapter.js'
 
 /**

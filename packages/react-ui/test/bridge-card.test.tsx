@@ -7,7 +7,7 @@ import {
   type OperationRecord,
   amount,
   routeByKey,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { BridgeCard } from '../src/BridgeCard.js'
 
 const bridge = routeByKey('coston2', 'coston2-sepolia')!

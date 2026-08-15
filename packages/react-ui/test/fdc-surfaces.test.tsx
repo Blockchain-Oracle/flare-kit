@@ -5,7 +5,7 @@ import {
   mockCatalogueDisagreement,
   mockCatalogueUnavailable,
   mockCatalogueUnreachableGroup,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AttestationCatalogue } from '../src/AttestationCatalogue.js'
 import { AttestationRequestBuilder } from '../src/AttestationRequestBuilder.js'
 import { FEE, NOW, OTHER, OWNER, PREPARED, ROWS, expectAllDistinct, rowFor } from './fdc-shapes.js'

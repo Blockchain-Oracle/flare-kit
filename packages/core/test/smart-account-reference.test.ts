@@ -1,4 +1,4 @@
-import { BUILT_IN_INSTRUCTIONS } from '@flare-kit/contracts'
+import { BUILT_IN_INSTRUCTIONS } from '@flarekit-dev/contracts'
 import { describe, expect, it } from 'vitest'
 import {
   type EncodePaymentReferenceInput,

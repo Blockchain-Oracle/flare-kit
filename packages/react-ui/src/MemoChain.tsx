@@ -1,6 +1,6 @@
 // packages/react-ui/src/MemoChain.tsx
-import type { MemoPlan } from '@flare-kit/core'
-import { amount, formatExact } from '@flare-kit/core'
+import type { MemoPlan } from '@flarekit-dev/core'
+import { amount, formatExact } from '@flarekit-dev/core'
 import type { ReactNode } from 'react'
 import { CodeWindow } from './primitives/CodeWindow.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'

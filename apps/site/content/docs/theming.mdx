@@ -1,0 +1,52 @@
+---
+title: Theming
+description: The kit's look is runtime CSS variables under data-theme. Rebind the tokens to your brand; light is the default and dark is a peer.
+breadcrumb: ['Docs', 'Theming']
+---
+
+One import ships the kit's tokens, primitives and component styles.
+
+```tsx
+import '@flarekit-dev/react-ui/styles.css'
+```
+
+## Tokens are runtime CSS variables
+
+The theme is CSS custom properties under `data-theme`, not build-time variants.
+Nothing is compiled per theme, so a host rebinds any token at runtime by
+overriding the variable — no rebuild, and no fork of the components.
+
+```css
+:root {
+  --fk-primary: #3959da; /* interaction: buttons, links, focus, code keywords */
+  --fk-brand: #e62058; /* identity only — never carries text */
+  --fk-bg: #fdfcf9; /* warm paper, not dashboard grey */
+  --fk-card: #ffffff; /* a raised surface, no shadow needed */
+}
+```
+
+Every colour, radius and font is a `--fk-*` variable. Override the ones you want
+after importing the stylesheet; the rest keep the kit's defaults.
+
+## Dark is switched, not rebuilt
+
+Dark mode is the same variables re-bound under `[data-theme="dark"]` on the
+root. Set the attribute and the whole kit follows — there is no second bundle.
+
+```css
+[data-theme='dark'] {
+  --fk-bg: #0f1014;
+  --fk-primary: #7197ff; /* the cobalt lifts for contrast on dark */
+}
+```
+
+Set `data-theme` before first paint — an inline script in `<head>` — so a
+reloading page never flashes the wrong theme.
+
+## Rebinding to your brand
+
+State colour is never the only signal: every state also carries a glyph and a
+word. That is what lets you retune the palette without breaking meaning. Two
+rules keep it legible: keep `--fk-primary` distinct from `--fk-danger`, and
+leave `--fk-brand` off text — it is tuned for marks and one emphasised word in a
+heading, not for body copy.

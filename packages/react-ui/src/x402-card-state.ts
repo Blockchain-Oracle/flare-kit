@@ -1,5 +1,5 @@
 // packages/react-ui/src/x402-card-state.ts
-import type { OperationRecord } from '@flare-kit/core'
+import type { OperationRecord } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 import type { Leg } from './primitives/LegTimeline.js'
 

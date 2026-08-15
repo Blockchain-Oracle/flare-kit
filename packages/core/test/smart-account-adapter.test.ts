@@ -1,4 +1,4 @@
-import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flare-kit/contracts'
+import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flarekit-dev/contracts'
 import type { PublicClient } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { readDeploymentSettings, readTransactionIdUsed } from '../src/smart-accounts/adapter.js'

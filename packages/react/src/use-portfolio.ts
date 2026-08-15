@@ -4,7 +4,7 @@ import {
   type SourceConflict,
   portfolioConflicts,
   portfolioIsStale,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useAccounts } from './use-accounts.js'
 

@@ -34,8 +34,8 @@ export * from './mock-governance.js'
 // governance deployment type and read the configured addresses (both networks) without a
 // second dependency on contracts — the same treatment the staking/vault/bridge registries
 // get below (M12-T8 gap: Tasks 3-5 never re-exported this, unlike every prior domain).
-export type { GovernanceDeployment } from '@flare-kit/contracts'
-export { GOVERNANCE, governanceFor } from '@flare-kit/contracts'
+export type { GovernanceDeployment } from '@flarekit-dev/contracts'
+export { GOVERNANCE, governanceFor } from '@flarekit-dev/contracts'
 export * from './delegation-adapter.js'
 export * from './delegation.js'
 export * from './delegation-states.js'
@@ -60,21 +60,21 @@ export * from './fdc/family.js'
 export * from './fdc/client.js'
 export * from './voting-round.js'
 // The FTSO surface types a consumer needs to name, re-exported so callers
-// do not need a direct dependency on @flare-kit/contracts for a parameter type.
-export type { FeedId, DecodedFeedId, DexToken, DexRegistry } from '@flare-kit/contracts'
-export { FEED_CATEGORY, encodeFeedId, decodeFeedId, isCustomFeedId } from '@flare-kit/contracts'
+// do not need a direct dependency on @flarekit-dev/contracts for a parameter type.
+export type { FeedId, DecodedFeedId, DexToken, DexRegistry } from '@flarekit-dev/contracts'
+export { FEED_CATEGORY, encodeFeedId, decodeFeedId, isCustomFeedId } from '@flarekit-dev/contracts'
 // The vault registry vocabulary, re-exported so react-ui/react can name a vault
 // type and read the configured vaults without a second dependency on contracts —
 // the same treatment DexToken/DexRegistry get above.
-export type { VaultConfig, VaultProtocol, ExitMode, ShareToken } from '@flare-kit/contracts'
-export { vaultsFor, vaultsForChain, vaultByKey, vaultByKeyForChain } from '@flare-kit/contracts'
-export type { BridgeRoute, ChainEndpoint, RouteKind } from '@flare-kit/contracts'
-export { BRIDGE_ROUTES, routesFor, routeByKey } from '@flare-kit/contracts'
+export type { VaultConfig, VaultProtocol, ExitMode, ShareToken } from '@flarekit-dev/contracts'
+export { vaultsFor, vaultsForChain, vaultByKey, vaultByKeyForChain } from '@flarekit-dev/contracts'
+export type { BridgeRoute, ChainEndpoint, RouteKind } from '@flarekit-dev/contracts'
+export { BRIDGE_ROUTES, routesFor, routeByKey } from '@flarekit-dev/contracts'
 // The staking registry vocabulary, re-exported so react/react-ui can name the staking
 // deployment type and read the configured addresses/P-chain endpoint without a second
 // dependency on contracts — the same treatment the vault/bridge registries get above.
-export type { StakingDeployment } from '@flare-kit/contracts'
-export { STAKING, stakingFor } from '@flare-kit/contracts'
+export type { StakingDeployment } from '@flarekit-dev/contracts'
+export { STAKING, stakingFor } from '@flarekit-dev/contracts'
 export * from './mock-ftso.js'
 export * from './ftso/fee.js'
 export * from './ftso/feeds.js'
@@ -107,7 +107,7 @@ export type {
   ValueDenomination,
   ReferenceTail,
   InstructionStanding,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 export {
   SMART_ACCOUNTS,
   smartAccountsFor,
@@ -116,7 +116,7 @@ export {
   VAULT_TYPE,
   builtInInstruction,
   requiredVaultType,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 export * from './smart-accounts/direct-mint-fees.js'
 export * from './smart-accounts/memo.js'
 export * from './smart-accounts/memo-plan.js'

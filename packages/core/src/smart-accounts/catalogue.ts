@@ -2,7 +2,7 @@ import {
   BUILT_IN_INSTRUCTIONS,
   type BuiltInInstruction,
   requiredVaultType,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import type { DeploymentSettings } from './adapter.js'
 
 /**

@@ -1,5 +1,5 @@
 // packages/react-ui/src/bridge-card-state.ts
-import type { BridgeError, BridgePlanResult, BridgeRoute, OperationRecord } from '@flare-kit/core'
+import type { BridgeError, BridgePlanResult, BridgeRoute, OperationRecord } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 import { chainLabel } from './route-catalogue-state.js'
 

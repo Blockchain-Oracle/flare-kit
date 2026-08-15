@@ -1,4 +1,4 @@
-import { type SmartAccountsDeployment, masterAccountControllerAbi } from '@flare-kit/contracts'
+import { type SmartAccountsDeployment, masterAccountControllerAbi } from '@flarekit-dev/contracts'
 import { type PublicClient, getAbiItem } from 'viem'
 import { decodePaymentReference } from './payment-reference.js'
 

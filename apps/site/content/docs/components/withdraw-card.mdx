@@ -1,0 +1,134 @@
+---
+title: WithdrawCard
+description: The vault withdraw composer — an explicit instant-or-delayed route choice, and a request → wait → claim lifecycle where a request is never rendered as assets received.
+breadcrumb: ['Docs', 'Components', 'WithdrawCard']
+importLine: "import { WithdrawCard } from '@flarekit-dev/react-ui'"
+---
+
+`WithdrawCard` takes a vault position back out. It shows the share balance read
+when it opened, lets you withdraw part of it by percent, and — where the vault offers
+both — makes you choose the exit route explicitly: instant, at a higher fee, or
+delayed, cheaper but with a wait. The two are never collapsed into one button,
+and a withdrawal request is never rendered as assets received.
+
+## Live
+
+The preview runs the gallery's own states, each produced by walking the real
+withdraw state machine with the M7 Coston2 reads. The waiting case uses a fixed
+clock, so its countdown is deterministic rather than wall-clock.
+
+<WithdrawCardDemo />
+
+## Usage
+
+The card is prop-driven: you own the position read and the operation record, it
+renders them and calls `onSubmit`. It holds no wallet client and no key.
+
+```tsx
+import { createMockVaultAdapter, readVaultPosition } from '@flarekit-dev/core'
+import { WithdrawCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const adapter = createMockVaultAdapter('upshift-fxrp')
+
+export function Withdraw({ positionResult, nowSeconds, onSubmit }) {
+  return (
+    <WithdrawCard
+      config={adapter.config}
+      positionResult={positionResult}
+      fees={{ instant: 50, delayed: 25 }}
+      route="delayed"
+      percent={100}
+      now={nowSeconds}
+      networkLabel="Coston2"
+      onSubmit={onSubmit}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'config', type: 'VaultConfig', required: true, description: 'The vault from `@flarekit-dev/contracts`: its address, asset, share model and the exit routes it actually offers. The route tabs render only when there is more than one.' },
+  { name: 'now', type: 'number', required: true, description: 'The host clock in unix seconds, for the claimable countdown. A prop, never `Date.now()` inside the component.' },
+  { name: 'operation', type: 'WithdrawOperation', description: 'The withdraw record from `createWithdraw`, once one exists. Its state drives the spine, the wait, the claim and the CTA. Omit it and the card is in its editing state.' },
+  { name: 'positionResult', type: 'VaultPositionResult', description: 'The share-balance read: `position`, `no_position`, or `unavailable` with a reason. The three are distinct states, and a failed read is never shown as a zero balance.' },
+  { name: 'quoteResult', type: 'WithdrawQuoteResult', description: 'The quote for the selected route, or `unavailable` with a reason. Without it the terms simply are not shown.' },
+  { name: 'planResult', type: 'WithdrawPlanResult', description: 'The unsigned plan, or the gate that refused it — paused, cap exceeded, insufficient shares, expired, or a withdraw path not verified on this network.' },
+  { name: 'route', type: "ExitRoute", description: "The route selected while editing. An active operation's own route always wins, so an in-flight withdrawal cannot be relabelled underneath itself." },
+  { name: 'fees', type: '{ instant: number | null; delayed: number | null }', description: 'The real fee in bips per route, for the route choice. A `null` renders `—` rather than a guessed fee.' },
+  { name: 'percent', type: 'number', description: 'The selected share of the position, for the percent pills.' },
+  { name: 'claimableAt', type: 'number', description: 'The concrete claimable time in unix seconds, for the countdown while waiting. Without it there is a wait but no invented deadline.' },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the card, which renders an explicit Mock note. Set it only when the data really is mock; it is never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network named in the panel subtitle — `Coston2`, `Flare`.' },
+  { name: 'onPercentChange', type: '(percent: number) => void', description: 'Called when the reader picks a share of the position.' },
+  { name: 'onRouteChange', type: '(route: ExitRoute) => void', description: 'Called when the reader switches exit route. Omit it and the tabs render read-only.' },
+  { name: 'onSubmit', type: '() => void', description: "Called when the reader takes the CTA — review, approve, or claim, whichever the state is. Signing is the host's job." },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+The position you hold and its current value, percent pills for a partial exit,
+and the exit-route tabs with each route's real fee on the tab itself. Once a
+route is quoted it shows what you receive net of that route's fee, the fee, and
+the minimum protected at your slippage. Once an operation exists, the steps
+render on the shared operation spine, the wait renders as a live countdown to a
+concrete time, and every transaction gathered appears as evidence beside the
+card.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **no position** — you hold none of the share token. An honest empty, stated as
+  such.
+- **unavailable** — the balance read failed. The card names the reason and says
+  this is not a zero, because a failed read shown as "no position" would be an
+  invented balance.
+- **position** — the live share balance and its current value, read when the
+  card opened.
+- **route choice** — instant and delayed side by side, each carrying its own
+  real fee, never collapsed into one exit.
+- **needs approval** — this vault pulls your LP token, so the approval is its
+  own transaction and its own step.
+- **requesting** — the request transaction is in flight.
+- **waiting** — the request landed, and it is not a withdrawal. The card says
+  your shares are queued and nothing has moved yet, and counts down to the
+  concrete claimable time.
+- **claimable** — the wait is over. A `Claimable now` badge and a
+  `Claim withdrawal` action, which is the real action, not a generic retry.
+- **claiming** — the claim transaction is in flight, and the CTA says `Claiming…`
+  rather than reusing the request wording.
+- **claimed** — `Withdrawn`, with the claim transaction as evidence. The exact
+  assets received are on that transaction.
+- **instant success** — the instant route concludes in one step: `Redeemed`, net
+  of its fee, with its transaction.
+
+## Mock to live
+
+The card takes a `VaultConfig` and prop-driven results, so moving from the mock
+to a live network swaps the adapter behind the position and the quote, not the
+screen. Addresses come from `@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+// From this…
+const adapter = createMockVaultAdapter('upshift-fxrp')
+
+// …to this. The component does not change.
+const adapter = makeVaultAdapter(publicClient, vaultByKey('coston2', 'upshift-fxrp')!)
+```
+
+## What it will not do
+
+It will not render a withdrawal request as assets received: `awaiting_external`,
+`action_required` and `succeeded` are three distinct phases, and only the claim
+concluding means the assets arrived. It will not turn a failed balance read into
+a confident "no position". And where a vault's withdraw path carries
+`withdrawVerified: false` — not proven on this network, rather than broken — it
+refuses to emit a plan at all and says so, instead of signing an approval against
+a path no live run has confirmed.

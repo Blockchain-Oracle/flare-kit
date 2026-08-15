@@ -9,9 +9,9 @@ import {
   MOCK_EPOCH,
   amount,
   delegationPosition,
-} from '@flare-kit/core'
-import { DelegationCard, type DelegationOperation } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import { DelegationCard, type DelegationOperation } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every required state of the M10 DelegationCard, in both themes (the one
@@ -21,7 +21,7 @@ import type { Section } from './sections.js'
  * prop-driven, so each state is data, never a live call. A fixed `now` (MOCK_EPOCH) keeps
  * the screenshots deterministic. The load-bearing honesty is visible here: `unavailable`
  * renders `—`, never a confident zero-delegation (and never collapsed into `no-balance`),
- * and `mode-conflict` reads "undelegate first", never a silent no-op.
+ * and `mode-conflict` states the delegation style is fixed for the account, never a silent no-op.
  */
 
 const NOW = MOCK_EPOCH + 5_000
@@ -186,7 +186,7 @@ export const M10_DELEGATION_SECTIONS: readonly Section[] = [
         node: <DelegationCard position={positionWrapped} planResult={OVER_100} {...base} />,
       },
       {
-        name: 'mode-conflict — "undelegate first", never a silent no-op',
+        name: 'mode-conflict — the style is fixed for this account, never a silent no-op',
         node: <DelegationCard position={positionWrapped} planResult={MODE_CONFLICT} {...base} />,
       },
       {

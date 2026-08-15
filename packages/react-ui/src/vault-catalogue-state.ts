@@ -1,5 +1,5 @@
 // packages/react-ui/src/vault-catalogue-state.ts
-import type { Amount, Observation, VaultConfig } from '@flare-kit/core'
+import type { Amount, Observation, VaultConfig } from '@flarekit-dev/core'
 import { feeBipsLabel } from './card-chrome.js'
 
 /**

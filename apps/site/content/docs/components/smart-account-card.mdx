@@ -1,0 +1,200 @@
+---
+title: SmartAccountCard
+description: The identity surface for an XRPL-controlled account on Flare — derived, possibly undeployed, readable with no wallet at all, and with the same-address property compared across networks rather than asserted.
+breadcrumb: ['Docs', 'Components', 'SmartAccountCard']
+importLine: "import { SmartAccountCard } from '@flarekit-dev/react-ui'"
+---
+
+`SmartAccountCard` describes the Flare account an **XRP Ledger address**
+controls: its derived address, whether the contract is actually there, its
+balances, its memo nonce and pinned executor, and the deployment settings that
+govern it — one column per network, side by side.
+
+Nothing on it needs a key, an EVM account or a signature. That is the milestone's
+most unusual property and it is deliberate: a person holding only an XRPL address
+and only XRP can read everything here, and so can an agent or a block explorer.
+Signing enters at the instruction path, which is
+[InstructionComposer](/docs/components/instruction-composer).
+
+Two facts shape the whole surface. A personal account is a **CREATE2** address,
+so it answers before the contract exists — *not deployed* is a real, ordinary
+holding rather than an error, and it is what every XRPL address has until its
+first instruction. And because the controller sits at one address on both
+networks, one XRPL address derives the **same** personal account on each — which
+this card **compares from two reads** rather than printing as a claim beside two
+values it never checked.
+
+## Live
+
+The preview runs the gallery's own states, built from the Coston2 runs and the
+keyless probe of both networks observed on `2026-08-13`. The two-network case is
+the real pair: Coston2 deployed by the first instruction, Flare mainnet derived
+and never touched, and both answered `0x89023176a776CDB1d339a7649116B1a6f3DeFfcb`.
+
+<SmartAccountCardDemo />
+
+## Usage
+
+Drive it from `useSmartAccount`, one hook per network — a personal account is
+read on the deployment it lives on, and two columns are what make the
+same-address property visible. The controller address comes from
+`@flarekit-dev/contracts`, never a literal in your screen.
+
+```tsx
+import { smartAccountsFor } from '@flarekit-dev/contracts'
+import { useSmartAccount } from '@flarekit-dev/react'
+import { SmartAccountCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Account({ xrplOwner, coston2Client, flareClient }) {
+  const coston2 = useSmartAccount({
+    deployment: smartAccountsFor('coston2'),
+    xrplOwner,
+    publicClient: coston2Client,
+  })
+  const flare = useSmartAccount({
+    deployment: smartAccountsFor('flare'),
+    xrplOwner,
+    publicClient: flareClient,
+  })
+
+  return (
+    <SmartAccountCard
+      xrplOwner={xrplOwner}
+      networks={[
+        {
+          deployment: smartAccountsFor('coston2'),
+          networkLabel: 'Coston2',
+          nativeSymbol: 'C2FLR',
+          settings: coston2.settings,
+          account: coston2.account,
+        },
+        {
+          deployment: smartAccountsFor('flare'),
+          networkLabel: 'Flare Mainnet',
+          nativeSymbol: 'FLR',
+          settings: flare.settings,
+          account: flare.account,
+        },
+      ]}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'xrplOwner', type: 'string', required: true, description: 'The XRP Ledger address that controls the account, rendered in full in the mono face. Not an EVM address and not a signer — the controller resolves the account from it.' },
+  { name: 'networks', type: 'readonly SmartAccountNetworkView[]', required: true, description: 'One entry per network, each carrying its deployment, label, native symbol, the deployment settings read and the personal account read. Two entries is what makes the identical-address property visible; with one, the card says there is nothing to compare against.' },
+  { name: 'history', type: 'readonly ObservedInstruction[]', description: 'The `InstructionExecuted` backfill, newest last. `[]` is a CONFIRMED-empty history and renders as a sentence saying the scan completed and found nothing. Omitting all three history props means no scan was asked for and no history section is drawn at all.' },
+  { name: 'historyError', type: 'string', description: 'Why the backfill could not be completed. Rendered as its own note stating that this is not an empty history — an incomplete scan must never wear the shape of an empty one.' },
+  { name: 'historyLoading', type: 'boolean', description: 'True while the backfill is still running. Neither an empty history nor a failed one is claimed until it finishes.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip on the panel header. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+One panel headed by the XRPL address, a line stating that reading this account
+needs no Flare account, wallet or signature, and then one column per network.
+
+Each column carries the deployment state as a chip with a glyph and a word —
+*Deployed*, *Not deployed yet*, *Couldn't read*, or *Address not derived* — with
+a sentence underneath saying what that means. Below it, two groups of rows: the
+**account** (personal account address with its explorer link, the controller, the
+FAsset balance in `drops`, the gas balance at full precision in the network's own
+native symbol, the memo nonce, and the pinned executor) and the **deployment**
+(operator wallets, FDC source id, proof window in seconds, default instruction
+fee in drops with its XRP equivalent, default executor and its fee, the
+registered vaults with their types, and whether dispatch is paused or open).
+
+Nothing in that second group is snapshotted anywhere. Operator wallets, fees, the
+proof window, the vault registry and the executor are settings an operator can
+change, and a plan built on a stale copy would send a real payment to a retired
+destination.
+
+Under the columns sits the address comparison — agreement, disagreement, or a
+statement of why the two cannot be compared — and then the history list, when a
+scan was asked for.
+
+An unread value is `—` everywhere. A genuinely observed zero balance, zero nonce
+or zero-address executor renders as its real value, because those are what a
+blank-slate account actually holds. The FAsset balance keeps its `drops` noun
+rather than borrowing a token symbol: the controller never tells the kit what the
+FAsset is called.
+
+### SmartAccountNetwork
+
+One network's column is exported too, for building a layout of your own:
+
+```tsx
+import { SmartAccountNetwork } from '@flarekit-dev/react-ui'
+```
+
+It takes a single `view: SmartAccountNetworkView` — `deployment`, `networkLabel`,
+`nativeSymbol`, `settings` and `account`, where `settings: undefined` means the
+controller could not be read and `account: undefined` means even the address
+could not be derived — and renders one `<section>`: the deployment chip, the
+account rows, the settings rows, and the note an unreadable controller earns. It
+has no page of its own because it renders no state the card above does not
+already show, and the identical-address comparison — the reason the card exists —
+is a property of two columns, which one column cannot have.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **both-networks** — the observed pair. Coston2 deployed by the first
+  instruction and holding what the two runs left it; Flare mainnet derived,
+  undeployed and empty. Both read the same address, and the note below says the
+  comparison found them identical.
+- **undeployed** — the account before its first instruction: a real CREATE2
+  address, an observed nonce of `0`, the zero-address executor, and the contract
+  genuinely not there yet.
+- **funded-undeployed** — the moment the transfer was planned: `2000000` drops
+  held by an account that does not exist. A balance before existence is a
+  reachable state, not a contradiction.
+- **partial-read** — the balance, nonce and code reads did not land while the
+  rest did. `—` sits beside real values, and deployment is stated as unknown
+  rather than as a "no".
+- **unavailable** — nothing landed on one column. Every value is `—`, the
+  controller is stated as unread, and the two addresses are explicitly **not**
+  compared, because one of them was never derived.
+- **history** — the two real dispatches, each row carrying its instruction id,
+  its action name decoded by the real codec from the reference the controller
+  accepted, the XRPL transaction, the Flare dispatch transaction, and the block.
+- **history-confirmed-empty** — the scan completed and found nothing. That is a
+  claim about the chain, and a true one.
+- **history-scanning** — the backfill is still running, so neither an empty
+  history nor a failed one is claimed yet.
+- **history-unavailable** — the scan could not complete. Distinct from empty,
+  and it never wears empty's shape.
+
+## Mock to live
+
+There is no fake client to swap out here. M13's mock is the read the live runs
+and the keyless probe actually produced — `OBSERVED_SETTINGS`,
+`OBSERVED_MAINNET_SETTINGS` and the personal-account records in
+`@flarekit-dev/core` — handed to the same components a live read drives. Going
+live is reading through `useSmartAccount` with your own viem public client:
+
+```tsx
+// From this…
+const view = { deployment, networkLabel: 'Coston2', nativeSymbol: 'C2FLR',
+               settings: OBSERVED_SETTINGS, account: OBSERVED_ACCOUNT_LIVE }
+
+// …to this. The component does not change.
+const { settings, account } = useSmartAccount({ deployment, xrplOwner, publicClient })
+```
+
+## What it will not do
+
+It will not render an unread balance, nonce or executor as a zero, and it will
+not turn a failed code read into "not deployed". It will not claim the two
+networks agree on an address it could not compare, and it will not render an
+incomplete history scan as an empty history. It offers no control at all: there
+is nothing to sign here, on either network.

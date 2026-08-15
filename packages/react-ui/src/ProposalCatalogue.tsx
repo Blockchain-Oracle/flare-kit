@@ -1,4 +1,4 @@
-import type { ProposalSource, ProposalSummary } from '@flare-kit/core'
+import type { ProposalSource, ProposalSummary } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { ToneChip } from './primitives/StateChip.js'

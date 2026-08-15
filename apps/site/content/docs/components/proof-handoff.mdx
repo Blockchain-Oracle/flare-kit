@@ -1,0 +1,106 @@
+---
+title: ProofHandoff
+description: The panel that hands a verified FDC proof to your own contract — the ABI-ready struct as pasteable TypeScript, the Solidity type to write against, and the verification call that already ran.
+breadcrumb: ['Docs', 'Components', 'ProofHandoff']
+importLine: "import { ProofHandoff } from '@flarekit-dev/react-ui'"
+---
+
+For `EVMTransaction` and `Web2Json` the consumer is your contract, by design —
+a proof of an arbitrary EVM transaction, or of an arbitrary JSON endpoint
+filtered through your own jq and encoded to your own ABI signature, has no
+meaning until your logic gives it one. This project ships no demo consumer, and
+the reason is recorded in
+`.thoughts/decisions/2026-08-04-no-first-party-proof-consumer.md`.
+
+But a screen that says "nothing takes this" and stops is a cul-de-sac.
+`ProofHandoff` is the difference between *nothing takes this* and *this is the
+last step we own*: the proof struct as calldata you can paste, the Solidity type
+to write against, and the verification that already happened.
+
+## Live
+
+The gallery mounts no standalone `ProofHandoff` case — the panel is verified
+inside [ProofDetail](/docs/components/proof-detail), which renders it whenever
+`abiStruct` is passed. So the preview below shows the whole proof screen, with
+the handoff panel at the bottom of it. That is where the panel actually appears,
+and re-mounting it alone would mean showing a state the surface was never
+verified against.
+
+<ProofHandoffDemo />
+
+## Usage
+
+`ProofHandoff` formats a struct you already hold. It fetches nothing, verifies
+nothing and signs nothing. Build the struct with the family module's
+`toProofStruct` — the family owns the ABI shape, and this surface never rebuilds
+it.
+
+```tsx
+import { evmTransactionFamily } from '@flarekit-dev/core'
+import { ProofHandoff } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Handoff({ row, proof }) {
+  return <ProofHandoff row={row} abiStruct={evmTransactionFamily.toProofStruct(proof)} />
+}
+```
+
+Passing `abiStruct` to `ProofDetail` renders the same panel in place, which is
+how the proof screen reaches it.
+
+## Props
+
+<PropsTable rows={[
+  { name: 'row', type: 'FamilyRow', required: true, description: 'The catalogue row for this proof’s family. Its name is what the Solidity type, the verification call and the import line in the snippet are all built from.' },
+  { name: 'abiStruct', type: 'unknown', required: true, description: 'The ABI-ready struct, from the family module’s `toProofStruct`. Typed `unknown` because the panel renders whatever shape the family produced without knowing its fields.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel with two rows and a code window. The rows name the Solidity type —
+`IEVMTransaction.Proof`, from `flare-foundry-periphery-package` — and the
+verification that already ran, `FdcVerification.verifyEVMTransaction`, with the
+note that your contract should verify it again itself. This kit's check is a
+pre-flight, not a substitute.
+
+The code window holds the struct as a TypeScript literal you can paste, wrapped
+in the `writeContract` call that takes it. Nothing in it is a placeholder except
+your contract, its ABI and its function.
+
+## States
+
+Both cases in the switcher above come from the gallery's `fdc-04` section, one
+source of truth for the gallery and these docs. They are the two cases that pass
+`abiStruct`, which is the only thing that decides whether the panel renders:
+
+- **verifier-only, with the handoff** — `EVMTransaction`, where nothing deployed
+  consumes the proof and the handoff is the whole end of the road.
+- **uint64-max sentinel** — `XRPPaymentNonexistence`, a family FAssets does
+  consume, so the handoff sits alongside a real consumer rather than replacing
+  one. Its struct carries `18446744073709551615` in two fields, and the snippet
+  renders it as
+  `18446744073709551615n`, whole and pasteable. This is the case worth looking
+  at hardest.
+
+The panel itself has no other states: it renders the struct it is given, or it
+is not rendered at all.
+
+## Mock to live
+
+There is nothing to swap. `ProofHandoff` reads no network and holds no
+addresses; it formats a struct. The same panel renders a mock proof and a
+Coston2 proof identically, because in both cases the struct came from the same
+`toProofStruct` on the same family module.
+
+## What it will not do
+
+It will not emit JSON. The snippet is TypeScript with `bigint` literals because
+that is what can actually be pasted — JSON renders every `uint64` as a string
+or, far worse, as a number, which is the precise corruption this kit exists to
+prevent, reintroduced at the last possible moment.
+
+It will not claim your contract is done being careful. `FdcVerification` having
+returned true here is a pre-flight; the panel says so on the row, because a
+contract that trusts a caller's assertion of verification is a contract with no
+verification.

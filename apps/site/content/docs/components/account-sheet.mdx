@@ -1,0 +1,124 @@
+---
+title: AccountSheet
+description: The account surface — a Flare account and an XRP Ledger account side by side, each stating its connection status and who holds its key in words.
+breadcrumb: ['Docs', 'Components', 'AccountSheet']
+importLine: "import { AccountSheet } from '@flarekit-dev/react-ui'"
+---
+
+`AccountSheet` shows both chain identities at once — Flare and the XRP Ledger —
+because an operation can need either or both, and a person should not have to
+leave it to find out which. Every row states its custody in words: a connected
+wallet, a watched address with no key anywhere, or an agent key. Custody is
+never implied by an icon.
+
+## Live
+
+The preview runs the gallery's own states. The state switcher walks the ten
+cases the sheet was verified against, so nothing here shows a connection state
+the surface never actually reaches.
+
+<AccountSheetDemo />
+
+## Usage
+
+The kit does not connect wallets. Your host owns its adapters, and hands the
+resulting identity in — which is why the sheet takes callbacks rather than a
+connector.
+
+```tsx
+import { walletConnected } from '@flarekit-dev/core'
+import { useAccounts } from '@flarekit-dev/react'
+import { AccountSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const COSTON2 = { name: 'Coston2', chainId: 114 }
+
+export function Accounts() {
+  const { context, setIdentity } = useAccounts()
+
+  return (
+    <AccountSheet
+      context={context}
+      onConnectEvm={async () => {
+        const address = await yourEvmAdapter.connect()
+        setIdentity(walletConnected('evm', address, COSTON2))
+      }}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'context', type: 'AccountContext', required: true, description: 'Both identities — `evm` and `xrpl` — as one frozen object. Build it with `createAccountContext()` or read it from `useAccounts()`.' },
+  { name: 'onConnectEvm', type: '() => void', description: 'Called when the reader asks to connect the Flare account. Omit it and no connect action is offered on that row.' },
+  { name: 'onConnectXrpl', type: '() => void', description: 'The same, for the XRP Ledger row.' },
+  { name: 'onSupplyReadOnly', type: '(family: ChainFamily, input: string) => void', description: 'Enables the watch-an-address path. Called with whatever was typed; validating it is the host\'s job, and `useAccounts().supplyReadOnly` does it.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the sheet follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the sheet.' },
+]} />
+
+## What it renders
+
+Two account rows and, below them, only the notes that apply. A row carries the
+chain and its mark, a status chip that differs by shape as well as colour, the
+address as an explorer link where a chain has one, the network by name, and the
+custody sentence. A watched address gets its own chip — `Read only` — because
+`Connected` covering both would hide the one difference that matters.
+
+The sheet holds no connection of its own. It renders the identity it is given
+and calls back.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **disconnected** — neither account is connected; both rows offer the action.
+- **connecting** — the request is with the wallet; the button is disabled while
+  it is.
+- **rejected** — `Request declined`. Nothing was sent and nothing changed.
+- **unavailable wallet** — nothing is installed for that family. Watching an
+  address is still offered, because it needs no wallet.
+- **wrong network** — reported here, repaired in
+  [`NetworkResolutionSheet`](/docs/components/network-resolution-sheet). No
+  `Connect` button appears, because connecting is not the remedy.
+- **account changed** — the wallet switched address under you. Reported, not
+  repaired, for the same reason.
+- **restored session** — rebuilt from this device and not yet re-authorized by
+  the wallet, so nothing can be signed until it is.
+- **read-only supplied** — a watched XRP Ledger address: connected, no key,
+  cannot sign.
+- **invalid read-only identity** — the address did not parse. The refusal stays
+  on the row it belongs to and the account is not claimed.
+- **both ready** — a Flare wallet and an XRP Ledger wallet, both connected.
+
+## Mock to live
+
+`AccountSheet` reads nothing from the network, so there is no mock kit to swap.
+Going live changes where the identity comes from: a gallery fixture such as
+`walletConnected('evm', address, COSTON2)` becomes the same call made with the
+address your adapter returned.
+
+```tsx
+// From a fixture…
+const context = createAccountContext({ evm: walletConnected('evm', EVM, COSTON2) })
+
+// …to your adapter. The sheet does not change.
+setIdentity(walletConnected('evm', await yourEvmAdapter.connect(), COSTON2))
+```
+
+Network names and chain ids come from configuration — `114` is Coston2 — and
+addresses from `@flarekit-dev/contracts`, never from the component.
+
+## What it will not do
+
+It will not connect a wallet, so it never claims custody it does not have. It
+will not repair a wrong network or a changed account — those belong to
+`NetworkResolutionSheet`, the only surface that knows what the drift
+invalidated, and offering `Connect` here would point at the one action that
+cannot help. It will not present an address it could not parse as a connected
+account, and it will not let an icon stand in for the sentence about who holds
+the key.

@@ -1,0 +1,57 @@
+---
+title: Quickstart
+description: Install the kit, mount the provider against the mock, and render a real operation in about a minute.
+breadcrumb: ['Docs', 'Quickstart']
+importLine: "import { createMockKit } from '@flarekit-dev/core'"
+---
+
+## Install
+
+<InstallTabs packages="@flarekit-dev/core @flarekit-dev/react @flarekit-dev/react-ui" />
+
+`react`, `viem` and the query libraries are peer dependencies — the kit never
+bundles them.
+
+## Start on the mock
+
+The mock is a real state machine, not a set of fixtures. It is seeded, so the
+same seed gives the same trace every time, which is what makes it usable in
+tests.
+
+```ts
+import { createMockKit } from '@flarekit-dev/core'
+
+const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
+
+const record = kit.start({
+  amountXrp: '25.000000',
+  recipient: '0xDeaDbeefDeAdbeefdEadbEEFdeadbeEFdEaDbeeF',
+  xrplAccount: 'rPT1Sjq2YGrBMTttX4GZHjKu9dyfzbpAYe',
+})
+
+// Every state the operation passes through, in order.
+const trace = kit.trace(record)
+```
+
+Scenarios cover the paths that actually happen: `happy`, `executor-late`,
+`large-delayed`, `protocol-unavailable`.
+
+## Render the operation
+
+```tsx
+import { OperationTimeline } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Mint({ record }) {
+  return <OperationTimeline operation={record} />
+}
+```
+
+The spine reads `state`, `steps`, `evidence` and `awaiting` off the record, so
+an attestation and a mint share one component rather than drifting apart.
+
+## Switch to a live network
+
+Network is configuration. Addresses come from `@flarekit-dev/contracts`, so moving
+from the mock to Coston2 or to Flare mainnet is a change of kit construction,
+not a rewrite of your screens.

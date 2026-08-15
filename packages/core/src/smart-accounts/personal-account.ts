@@ -1,7 +1,7 @@
 import {
   type SmartAccountsDeployment,
   masterAccountControllerAbi,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Abi, type PublicClient } from 'viem'
 
 /**

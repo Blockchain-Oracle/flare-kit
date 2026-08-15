@@ -1,4 +1,4 @@
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { smartAccountsFor } from '@flarekit-dev/contracts'
 import { describe, expect, it } from 'vitest'
 import type { PersonalAccountState } from '../src/smart-accounts/personal-account.js'
 import { planMemoInstruction } from '../src/smart-accounts/memo-plan.js'

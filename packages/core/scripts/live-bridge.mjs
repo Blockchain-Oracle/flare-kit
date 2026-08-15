@@ -17,7 +17,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http, formatUnits, parseEventLogs } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { routeByKey, OFT_ADAPTER_ABI } from '@flare-kit/contracts'
+import { routeByKey, OFT_ADAPTER_ABI } from '@flarekit-dev/contracts'
 import {
   makeBridgeAdapter, bridgeAbiFor, quoteBridge,
   buildBridgePlan, buildRedeemPlan, reconcileDelivery, reconcileBridgeRedeem,

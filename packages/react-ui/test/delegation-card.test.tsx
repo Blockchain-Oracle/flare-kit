@@ -3,7 +3,7 @@ import type {
   DelegationPlanResult,
   DelegationReads,
   DexToken,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   applyTransition,
   buildDelegationPlan,
@@ -12,7 +12,7 @@ import {
   delegationPosition,
   evidence,
   reconcileDelegation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { DelegationCard } from '../src/DelegationCard.js'
@@ -132,13 +132,13 @@ describe('DelegationCard — DEL-01 composer invariants (honest, never a silent 
     expect(cta(container)?.hasAttribute('disabled')).toBe(true)
   })
 
-  it('mode-conflict reads "undelegate first", never a silent no-op', () => {
+  it('mode-conflict states the style is fixed for the account, never a silent no-op', () => {
     const plan: DelegationPlanResult = { kind: 'error', error: { kind: 'mode-conflict', current: 'amount' } }
     const { container } = render(
       <DelegationCard position={observedWrapped} planResult={plan} nativeToken={C2FLR} wrappedToken={WNAT} />,
     )
     expect(container.querySelector('[data-del-state]')?.getAttribute('data-del-state')).toBe('mode-conflict')
-    expect(container.textContent?.toLowerCase()).toContain('undelegate first')
+    expect(container.textContent?.toLowerCase()).toContain('delegation style is fixed')
   })
 
   it('not-verified gate: the CTA is disabled and the note is shown', () => {

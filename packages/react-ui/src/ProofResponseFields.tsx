@@ -1,4 +1,4 @@
-import { formatExact } from '@flare-kit/core'
+import { formatExact } from '@flarekit-dev/core'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { ToneChip } from './primitives/StateChip.js'
 

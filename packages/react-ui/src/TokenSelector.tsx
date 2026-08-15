@@ -1,4 +1,4 @@
-import { type Amount, type DexToken, formatExact } from '@flare-kit/core'
+import { type Amount, type DexToken, formatExact } from '@flarekit-dev/core'
 import { useMemo, useState } from 'react'
 import { AssetLogo } from './primitives/AssetLogo.js'
 import { Modal } from './primitives/Modal.js'

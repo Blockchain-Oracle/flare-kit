@@ -1,4 +1,4 @@
-import type { ProposalSummary } from '@flare-kit/core'
+import type { ProposalSummary } from '@flarekit-dev/core'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ProposalCatalogue } from '../src/ProposalCatalogue.js'

@@ -9,7 +9,7 @@ import {
   readDirectMintProtocolState,
   readPersonalAccount,
   readTransactionIdUsed,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 /**

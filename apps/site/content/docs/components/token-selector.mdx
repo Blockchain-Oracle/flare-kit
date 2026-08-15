@@ -1,0 +1,113 @@
+---
+title: TokenSelector
+description: The token picker for a swap side — search, common-base pills and balance-sorted rows, with any token the DEX has no pool for shown disabled and named rather than hidden.
+breadcrumb: ['Docs', 'Components', 'TokenSelector']
+importLine: "import { TokenSelector } from '@flarekit-dev/react-ui'"
+---
+
+`TokenSelector` picks the token on one side of a swap. It is presentational and
+fetches nothing: you hand it the tokens you know and the balances you have read.
+Its one hard rule is the counter-side gate — a token with no pool against the
+side already chosen is shown, disabled, with the missing pair named, so a pair
+the DEX cannot quote can never be selected.
+
+## Live
+
+The preview runs the gallery's own cases. Each is mounted inside its own
+container so the modal renders in the preview rather than over the page.
+
+<TokenSelectorDemo />
+
+## Usage
+
+Build one `TokenChoice` per token you want offered. Balances come from whatever
+the host has read; omit the balance when you have not read one, because absence
+is unknown and not zero.
+
+```tsx
+import { dexFor } from '@flarekit-dev/contracts'
+import { TokenSelector } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const dex = dexFor(114) // Coston2
+
+export function PickToken({ open, balances, pooledWith, onSelect, onClose }) {
+  const tokens = Object.entries(dex.tokens).map(([key, token]) => ({
+    key,
+    token,
+    ...(balances[key] ? { balance: balances[key] } : {}),
+    pooled: pooledWith.includes(key),
+  }))
+
+  return (
+    <TokenSelector
+      open={open}
+      tokens={tokens}
+      commonBases={['FXRP', 'USDT0']}
+      counterSymbol="FXRP"
+      onSelect={onSelect}
+      onClose={onClose}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'open', type: 'boolean', required: true, description: "Whether the picker is shown. The host owns it — typically opened from a leg's onSelectFrom or onSelectTo." },
+  { name: 'tokens', type: 'readonly TokenChoice[]', required: true, description: 'The tokens on offer. Each carries key, token, and optionally name, balance and pooled.' },
+  { name: 'commonBases', type: 'readonly string[]', description: 'Keys to surface as quick pills above the list. A pill for an unpoolable token is rendered disabled, like its row.' },
+  { name: 'selectedKey', type: 'string', description: 'The token already chosen on this side, marked as current in the list.' },
+  { name: 'onSelect', type: '(key: string) => void', required: true, description: 'Called with the registry key of the picked token, never with the symbol — the symbol differs per network, the key does not.' },
+  { name: 'onClose', type: '() => void', required: true, description: 'Called when the modal is dismissed.' },
+  { name: 'counterSymbol', type: 'string', description: 'The symbol being paired against. It is named in the no-pool reason, so the row says which pair is missing rather than only that something is wrong.' },
+  { name: 'defaultQuery', type: 'string', description: 'Initial search text. Uncontrolled — the initial value, not a binding, so typing still owns the field. It exists so the filtered state is reachable from props and can be verified in a browser.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the modal, so a host layout can place it.' },
+]} />
+
+### TokenChoice
+
+<PropsTable rows={[
+  { name: 'key', type: 'string', required: true, description: 'The registry key the selection reports, for example FXRP. Stable across networks.' },
+  { name: 'token', type: 'DexToken', required: true, description: "The symbol, address and decimals, from the network's dex registry." },
+  { name: 'name', type: 'string', description: "Human name for the row's sublabel, for example FAsset XRP. Also searchable." },
+  { name: 'balance', type: 'Amount', description: "The holder's balance, when read. Absence is unknown, never zero — an unread balance shows no figure and does not sort as held." },
+  { name: 'pooled', type: 'boolean', description: 'The counter-side gate. False means no pool pairs this token with the chosen side, so the row is shown but cannot be picked. Omit it when the side is not counter-gated.' },
+]} />
+
+## What it renders
+
+A modal titled `Select a token`: a search field, the common-base pills, then the
+rows in two sections — `Your assets` for tokens with a balance above zero,
+largest first, and `All tokens` for the rest, in the order you passed them.
+Search matches symbol, name or address. When nothing matches, the list is
+replaced by a line naming the query rather than an empty panel.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **search** — the list filtered by `defaultQuery`, so the filtered result is a
+  state reachable from props and verifiable in a browser.
+- **balance-sorted** — held assets first with their exact figures, then the
+  rest. A token with no balance read is not sorted as if it held nothing.
+- **no-pool counter** — the gate, against a chosen `FXRP` side. Tokens with no
+  `FXRP` pool are listed and disabled, each row stating which pool is missing.
+
+## Mock to live
+
+There is nothing to mock here: the picker never reads the chain. The same
+component renders whether the balances came from a live client or from
+`createMockKit()`, and a balance the host has not read stays absent rather than
+being filled in with a zero.
+
+## What it will not do
+
+It will not hide a token the DEX cannot pair, and it will not let one be picked
+— hiding it would leave the reason unsaid, and allowing it would produce a quote
+that cannot exist. It will not show a missing balance as `0`, and it will not
+fetch tokens, balances or pool state of its own.

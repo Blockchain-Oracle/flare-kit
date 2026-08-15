@@ -7,7 +7,7 @@ import {
   accountExplorerLink,
   cannotSignReason,
   canSign,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useState } from 'react'
 import { Button } from './primitives/Button.js'
 import { CopyButton } from './primitives/CopyButton.js'

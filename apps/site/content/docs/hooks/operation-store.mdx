@@ -1,0 +1,119 @@
+---
+title: Operation store
+description: The synchronous, capability-agnostic registry of live operations that React renders from, its one write door, and the rule that an older reading never overwrites a newer one.
+breadcrumb: ['Docs', 'Hooks', 'Operation store']
+importLine: "import { createOperationRegistry, openOperations } from '@flarekit-dev/react'"
+---
+
+Every operation surface in this package — the activity feed, the pending tray,
+the timeline — reads one registry. It is the provider's in-memory record of
+live operations, with subscriptions, and it is deliberately separate from the
+durable `OperationStore` in `@flarekit-dev/core`: that one is durable and async,
+this one is the *synchronous* snapshot React renders from, which is what
+`useSyncExternalStore` needs to avoid tearing under concurrent rendering. The
+provider keeps the two in step, rather than either one knowing about the other.
+
+The registry is capability-agnostic. A mint and a redemption share one durable
+record type, so one registry holds both and a portfolio can list them together
+without knowing which is which.
+
+## Live
+
+The readout below is what `snapshot()` holds on this render, after three of the
+mock's operation records were written in through `upsert` — the same door a
+reconciliation uses. Each record is summarised to the fields the registry
+itself keys on; the order is the registry's own, and `openOperations` picks out
+the two that have not reached a terminal state.
+
+<OperationStoreDemo />
+
+## Usage
+
+You rarely construct one. `FlareProvider` creates it and hands it out through
+context — pass a durable `store` and operations survive a reload.
+
+```tsx
+import { openOperations, useFlareContext } from '@flarekit-dev/react'
+import { useSyncExternalStore } from 'react'
+
+function OpenCount() {
+  const { registry } = useFlareContext()
+
+  const records = useSyncExternalStore(
+    registry.subscribe,
+    registry.snapshot,
+    registry.snapshot,
+  )
+
+  return <span>{openOperations(records).length} open</span>
+}
+```
+
+One kit is one session, so its registry is shared by every provider using that
+kit: a widget mounted in two places shows one operation in one state, rather
+than two copies drifting apart. The association is weakly keyed, so nothing is
+retained once the kit is gone.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'durable', type: 'OperationStore', required: false, description: 'Where records are persisted. Every upsert writes through to it, but never on the render path — a store that is slow or unavailable must not stop the UI showing what it knows. Omit it and the registry is in-memory only.' },
+]} />
+
+## The registry
+
+<PropsTable rows={[
+  { name: 'snapshot', type: '() => readonly AnyOperation[]', description: 'Everything held, in write order — the most recently added record first. The same array identity is returned until something changes; a fresh array per call would make useSyncExternalStore loop forever.' },
+  { name: 'get', type: '(id: string) => AnyOperation | undefined', description: 'One record by its operation id — the kit\'s own id, which is independent of any transaction hash because one operation correlates several.' },
+  { name: 'upsert', type: '(record: AnyOperation) => void', description: 'The one write door. Adds a record or replaces the one with the same id, persists to the durable store without awaiting it, then notifies subscribers.' },
+  { name: 'subscribe', type: '(listener: () => void) => () => void', description: 'Called on every committed write. Returns its own unsubscribe.' },
+]} />
+
+`openOperations(records)` filters a snapshot to the operations that have not
+reached a terminal state. `AnyOperation` is `OperationRecord` — the alias is
+there to say the registry does not care which capability produced it.
+
+## States
+
+- **empty** — nothing has been written yet. For a feed that is being backfilled
+  this is an unfinished read rather than an answer, which is why `useActivity`
+  takes `backfilling` as a separate claim.
+- **holding records** — `snapshot()` returns them newest-write-first.
+- **open or terminal** — the only distinction the registry itself draws, and it
+  draws it through `openOperations`, not by storing a flag.
+- **stale write ignored** — an `upsert` whose `updatedAt` is older than the
+  record already held is dropped. Reconciliation can be in flight from more
+  than one place, and an older reading must never overwrite a newer one.
+- **identical write ignored** — an `upsert` of the same object that is already
+  held returns without notifying, so nothing re-renders for no change.
+
+## Mock to live
+
+Nothing about the registry changes. The mock kit and a live kit write the same
+`OperationRecord` type through the same `upsert`:
+
+```tsx
+// Mock: the operations the mock kit reconciles, in memory only.
+<FlareProvider kit={createMockKit()}>
+
+// Live: the same registry, plus somewhere for the records to survive a reload.
+<FlareProvider kit={liveKit} store={indexedDbStore}>
+```
+
+## What it will not do
+
+It will not sort. Records come back in write order; `buildActivity` is what
+orders them by `updatedAt` for display, and the pending tray does its own
+sorting. Two different orderings of the same records are a presentation
+decision, so the registry does not make it.
+
+It will not read anything. It holds what is written to it — reconciliation,
+polling and chain reads all live elsewhere and arrive here as an `upsert`.
+
+It will not report a failed persist. The durable write is fire-and-forget by
+design, so the UI never blocks on storage; if you need to know that persistence
+failed, the durable `OperationStore` is where to find out.
+
+It will not survive its kit. The registry is keyed weakly on the kit object, so
+a new kit is a new session with an empty registry — and without a durable
+`store`, a reload is a new session too.

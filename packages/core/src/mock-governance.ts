@@ -1,6 +1,6 @@
 // packages/core/src/mock-governance.ts
 import { type Address, type Hex, type PublicClient, zeroAddress } from 'viem'
-import { type FlareNetworkKey, type GovernanceDeployment, governanceFor } from '@flare-kit/contracts'
+import { type FlareNetworkKey, type GovernanceDeployment, governanceFor } from '@flarekit-dev/contracts'
 
 /**
  * The governance mock (M12-T7), written AFTER the real Coston2 round trip + mainnet

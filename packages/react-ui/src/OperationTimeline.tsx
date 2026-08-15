@@ -1,4 +1,4 @@
-import type { EvidenceItem, OperationRecord, OperationStep } from '@flare-kit/core'
+import type { EvidenceItem, OperationRecord, OperationStep } from '@flarekit-dev/core'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { GlyphMark, StateChip } from './primitives/StateChip.js'
 import { formatInstant } from './primitives/Timestamp.js'

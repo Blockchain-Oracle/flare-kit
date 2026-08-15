@@ -41,22 +41,22 @@ every later capability reuses the lifecycle engine it forces us to build.
 
 - R1 — A pnpm + Turborepo workspace publishing dual ESM/CJS packages that pass
   `publint`, with changesets configured for release.
-- R2 — `@flare-kit/contracts` exports typed ABIs and one address registry for
+- R2 — `@flarekit-dev/contracts` exports typed ABIs and one address registry for
   Coston2. No address is hardcoded anywhere else.
-- R3 — `@flare-kit/core` exposes a durable operation lifecycle: immutable
+- R3 — `@flarekit-dev/core` exposes a durable operation lifecycle: immutable
   intent, quote, unsigned plan, execution, canonical states, typed errors, and
   a recovery matrix that distinguishes reusing prior evidence from creating a
   new payment.
-- R4 — `@flare-kit/core` implements `directMint`: quote XRP to FXRP with exact
+- R4 — `@flarekit-dev/core` implements `directMint`: quote XRP to FXRP with exact
   fees, produce the XRPL payment to sign, track XRPL finality, FDC request and
   proof, executor execution, and the FXRP credit.
 - R5 — Operation records persist and resume by ID across reload and process
   restart, through a storage adapter with an in-memory default.
 - R6 — `createMockKit()` reproduces the full state machine with configurable
   timings and no wallet, key or network.
-- R7 — `@flare-kit/react` exposes `FlareProvider`, `useDirectMint`,
+- R7 — `@flarekit-dev/react` exposes `FlareProvider`, `useDirectMint`,
   `useOperation`, accepting either a live config or a mock kit.
-- R8 — `@flare-kit/react-ui` ships `MintFXRP`, `OperationTimeline` and
+- R8 — `@flarekit-dev/react-ui` ships `MintFXRP`, `OperationTimeline` and
   `ConnectButton` supporting simultaneous EVM and XRPL accounts, styled from
   DESIGN.md tokens and themeable through CSS custom properties.
 - R9 — Every component renders every state in its required-state list against
@@ -75,7 +75,7 @@ every later capability reuses the lifecycle engine it forces us to build.
 - No documentation site build. The accepted specimens under
   `.thoughts/design/fable5-direction-return/` remain the visual reference.
 - No environment variables for public values. RPC URLs, chain IDs and contract
-  addresses are exported constants in `@flare-kit/contracts`. A signing key for
+  addresses are exported constants in `@flarekit-dev/contracts`. A signing key for
   the demo is the only secret, and it is never committed.
 - No npm publish, no domain registration, no deployment in this milestone.
 - No `apps/funding-api` yet. A funder-held faucet service is required before
@@ -101,6 +101,29 @@ every later capability reuses the lifecycle engine it forces us to build.
 - `packages/*/package.json`, `packages/*/tsconfig.json`, `packages/*/tsup.config.ts`,
   `packages/*/vitest.config.ts` — per-package manifests and build config; R1's
   dual ESM/CJS and publint requirement lives here, not in the root
+- `README.md` — the repository README. Contributor-facing, and the only surface
+  that may carry mermaid: npm renders none of it
+- `packages/*/README.md` — the npm-facing README per package, on the R-DIST-007
+  skeleton; `contracts` diverges long because a registry package has no
+  docs-site page to link to
+- `LICENSE`, `packages/*/LICENSE` — every package declares MIT, so every
+  published tarball must carry the text. npm packs only from within a package
+  directory, so the root copy alone would ship none of them
+- `brand/flare-kit-mark.svg`, `brand/flare-kit-logo.svg`,
+  `brand/flare-kit-banner.svg` — the identity. One crimson, theme-neutral:
+  `<picture>` dark-mode switching is structurally broken on npm, so a single
+  file must survive both grounds. Wordmarks are outlined paths, never `<text>`,
+  because camo's CSP forbids a font load
+- `brand/packages.svg`, `brand/architecture.svg` — hand-authored diagrams that
+  keep live `<text>` on a system stack, because a diagram must stay editable
+- `brand/build.mjs` — regenerates the three identity files from the vendored
+  Bricolage and Hanken faces. Run by hand; its two tools are deliberately not
+  workspace dependencies
+- `apps/site/**` — `flare-kit.xyz`: the landing page and the documentation, one
+  Next.js App Router application. Specified in
+  `.thoughts/specs/2026-08-13-docs-site.md`; the framework is chosen in
+  `.thoughts/decisions/2026-08-13-docs-site-framework.md`. `apps/*` deploys and
+  never publishes, so it is outside the publint and dual-format rules
 - `packages/contracts/src/chains.ts` — network + underlying-chain constants (ids,
   RPCs, explorers); split from the address registry because it is what makes
   "mainnet-capable with no source rewrite" true
@@ -844,18 +867,18 @@ these live in `.thoughts/specs/2026-08-04-m4-ftso-surfaces.md`, not here.
   `reference/contracts/tsconfig.json`, `reference/contracts/README.md` — the Hardhat
   project scaffold; the Coston2 network from the constant RPC + the dev key.
 - `reference/contracts/deployments/coston2.json` — the recorded live-deploy addresses
-  the `@flare-kit/contracts` registries read from; no address hardcoded elsewhere.
+  the `@flarekit-dev/contracts` registries read from; no address hardcoded elsewhere.
 - `services/relayer/src/index.ts` (+ `services/relayer/src/relayer-execute.ts` split
   < 300 lines) — M9-R5. The fee-free gasless relayer (`GET /nonce/:addr`, `POST
   /execute`): recovers the signer via core's `recoverPaymentSigner`, validates
   balance/allowance/nonce/deadline, `staticCall`-simulates, submits `executePayment`
-  with the operator key; imports the EIP-712 types from `@flare-kit/core` (no
+  with the operator key; imports the EIP-712 types from `@flarekit-dev/core` (no
   re-declaration); absorbs its own gas, adds no fee/quota, logs no key.
 - `services/x402-server/src/index.ts` (+ `services/x402-server/src/x402-settle.ts`
   split < 300 lines) — M9-R6/R7. The single-endpoint x402 fixture (`GET /api/demo`):
   `402` with a demo-labelled requirement, then decode → `verifyPayment` →
   `settlePayment` → `X-Payment-Response` + an obviously-synthetic payload with no
-  fabricated data; imports the EIP-3009 types from `@flare-kit/core`; `GET /health`
+  fabricated data; imports the EIP-3009 types from `@flarekit-dev/core`; `GET /health`
   reports config (addresses only, no key).
 - `services/relayer/package.json`, `services/relayer/tsconfig.json`,
   `services/relayer/README.md`, `services/x402-server/package.json`,
@@ -1331,7 +1354,7 @@ instruction runs as a consequence of a direct mint the kit self-relays.
 
 ```bash
 pnpm install && pnpm build && pnpm typecheck && pnpm lint && pnpm test
-pnpm --filter @flare-kit/core test:e2e:mock      # AC1, AC3, AC4, AC5 against the mock
+pnpm --filter @flarekit-dev/core test:e2e:mock      # AC1, AC3, AC4, AC5 against the mock
 pnpm --filter demo dev                            # then drive AC2 in a browser on Coston2
 ```
 

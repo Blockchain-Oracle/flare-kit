@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { type Address, maxUint256 } from 'viem'
-import { gaslessFor } from '@flare-kit/contracts'
+import { gaslessFor } from '@flarekit-dev/contracts'
 import {
   type GaslessAdapter,
   type GaslessIntent,

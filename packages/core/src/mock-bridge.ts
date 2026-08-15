@@ -1,6 +1,6 @@
 // packages/core/src/mock-bridge.ts
 import type { Address, Hex, PublicClient } from 'viem'
-import { type BridgeRoute, routeByKey } from '@flare-kit/contracts'
+import { type BridgeRoute, routeByKey } from '@flarekit-dev/contracts'
 import { type BridgeAdapter, makeBridgeAdapter } from './bridge-adapter.js'
 
 /**

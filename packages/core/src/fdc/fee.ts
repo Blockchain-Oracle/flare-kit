@@ -1,4 +1,4 @@
-import { fdcHubAbi, registryFor } from '@flare-kit/contracts'
+import { fdcHubAbi, registryFor } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 
 /**

@@ -1,4 +1,4 @@
-import { createMockKit } from '@flare-kit/core'
+import { createMockKit } from '@flarekit-dev/core'
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it } from 'vitest'

@@ -4,7 +4,7 @@ import {
   attestationName,
   claimedStatus,
   familyFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import type { FamilyRow } from './fdc/catalogue.js'
 import type { EvmTransactionProof } from './fdc/families/evm-transaction.js'
 import type { XrpPaymentProof } from './fdc/families/xrp-payment.js'

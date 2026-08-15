@@ -1,5 +1,5 @@
 // packages/react-ui/src/SmartAccountCard.tsx
-import type { ObservedInstruction } from '@flare-kit/core'
+import type { ObservedInstruction } from '@flarekit-dev/core'
 import { ExplorerLink } from './primitives/ExplorerLink.js'
 import { Note } from './primitives/Note.js'
 import { Panel } from './primitives/Panel.js'

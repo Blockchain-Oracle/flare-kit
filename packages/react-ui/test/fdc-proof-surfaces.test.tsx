@@ -5,7 +5,7 @@ import {
   MOCK_NONEXISTENCE_SENTINEL_PROOF,
   MOCK_UNKNOWN_REASONS,
   MOCK_XRP_PAYMENT_PROOF,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AttestationTimeline } from '../src/AttestationTimeline.js'
 import { ProofDetail } from '../src/ProofDetail.js'
 import {

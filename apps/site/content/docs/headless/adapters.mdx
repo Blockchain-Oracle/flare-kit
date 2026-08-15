@@ -1,0 +1,171 @@
+---
+title: Adapters
+description: The seam between the lifecycle and a chain — reads that return protocol truth, builders that return unsigned calls, and an executor the host injects. Core never holds a key.
+breadcrumb: ['Docs', 'Headless', 'Adapters']
+importLine: "import { makeVaultAdapter, makeBridgeAdapter } from '@flarekit-dev/core'"
+---
+
+The lifecycle in [The operation lifecycle](/docs/headless/lifecycle) is pure
+and knows nothing about any chain. Adapters are the seam where it meets one.
+An adapter is small on purpose: it reads, and it builds unsigned calls. It does
+not sign, broadcast, poll or decide.
+
+## The shape
+
+Every contract-facing adapter in this package has the same three parts.
+
+```ts
+import { makeVaultAdapter, type VaultAdapter } from '@flarekit-dev/core'
+
+const adapter = makeVaultAdapter(publicClient, vaultConfig)
+
+adapter.config // the registry entry it was built for
+adapter.reads // pure chain reads, no key
+adapter.writes // pure builders of structured, unsigned calls
+```
+
+**Reads** return what the chain says, and only that. A read that the chain
+cannot answer throws; it never returns a plausible zero. `VaultReads.claimable`
+takes `now` explicitly so a withdrawal still inside its waiting period is
+reported as waiting rather than resolved to a false success.
+
+**Writes** return a structured call, tagged with the ABI that encodes it:
+
+```ts
+const call = adapter.writes.deposit(assets, receiver)
+// { protocol, address, functionName, args, label }
+
+// The signing edge — the host's onSubmit, a script, an agent with its own key —
+// resolves the ABI and submits. Core is not involved.
+await walletClient.writeContract({ ...call, abi: vaultAbiFor(call.protocol) })
+```
+
+The `label` on a call is the human sentence that ends up on the operation
+spine, so the description of what was signed comes from the same object that
+was signed.
+
+**Planning** is separate from both. The plan builders take an adapter or its
+reads plus an intent, and return either a plan or a named refusal —
+`buildDepositPlan`,
+`buildWithdrawPlan`, `buildBridgePlan`, `buildRedeemPlan`,
+`buildDelegationPlan`, `buildRewardsClaimPlan`, `buildGaslessPlan`,
+`buildSwapPlan`, `planStake`. A refusal is a value with a reason, not an
+exception a UI has to catch.
+
+## The adapters in core
+
+**FAssets mint and redeem** do not use a `make…Adapter`; the kit itself is the
+seam. `createFlareKit` takes the readers it needs and nothing else:
+
+```ts
+import { createFlareKit } from '@flarekit-dev/core'
+
+const kit = await createFlareKit({
+  client, // ChainStateReader & RawCallReader — viem's PublicClient fits
+  chainId: 114,
+})
+```
+
+An `XrplClient` and an `XrpPaymentProofRetriever` can be supplied too; without
+them the kit builds them from the network registry —
+`createXrplClient` against the chain's XRPL endpoint, and `createFdcClient`
+over the `xrpPaymentFamily` source the family table lists for that network.
+If protocol state cannot be read, `createFlareKit` throws `KIT_UNAVAILABLE`. It
+does not start in a degraded state, and it never substitutes a simulation.
+
+**Swap and liquidity** need one call, so the seam is one method:
+`SwapReader` is structurally viem's `readContract`. Quoting goes through the
+router that guards the swap, because only the router can say what a swap will
+return; a pair with no pool is a first-class `no_route` rather than a zero.
+
+**Vaults** — `makeVaultAdapter(client, config)`, over the vault registry from
+`@flarekit-dev/contracts`. Reads cover the rate, previews, share and asset
+balances, both allowances and availability. Writes cover approve, deposit,
+`requestWithdraw` on a `'delayed' | 'instant'` route, and `claim`.
+`withdrawalPhase` turns a pending withdrawal into
+`'none' | 'waiting' | 'claimable' | 'claimed'`.
+
+**Bridge** — `makeBridgeAdapter(src, dst, route)` takes two clients, because a
+cross-chain operation is read on both ends. Reads include `peer`, `quoteFee`,
+`quoteReceive` and the destination reads `delivery` and `redemption`. Writes
+are `approveAsset` and `send`; `buildSendParam` shapes the parameters.
+
+**Gasless** — `makeGaslessAdapter(client, deployment)`. Alongside `reads` and
+`writes` it carries the `relayer` endpoint and a `relay(req)` method returning
+a `RelayReceipt`. `accepted` on that receipt means the relayer took the job. It
+never means the money moved: the transfer reaches `succeeded` only from
+`reads.paymentSince`.
+
+**Delegation** — `makeDelegationAdapter(client, deployment)`. One `read` for
+the whole position (native and wrapped balance, mode, delegates, vote power)
+and builders for wrap, unwrap, `delegate`, `batchDelegate`,
+`delegateExplicit` and `undelegateAll`.
+
+**Rewards** — `makeRewardsAdapter(client, deployment, fetchImpl?)`. `read`
+returns the current epoch, the claimable epochs, and the FTSO, RNat, FlareDrop
+and staking reward state. Builders exist per claim kind, plus `fetchFtsoProof`,
+which returns `null` when the proof is unavailable rather than inventing one.
+
+**x402** is an HTTP seam, not a contract one: `parseChallenge` reads a `402`
+body into an `X402Challenge`, `encodeXPayment` produces the header, and
+`readXPaymentResponse` reads the settlement back out.
+
+**Staking** is the one capability core cannot execute at all — see below.
+
+## Injecting your own executor
+
+Flare staking is a cross-chain round trip: C-chain to P-chain, delegate on the
+P-chain, then back, plus a C-chain reward claim. Those legs cannot be signed by
+a viem-only runtime, so core ships the shape and not an implementation.
+
+```ts
+import type { PChainStakeExecutor, StakeIntent } from '@flarekit-dev/core'
+
+interface PChainStakeExecutor {
+  getPAddress(): Promise<string>
+  transferToP(amount: bigint): Promise<{ txId: string }>
+  delegate(intent: StakeIntent): Promise<{ txId: string }>
+  transferToC(amount: bigint): Promise<{ txId: string }>
+  claimStakingReward(
+    recipient: `0x${string}`,
+    amount: bigint,
+    wrap: boolean,
+  ): Promise<{ txHash: `0x${string}` }>
+}
+```
+
+A host fulfils this seam with an SDK-backed implementation of its own. The
+published packages depend only on the shape. The bounds a plan is checked
+against are read live rather than assumed:
+
+```ts
+import { readStakeLimits } from '@flarekit-dev/core'
+
+const limits = await readStakeLimits(client, verifier)
+// { minAmount, maxAmount, minDuration, maxDuration }
+```
+
+All four getters are read together, and any one that throws rejects the whole
+snapshot. There is no per-field fabricated zero.
+
+## Signing is always somebody else's job
+
+The same rule holds for every capability, staking included. Core builds; the
+edge signs. That edge might be a host app's `onSubmit`, a script, or an agent
+with its own key — read and plan tools need no key at all.
+
+## Network is configuration
+
+No address appears in an adapter. Deployments, vault entries, bridge routes and
+staking configuration all come from `@flarekit-dev/contracts` and are passed in.
+Switching from Coston2 to Flare mainnet is a different registry entry, not a
+different code path.
+
+## What it will not do
+
+An adapter will not sign, will not broadcast, and will not retry. It will not
+smooth over a read it could not perform — an unanswerable read throws rather
+than returning a default, because a fabricated zero is indistinguishable from a
+real balance of nothing. And it will not fall back to a mock: mock adapters
+exist, but a caller constructs them explicitly. See
+[The mock kit](/docs/headless/mock).

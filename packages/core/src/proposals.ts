@@ -1,6 +1,6 @@
 // packages/core/src/proposals.ts
 import type { PublicClient } from 'viem'
-import { type GovernanceDeployment, GOVERNOR_ABI, POLLING_FTSO_ABI } from '@flare-kit/contracts'
+import { type GovernanceDeployment, GOVERNOR_ABI, POLLING_FTSO_ABI } from '@flarekit-dev/contracts'
 import type { GovernanceVoteReads } from './governance-adapter.js'
 import {
   mapProposalState,

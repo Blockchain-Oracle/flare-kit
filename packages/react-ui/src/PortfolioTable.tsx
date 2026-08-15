@@ -6,7 +6,7 @@ import {
   isObserved,
   isPortfolioEmpty,
   truncateAddress,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AssetLogo } from './primitives/AssetLogo.js'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'

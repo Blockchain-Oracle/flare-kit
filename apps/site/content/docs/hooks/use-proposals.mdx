@@ -1,0 +1,111 @@
+---
+title: useProposals
+description: Discover governance proposals and read one in detail, where a failed read and an empty catalogue are two different answers and never share a shape.
+breadcrumb: ['Docs', 'Hooks', 'useProposals']
+importLine: "import { useProposals } from '@flarekit-dev/react'"
+---
+
+`useProposals` discovers governance proposals and reads any one of them in
+detail. Every read is keyless; nothing here signs, and there is no write path to
+sign with.
+
+The whole hook is organised around one distinction: **a read that failed and a
+catalogue that is genuinely empty are different facts**, and they never share a
+representation.
+
+## Live
+
+The readout below is the hook's actual return value on this render, running
+against the mock governance adapter pointed at the Flare mainnet deployment.
+Proposals are read from mainnet because Coston2 hosts none — that is a fact about
+the deployment, not a limitation of the hook.
+
+<UseProposalsDemo />
+
+## Usage
+
+```tsx
+import { governanceFor } from '@flarekit-dev/contracts'
+import { useProposals } from '@flarekit-dev/react'
+import { ProposalCatalogue } from '@flarekit-dev/react-ui'
+
+function Proposals({ account, publicClient, onOpen }) {
+  const { proposals, loading, error } = useProposals({
+    readDeployment: governanceFor('flare'), // proposals live on mainnet
+    publicClient, // keyless throughout
+    account,
+  })
+
+  return (
+    <ProposalCatalogue
+      proposals={proposals} // undefined = pending or failed; [] = confirmed-empty
+      loading={loading}
+      error={error}
+      networkLabel="Flare mainnet"
+      onSelect={onOpen}
+    />
+  )
+}
+```
+
+## Parameters
+
+`readDeployment` is the deployment to read proposals from, from
+`@flarekit-dev/contracts`. `publicClient` performs every read and needs no key.
+`account` scopes the reads that depend on who is asking.
+
+## Return type
+
+`proposals` carries the distinction the hook exists for:
+
+| Value | Means |
+| --- | --- |
+| `undefined` | not yet loaded, **or** the discovery read failed — see `error` |
+| `[]` | discovery genuinely succeeded and found zero proposals |
+| non-empty | observed proposals |
+
+A failed discovery is never overwritten with a fabricated `[]`. That is the
+single most important line in this hook: an empty list is a claim about the
+chain, and the hook only makes it when the chain actually said so.
+
+`loading` stays `true` until the discovery read for the **current** dependencies
+completes, and returns to `true` whenever `readDeployment` or `account` changes —
+so rows read from the previous network are never presented as a fresh result
+under the new one.
+
+`error` is the last failed read's message.
+
+`detailOf(id, source)` returns a proposal's detail. It is `undefined` until the id
+has both been discovered **and** its detail read has landed. A discovered proposal
+whose detail read failed returns the honest `ProposalUnknown` shape rather than a
+fabricated tally. It takes `source` alongside `id` because ids are only unique
+*within* a source — the catalogue's own `onSelect(id, source)` already supplies
+both.
+
+## States
+
+The catalogue renders five: `loading` while discovery is in flight; `listed` when
+proposals were observed; `confirmed-empty` when discovery succeeded and returned
+nothing; `unavailable` when the read failed, stated as unreadable rather than
+wearing the shape of an empty catalogue; and `stale`, where a later refresh failed
+while a good earlier read is still held, so the rows are shown and labelled as
+previously read.
+
+The detail view renders three: the full proposal, `unknown` where the detail read
+failed and every tally renders `—`, and `nothing-read` where the view was opened
+before any read landed.
+
+## Mock to live
+
+`createMockGovernanceAdapter({}, 'flare')` returns a labelled client paired with
+the real mainnet deployment. Going live is replacing that client with your own
+`publicClient` — the hook code does not change.
+
+## What it will not do
+
+It will not invent a proposal, a tally, or an empty list. It will not present a
+failed read as an empty catalogue, or a stale read as a fresh one. It will not
+sign, because it has nothing to sign.
+
+`castVote` is **carried, and declared unbuilt**. Reading a proposal is implemented;
+voting on one is not, and this page does not imply otherwise.

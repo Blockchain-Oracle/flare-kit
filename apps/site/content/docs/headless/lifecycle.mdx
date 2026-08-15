@@ -1,0 +1,177 @@
+---
+title: The operation lifecycle
+description: One durable record carries an operation from intent to evidence — persisted, non-blocking, and advanced only by reconciliation, which is why there is no Resume button.
+breadcrumb: ['Docs', 'Headless', 'The operation lifecycle']
+importLine: "import type { OperationRecord } from '@flarekit-dev/core'"
+---
+
+Everything `@flarekit-dev/core` does to a mint, a redeem, a swap, a bridge send, a
+delegation or a stake happens to one type: `OperationRecord`. A widget renders
+it, a hook holds it, an agent reads it, and a durable store keeps it. There is
+no second representation of "what is happening", so there is no place for two
+answers to diverge.
+
+## The record
+
+```ts
+import type { OperationRecord } from '@flarekit-dev/core'
+
+interface OperationRecord<TIntent = unknown, TQuote = unknown, TPlan = unknown> {
+  readonly schemaVersion: number
+  readonly id: string
+  readonly capability: string
+  readonly network: number
+  readonly idempotencyKey?: string
+  readonly intent: TIntent
+  readonly quote?: TQuote
+  readonly quoteHistory: readonly TQuote[]
+  readonly plan?: TPlan
+  readonly state: OperationState
+  readonly steps: readonly OperationStep[]
+  readonly evidence: readonly EvidenceItem[]
+  readonly attempts: readonly OperationAttempt[]
+  readonly recovery?: readonly RecoveryAction[]
+  readonly awaiting?: AwaitingDescriptor
+  readonly error?: SerializedError
+  readonly createdAt: number
+  readonly updatedAt: number
+}
+```
+
+Each capability names the three generics and gets its own alias — for the
+direct mint, `DirectMintOperation` is
+`OperationRecord<DirectMintIntent, DirectMintQuote, never>`. The lifecycle code
+below is generic over all of them.
+
+## Intent
+
+An operation begins with what the caller wants, before anything has been
+priced. `createOperation` records it and nothing else:
+
+```ts
+import { createOperation } from '@flarekit-dev/core'
+
+const record = createOperation({
+  capability: 'fassets.directMint',
+  network: 114,
+  intent,
+  now: Date.now(),
+})
+```
+
+The `id` is generated independently of any transaction hash, because one
+operation correlates several — an XRPL payment, an FDC request, a Flare
+transaction. The intent is frozen. A new state is `draft`.
+
+## Quote
+
+A quote is terms, and terms are approved rather than assumed. When a
+re-quote lands, `applyTransition` does not overwrite the old one: it pushes the
+previous quote onto `quoteHistory` and sets the new one. What was shown to the
+person who approved it survives.
+
+Capability code refuses to build an operation on terms that cannot be signed.
+`createDirectMintOperation` throws `QUOTE_NOT_PROCEEDABLE` when
+`quote.canProceed` is false, and `buildPaymentForQuote` throws it again — below
+the protocol minimum there is no argument list that produces a signable
+payment at all.
+
+## Plan
+
+`plan` holds the concrete calls a capability will make, produced by pure
+builder functions rather than by the record itself: `buildSwapPlan`,
+`buildDepositPlan`, `buildBridgePlan`, `buildDelegationPlan`,
+`buildRewardsClaimPlan`, `buildGaslessPlan`, `planStake`. A plan is unsigned
+until exact approval, and core never signs it. See
+[Adapters](/docs/headless/adapters).
+
+## Execution
+
+Execution moves the record along the transition table and stamps the spine.
+`steps` is the operation's spine — one row per real stage, each naming the
+actor that owns it:
+
+```ts
+import { DIRECT_MINT_STEPS, advanceSteps } from '@flarekit-dev/core'
+
+// ['pay-xrpl', 'xrpl-finality', 'fdc-attest', 'execute-mint', 'credit-fasset']
+
+const steps = advanceSteps(record.steps, { done: 2, current: 'active' }, now)
+```
+
+`advanceSteps` never regresses a step. Protocol readings arrive duplicated, out
+of order and backfilled, and a later, poorer reading must not walk the spine
+backwards past evidence already held.
+
+## Evidence
+
+`evidence` is the set of identifiers this operation correlates — the XRPL
+transaction, the ledger, the payment reference, the FDC request, round and
+proof, the Flare transaction and block, the executor and recipient addresses,
+the reservation id, the agent vault. `mergeEvidence` is idempotent by
+`(kind, value)`, keeps the earliest `observedAt`, and accepts a link a later
+sighting supplies without revising when the identifier was first seen.
+
+A refused transition still absorbs the evidence its event carried, so a
+duplicate, late or backfilled protocol event can never cost an identifier.
+
+## Recovery
+
+Two fields carry a long wait honestly. `awaiting` is an `AwaitingDescriptor` —
+the actor, the reason, when the wait began, an expected range, and
+`availableAt` where the protocol states an exact end. It is absent when the
+wait has no knowable end, which is a real answer rather than a missing one.
+
+`recovery` is the list of `RecoveryAction`s that are safe right now. An empty
+list is also a real answer: it means nothing is safe yet, and the surface says
+so rather than offering a button that could pay twice. The load-bearing field
+on an action is `movesNewValue` — false means the action completes the
+operation from evidence that already exists.
+
+```ts
+import { availableActions, isAvailable } from '@flarekit-dev/core'
+
+const offerable = availableActions(record.recovery, Date.now())
+```
+
+`escalate` is the only path a long wait takes, and it is structurally unable to
+invent a failure: the sole state it can move to is `action_required`, and only
+when a safe action exists. Otherwise it updates `awaiting` and stays put.
+
+Every attempt is appended, never replaced. `appendAttempt` records what the
+attempt reused, whether it moved new value, and its outcome, so the original
+plan and the full history survive a recovery.
+
+## Submitting never blocks
+
+Nothing in this file awaits a chain. `createOperation`, `applyTransition`,
+`advanceSteps`, `escalate` and `appendAttempt` are synchronous pure functions
+over a record. Submitting writes a record and returns; the operation's progress
+is then a property of the chain, not of a promise the UI is holding open. Close
+the tab and the payment still lands.
+
+## Why there is no Resume button
+
+There is no `resume()` in this package. `reconcile` is safe to call at any time
+from any state, and it is the only thing that advances an operation, so opening
+the app and receiving a protocol event are the same code path.
+
+```ts
+// The only way an operation moves forward, whichever kit you hold.
+const advanced = await kit.reconcile(record)
+```
+
+Reconciliation derives the target state from what the chain currently shows
+rather than from what happened last, which makes it idempotent: calling it
+twice with the same reading changes nothing. A Resume button would be a second,
+worse way to do what opening the app already does. See
+[Storage and reconcile](/docs/headless/storage).
+
+## What it will not do
+
+The lifecycle will not report an outcome it has not observed. There is no code
+path from a timeout to `failed`, no path from `submitted` to a success claim,
+and no branch on which a direct mint offers to pay again — `planRecovery`
+returns waits and one action that reuses the existing payment and proof, and
+that is the whole matrix. It will not persist a secret either: the store
+refuses one at the boundary rather than trusting the caller.

@@ -14,7 +14,7 @@ import {
   walletUnavailable,
   wrongNetwork,
   type PendingOperation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { AccountSheet } from '../src/AccountSheet.js'
 import { OperationTimeline } from '../src/OperationTimeline.js'
 import { PendingTray } from '../src/PendingTray.js'

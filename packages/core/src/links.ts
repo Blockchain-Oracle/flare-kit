@@ -6,7 +6,7 @@ import {
   underlyingExplorerAccountUrl,
   underlyingExplorerLedgerUrl,
   underlyingExplorerTxUrl,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import type { ChainFamily } from './account.js'
 import { type EvidenceItem, type EvidenceKind, evidence } from './evidence.js'
 

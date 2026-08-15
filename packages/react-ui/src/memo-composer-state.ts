@@ -1,5 +1,5 @@
 // packages/react-ui/src/memo-composer-state.ts
-import type { MemoPlanResult, MemoPlanWarning, MemoRefusalCode, OperationRecord } from '@flare-kit/core'
+import type { MemoPlanResult, MemoPlanWarning, MemoRefusalCode, OperationRecord } from '@flarekit-dev/core'
 import type { CardNote, Cta } from './card-chrome.js'
 
 /**

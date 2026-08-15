@@ -26,7 +26,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http, formatUnits, getAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { delegationFor, chainFor, rewardsFor } from '@flare-kit/contracts'
+import { delegationFor, chainFor, rewardsFor } from '@flarekit-dev/contracts'
 import {
   makeDelegationAdapter, delegationAbiFor, buildDelegationPlan, reconcileDelegation,
   makeRewardsAdapter, rewardsAbiFor, buildRewardsClaimPlan, reconcileClaim,

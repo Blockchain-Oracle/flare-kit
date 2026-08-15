@@ -3,7 +3,7 @@ import type {
   DeploymentSettings,
   PersonalAccountState,
   SmartAccountsDeployment,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import type { Glyph, Tone } from './state-visuals.js'
 
 /**

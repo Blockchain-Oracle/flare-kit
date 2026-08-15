@@ -1,4 +1,4 @@
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { smartAccountsFor } from '@flarekit-dev/contracts'
 import {
   type OperationRecord,
   type OperationState,
@@ -32,7 +32,7 @@ import { type InstructionObservation, instructionSpine } from './smart-accounts/
  * inventing the one thing this milestone exists to prove.
  *
  * The observed values themselves live in `mock-smart-accounts-observed.ts` and are re-exported
- * here, so `@flare-kit/core`'s public surface is unchanged by the split.
+ * here, so `@flarekit-dev/core`'s public surface is unchanged by the split.
  */
 
 export * from './mock-smart-accounts-observed.js'

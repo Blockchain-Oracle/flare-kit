@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { DISTRIBUTION_ABI, REWARD_MANAGER_ABI, RNAT_ABI, VALIDATOR_REWARD_MANAGER_ABI, rewardsFor, stakingFor } from '@flare-kit/contracts'
+import { DISTRIBUTION_ABI, REWARD_MANAGER_ABI, RNAT_ABI, VALIDATOR_REWARD_MANAGER_ABI, rewardsFor, stakingFor } from '@flarekit-dev/contracts'
 import { makeRewardsAdapter, rewardsAbiFor } from '../src/rewards-adapter.js'
 
 // M10 Task 7 + M11 Task 8: the rewards adapter — now FOUR DISTINCT claim reads + call

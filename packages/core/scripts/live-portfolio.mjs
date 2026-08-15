@@ -15,7 +15,7 @@
  */
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { createPublicClient, http } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import {
   buildActivity,
   createAccountContext,

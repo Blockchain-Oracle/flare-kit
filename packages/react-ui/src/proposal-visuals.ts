@@ -1,4 +1,4 @@
-import type { ProposalSource, ProposalState } from '@flare-kit/core'
+import type { ProposalSource, ProposalState } from '@flarekit-dev/core'
 import type { Glyph, Tone } from './state-visuals.js'
 
 /**

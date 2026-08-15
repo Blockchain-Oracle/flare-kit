@@ -1,0 +1,118 @@
+---
+title: ActivityTable
+description: Every operation this installation has started, with the XRP Ledger, Data Connector and Flare events behind each one kept as three separate identifiers rather than collapsed into a single transaction hash.
+breadcrumb: ['Docs', 'Components', 'ActivityTable']
+importLine: "import { ActivityTable } from '@flarekit-dev/react-ui'"
+---
+
+`ActivityTable` lists the operations you have started and keeps their underlying
+events reachable. A mint's ledger payment, its attestation round and its Flare
+execution are three identifiers on three systems, so they render as three groups
+of chips — never as one "transaction hash" column, because for this operation
+there is no such thing.
+
+## Live
+
+The preview renders the gallery's own cases — activity feeds built from the
+mock's own operation records, never re-authored here. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the table never actually reaches.
+
+<ActivityTableDemo />
+
+## Usage
+
+Mount it under a `FlareProvider`. `useActivity` reads the operation registry, so
+the feed, the filtered view and the export all come from one source.
+
+```tsx
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, useActivity } from '@flarekit-dev/react'
+import { ActivityTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+function History() {
+  const { feed, entries, exportError, exportJson } = useActivity()
+
+  return (
+    <ActivityTable
+      feed={feed}
+      entries={entries}
+      exportError={exportError}
+      onExport={() => exportJson()}
+    />
+  )
+}
+
+export function Activity() {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <History />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'feed', type: 'ActivityFeed', description: 'The whole feed, including its coverage claim and whether history is still being backfilled. Leave it undefined and the table can only be loading.' },
+  { name: 'entries', type: 'readonly ActivityEntry[]', description: 'The filtered view, when a filter is applied. Defaults to every entry. Passing fewer than the feed holds is what lets the empty row say "no operation matches this filter" instead of "you have no history".' },
+  { name: 'loading', type: 'boolean', description: 'True while the registry is still being read. Renders skeleton rows only when there is no feed yet.' },
+  { name: 'exportError', type: 'string', description: 'Why the last export was refused. Rendered with "No file was written", because a partial file would look complete to whoever opened it later.' },
+  { name: 'onExport', type: '() => void', description: 'Called when the reader asks for the JSON export. Omit it and no export control is rendered.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+A four-column table — Operation, State, Underlying events, Updated. The state
+cell is a chip carrying a glyph and a word as well as a colour, so `Submitted`
+reads as submitted and nothing else. The events cell groups evidence under
+`XRP Ledger`, `Data Connector` and `Flare`, each chip linking out to the system
+that actually holds the record; an operation with nothing recorded yet says so.
+
+Around the table sit the honest edges: a backfilling notice while older
+operations are still being reconciled, the feed's own coverage reason whenever
+coverage is incomplete, and the export refusal when one happens.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the registry is still being read. Skeleton rows, no claims.
+- **empty** — the feed arrived and holds nothing: you have not started an
+  operation on this device.
+- **ready** — operations with their evidence, grouped by the system that holds
+  it.
+- **backfilling** — history is still being reconciled, and the list will grow.
+  Empty here means "nothing found yet", not "nothing exists".
+- **partial coverage** — `entries` is narrower than the feed, and the table says
+  which limit applies rather than passing the narrow view off as everything.
+- **export error** — the export was refused, the reason is shown, and no file was
+  written.
+
+## Mock to live
+
+`ActivityTable` renders whatever `useActivity` derived from the operation
+registry on the provider, so moving from the mock to a live network swaps the
+kit, not the screen. Addresses come from `@flarekit-dev/contracts`; network is
+configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not collapse an operation's three systems into one identifier, and it
+will not describe `Submitted` as done. When an outcome is not yet confirmed it
+stays unconfirmed rather than being called failed. An export that cannot be
+produced in full is refused outright — you get the reason, not a partial file.

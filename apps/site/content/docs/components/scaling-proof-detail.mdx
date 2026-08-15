@@ -1,0 +1,151 @@
+---
+title: ScalingProofDetail
+description: One scaling-feed proof, with the two questions kept apart — did the proof arrive, and does the chain accept it — and a verdict that stays three-valued.
+breadcrumb: ['Docs', 'Components', 'ScalingProofDetail']
+importLine: "import { ScalingProofDetail } from '@flarekit-dev/react-ui'"
+---
+
+`ScalingProofDetail` shows one anchor feed's merkle proof for one voting round,
+and the outcome of checking it against `FtsoV2`. It asks two questions in order
+and never lets one answer the other: *did the proof arrive*, from a
+data-availability host, and *does the chain accept it*, from the Relay's
+published root. "No proof was served" is not a verdict on the value.
+
+## Live
+
+The preview runs the gallery's own states. The state switcher walks the cases
+the surface was verified against, so nothing here shows a state the panel never
+actually reaches.
+
+<ScalingProofDetailDemo />
+
+## Usage
+
+Retrieve with `useAnchorProof`, which fetches the leaves and verifies each one,
+then hand the panel the feed, its provenance and the verification.
+
+```tsx
+import { FEED_CATEGORY, encodeFeedId, isObserved, observe } from '@flarekit-dev/core'
+import type { RoundReader } from '@flarekit-dev/core'
+import { useAnchorProof } from '@flarekit-dev/react'
+import { ScalingProofDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const FLR_USD = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
+
+export function Proof({ reader, votingRoundId }: { reader: RoundReader; votingRoundId: bigint }) {
+  const { data, loading, refresh } = useAnchorProof({
+    reader,
+    chainId: 114,
+    feedIds: [FLR_USD],
+    votingRoundId,
+  })
+
+  // One feed out of the batch, carrying the batch's own provenance.
+  const retrieved = data && isObserved(data.retrieved) ? data.retrieved : undefined
+  const found = retrieved?.value.found[0]
+
+  return (
+    <ScalingProofDetail
+      feedName="FLR/USD"
+      votingRoundId={votingRoundId}
+      loading={loading}
+      now={Date.now()}
+      onRetry={refresh}
+      {...(retrieved && found
+        ? {
+            availability: 'retrieved' as const,
+            anchor: observe(found, retrieved.source, retrieved.observedAt),
+          }
+        : {})}
+      {...(data?.verifications[0] ? { verification: data.verifications[0] } : {})}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'feedName', type: 'string', required: true, description: 'Which feed this is about, whatever the outcome. Shown in the header even when nothing was retrieved.' },
+  { name: 'votingRoundId', type: 'bigint', required: true, description: 'Which round this is about. Also stated regardless of outcome, so an empty panel still names what was asked.' },
+  { name: 'availability', type: "'retrieved' | 'pending' | 'unavailable' | 'could_not_ask'", description: 'How the retrieval went, classified by the caller against the Relay’s root. Omit it while loading: every member asserts a terminal answer, and pending in particular claims the round is finalized — a fact about the chain, not about a request still in flight.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'The read is still running. Nothing is asserted about the round yet.' },
+  { name: 'anchor', type: 'Observation<AnchorFeedWithProof>', description: 'The feed body and its proof nodes, wrapped in the observation that carries who served them and when. Present exactly when availability is retrieved.' },
+  { name: 'verification', type: 'VerificationResult', description: 'Present once the chain has actually been asked. Absent means nobody asked, and the panel says so rather than showing a verdict.' },
+  { name: 'reason', type: 'string', description: 'Why the proof did not arrive, in the host’s or the transport’s own words. Used by the unavailable and could_not_ask notes.' },
+  { name: 'now', type: 'number', required: true, description: 'The clock, for the proof provider’s freshness. Never used to stamp a check time — that comes from the verification’s own observedAt.' },
+  { name: 'onRetry', type: '() => void', description: 'Offered on pending and could_not_ask, the two outcomes a second request can change. Not offered when the host answered and had nothing.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel headed by the feed and the round, with a chip for how the retrieval
+went. Under it: the committed value at full precision with its decimals and
+turnout in BIPS, the proof provider as a source chip, and the proof's sibling
+nodes as evidence chips. When the chain has been asked, it also names
+`FtsoV2.verifyFeedData` and the time the check was made — both of which stay off
+the screen entirely until somebody actually asks, because "checked at" beside an
+unverified proof is an unasked question rendered as a completed one.
+
+The proof provider and the Relay are shown as two different sources, and only
+the second is on chain. A retrieved proof is a provider's claim until
+`verifyFeedData` accepts it.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the read is running; nothing is asserted about the round.
+- **retrieved and proven on chain** — the proof arrived and `verifyFeedData`
+  returned true.
+- **could not be checked** — the check did not complete, and the revert reason
+  is kept verbatim, `merkle proof invalid` here. The value is neither proven nor
+  disproven.
+- **verification failed** — the chain returned a definite no. Rare on this path,
+  and visually distinct from the case above for exactly that reason.
+- **retrieved, nothing has asked the chain yet** — the proof is here, no verdict
+  exists, and none is shown.
+- **single-leaf round** — a round whose tree has one leaf needs no siblings, so
+  an empty proof array is legitimate and verifies. It is not a truncated proof.
+- **proof pending** — the round is finalized and the host has not indexed it
+  yet. A wait, not an absence.
+- **proof unavailable** — the host answered and had nothing for this feed in
+  this round. Whether the round was finalized is a separate question the Relay
+  answers.
+- **host could not be asked** — the request did not complete. Silence from a
+  provider says nothing about the round.
+
+## Mock to live
+
+The panel reads nothing itself; it renders what a `RoundReader` produced. Moving
+from the mock to a live network swaps the reader, not the screen. Addresses come
+from `@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
+import { createPublicClient, http } from 'viem'
+
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. The component does not change.
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+## What it will not do
+
+It will not turn a revert into a `false`. `FtsoV2.verifyFeedData` reverts on a
+bad proof rather than returning false — a value off by one, a shifted round, a
+truncated proof and an empty proof array all revert `merkle proof invalid` on
+Coston2 — so coercing that to a boolean would put "this is not proven" on screen
+when the truth is "we could not check this". The verdict stays three-valued and
+the three never render alike.
+
+It will not treat a missing proof as a failed one, and it will not present a
+retrieved proof as verified. If nobody asked the chain, it says nobody asked.

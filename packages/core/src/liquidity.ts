@@ -1,5 +1,5 @@
 // packages/core/src/liquidity.ts
-import { type Address, type DexRegistry, dexFor } from '@flare-kit/contracts'
+import { type Address, type DexRegistry, dexFor } from '@flarekit-dev/contracts'
 import {
   type OperationRecord,
   type OperationStep,

@@ -4,7 +4,7 @@ import {
   PCHAIN_STAKE_MIRROR_ABI,
   PCHAIN_STAKE_MIRROR_VERIFIER_ABI,
   VALIDATOR_REWARD_MANAGER_ABI,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 /**
  * The stake adapter — the EVM read seam for the M11 staking op plus the P-chain

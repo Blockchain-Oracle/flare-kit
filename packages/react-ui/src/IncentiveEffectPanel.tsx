@@ -1,5 +1,5 @@
-import type { IncentiveEffect } from '@flare-kit/core'
-import { amount, evidence } from '@flare-kit/core'
+import type { IncentiveEffect } from '@flarekit-dev/core'
+import { amount, evidence } from '@flarekit-dev/core'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { Note } from './primitives/Note.js'

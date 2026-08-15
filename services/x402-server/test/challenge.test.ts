@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { createWalletClient, http, type Address, type Hex, type PublicClient, type WalletClient } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { x402For } from '@flare-kit/contracts'
-import { eip3009Domain, encodeXPayment, parseChallenge, signAuthorization } from '@flare-kit/core'
+import { x402For } from '@flarekit-dev/contracts'
+import { eip3009Domain, encodeXPayment, parseChallenge, signAuthorization } from '@flarekit-dev/core'
 import {
   buildChallenge,
   decodePaymentHeader,

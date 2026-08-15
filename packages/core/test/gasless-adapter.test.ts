@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { gaslessFor } from '@flare-kit/contracts'
+import { gaslessFor } from '@flarekit-dev/contracts'
 import { makeGaslessAdapter } from '../src/gasless-adapter.js'
 
 const DEPLOYMENT = gaslessFor('coston2')!

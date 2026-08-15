@@ -1,5 +1,5 @@
 // packages/react-ui/src/gasless-card-state.ts
-import type { GaslessError, GaslessPlanResult, OperationRecord } from '@flare-kit/core'
+import type { GaslessError, GaslessPlanResult, OperationRecord } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 import type { Leg } from './primitives/LegTimeline.js'
 

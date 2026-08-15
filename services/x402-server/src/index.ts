@@ -1,8 +1,8 @@
 import express from 'express'
 import { createPublicClient, createWalletClient, http, type Hex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { FLARE_NETWORKS, x402For, type FlareNetworkKey } from '@flare-kit/contracts'
-import { eip3009Domain } from '@flare-kit/core'
+import { FLARE_NETWORKS, x402For, type FlareNetworkKey } from '@flarekit-dev/contracts'
+import { eip3009Domain } from '@flarekit-dev/core'
 import {
   buildChallenge,
   encodePaymentResponse,
@@ -17,7 +17,7 @@ import {
  * marketplace. `GET /api/demo` returns `402`; with an `X-Payment` header it verifies +
  * settles the EIP-3009 authorization via the X402Facilitator and serves an obviously
  * synthetic payload. The operator key is read from `X402_PRIVATE_KEY` — never logged,
- * never in any response. Public config comes from `@flare-kit/contracts`.
+ * never in any response. Public config comes from `@flarekit-dev/contracts`.
  */
 
 const NETWORK = (process.env.X402_NETWORK ?? 'coston2') as FlareNetworkKey

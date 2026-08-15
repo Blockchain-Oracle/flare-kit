@@ -60,7 +60,7 @@ import {
   smartAccountsFor,
   totalCallValue,
   xrpPaymentFamily,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   FDC_PROTOCOL_ID,
   assetManagerAbi,
@@ -69,7 +69,7 @@ import {
   masterAccountControllerAbi,
   registryFor,
   sourceFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-15-coston2-live-memo.json`

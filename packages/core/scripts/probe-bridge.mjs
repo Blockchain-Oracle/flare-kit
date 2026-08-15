@@ -6,12 +6,12 @@
 //
 //   node packages/core/scripts/probe-bridge.mjs
 //
-// Everything here is later formalised into @flare-kit/contracts (Task 2); the probe
+// Everything here is later formalised into @flarekit-dev/contracts (Task 2); the probe
 // inlines the addresses/EIDs/ABI it is verifying, on purpose — it is the thing that
 // verifies them before they become the registry's source of truth.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http, erc20Abi, pad, numberToHex, getAddress } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-11-m8-bridge-probe.json`

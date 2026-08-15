@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { delegationFor } from '@flare-kit/contracts'
+import { delegationFor } from '@flarekit-dev/contracts'
 import { type DelegationReads, makeDelegationAdapter } from '../src/delegation-adapter.js'
 import { type DelegationIntent, buildDelegationPlan } from '../src/delegation.js'
 

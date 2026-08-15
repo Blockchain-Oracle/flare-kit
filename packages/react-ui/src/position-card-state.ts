@@ -1,5 +1,5 @@
 // packages/react-ui/src/position-card-state.ts
-import { type Amount, type RemoveLiquidityOperation, type RemoveLiquidityQuoteResult, amount, formatExact } from '@flare-kit/core'
+import { type Amount, type RemoveLiquidityOperation, type RemoveLiquidityQuoteResult, amount, formatExact } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 // IN_FLIGHT, Cta and CardNote now live once in ./card-chrome.js (M7-R11).

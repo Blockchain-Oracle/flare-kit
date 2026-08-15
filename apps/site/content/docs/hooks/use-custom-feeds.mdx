@@ -1,0 +1,126 @@
+---
+title: useCustomFeeds
+description: The custom feeds registered on one network, read as a dated observation — where an empty set is a real reading of a network that has none, not an error and not a missing feature.
+breadcrumb: ['Docs', 'Hooks', 'useCustomFeeds']
+importLine: "import { useCustomFeeds } from '@flarekit-dev/react'"
+---
+
+`useCustomFeeds` reads the custom feeds a network actually serves. It takes the
+reader and the chain id positionally — there is nothing else to configure,
+because the set is a property of the deployment.
+
+The set is network-specific and one of the two networks is legitimately empty:
+Coston2 has none, Flare Mainnet has three. So an empty result arrives as an
+`Observation` carrying the network it was read on, which lets a surface say
+*empty, read on Flare Testnet Coston2 just now, and it was empty on 2026-08-04
+too* rather than leaving a reader unsure whether the read failed.
+
+A custom feed is not a protocol feed. A protocol feed's value is what the FTSO
+providers voted on; a custom feed's value comes from a contract somebody else
+deployed and governance approved. Both are real, they are not the same claim,
+and every entry carries `trust: 'custom'` as a field so the distinction survives
+being merged into a catalogue row.
+
+## Live
+
+The readout is the hook's actual return value, running the real
+`readCustomFeeds` against a mock reader shaped like Flare Mainnet — the three
+feeds `getSupportedFeedIds()` listed there on 2026-08-04.
+
+<UseCustomFeedsDemo />
+
+## Usage
+
+```tsx
+import type { RoundReader } from '@flarekit-dev/core'
+import { useCustomFeeds } from '@flarekit-dev/react'
+import { CustomFeedReview } from '@flarekit-dev/react-ui'
+
+export function CustomFeeds({ reader }: { reader: RoundReader }) {
+  const { data, loading, error } = useCustomFeeds(reader, 14)
+
+  if (error) return <p>The set could not be read: {error}</p>
+  return <CustomFeedReview feeds={data} loading={loading} now={Date.now()} />
+}
+```
+
+Values are a separate read. `useCustomFeeds` enumerates; `useFeeds` prices —
+custom feeds are readable through `FtsoV2.getFeedsById` like any other, and that
+is the only path that reaches them.
+
+## Parameters
+
+Positional, not an options object.
+
+<PropsTable rows={[
+  { name: 'reader', type: 'RoundReader', required: true, description: 'First argument. Reads FtsoV2.getSupportedFeedIds() on the network given.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Second argument. Selects the deployment, the network name carried on the observation, and which dated prior observation is attached.' },
+]} />
+
+## Return type
+
+`ObservedRead<Observation<CustomFeedSet>>`, from
+[useObservedRead](/docs/hooks/use-observed-read).
+
+<PropsTable rows={[
+  { name: 'data', type: 'Observation<CustomFeedSet> | undefined', description: 'undefined until the read lands. Source class chain, provider FtsoV2, with the network named — an empty set is still an observation and still dated.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no read has landed. Never how "this network has none" is expressed.' },
+  { name: 'error', type: 'string | undefined', description: 'The enumeration failed. Never an empty set: those are different facts.' },
+  { name: 'refresh', type: '() => void', description: 'Read again. What is held stays until the new read lands.' },
+]} />
+
+Inside `data.value`: `network` and `chainId`, `entries`, and
+`previouslyObserved` — what was seen the last time this project looked, and
+when. Each entry carries `feedId`, `name`, `trust: 'custom'`, and
+`directContractReadable: false`.
+
+That last flag is always `false`, and it is a property of the deployment rather
+than a gap here: `IICustomFeed` declares `feedId()`, mapping a contract to its
+id, and no vendored interface maps an id back to a contract address. So a custom
+feed's value is readable through `FtsoV2` — verified live, `sFLR/USD` returned
+`1128983` at 8 decimals — while its own `calculateFee()` and `getCurrentFeed()`
+are unreachable without an address supplied out of band.
+
+## States
+
+- **loading** — no read has landed.
+- **entries** — the feeds this network serves right now, each flagged as custom.
+- **empty** — a real reading of a network with none. Coston2 genuinely has zero,
+  and the dated `previouslyObserved` sits beside the emptiness rather than
+  standing in for it.
+- **error** — the enumeration call failed. No set is inferred, and the last one
+  read is not quietly re-presented as current.
+
+## Mock to live
+
+```tsx
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
+import { createPublicClient, http } from 'viem'
+
+// Shaped like Coston2: protocol feeds only, no custom ones.
+const reader = createMockFtsoReader()
+
+// Shaped like Flare Mainnet: the three that were registered there.
+const reader = createMockFtsoReader({ customFeedNames: ['sFLR/USD', 'stXRP/USD', 'stFLR/USD'] })
+
+// Live. The hook does not change.
+const reader = createPublicClient({ transport: http(chainFor(14).rpcUrl) })
+```
+
+## What it will not do
+
+It will not enumerate through `FtsoV2.getCustomFeeds()`. That method is declared
+in no vendored interface artifact on either network, yet the deployment answers
+it — and its mainnet answer is wrong twice over: it returns
+`0x000000000000000000000000d1002f3820ad32145b`, a category-`0x00` id with no
+decodable name that is absent from `getSupportedFeedIds()` and reverts on read,
+and it omits `stFLR/USD`, which `getSupportedFeedIds()` does list. Filtering the
+supported set on the category byte yields exactly the three real ones, so that
+is what this does.
+
+It will not render a custom feed as protocol-equivalent, it will not offer a
+route to register one — `addCustomFeeds` is governance-gated and the documented
+route is a New Feed Request the Flare Foundation reviews off chain — and it will
+not report an empty network as a failed read, or a failed read as an empty
+network.

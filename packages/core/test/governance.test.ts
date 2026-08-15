@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address } from 'viem'
-import { governanceFor, type GovernanceDeployment } from '@flare-kit/contracts'
+import { governanceFor, type GovernanceDeployment } from '@flarekit-dev/contracts'
 import { planGovernance, type GovernanceIntent } from '../src/governance.js'
 import type { GovernanceVoteReads } from '../src/governance-adapter.js'
 

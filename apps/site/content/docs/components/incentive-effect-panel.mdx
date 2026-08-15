@@ -1,0 +1,130 @@
+---
+title: IncentiveEffectPanel
+description: What a Fast Update incentive actually bought, measured at the offer's own block — including the case where the delta cannot be attributed to it.
+breadcrumb: ['Docs', 'Components', 'IncentiveEffectPanel']
+importLine: "import { IncentiveEffectPanel } from '@flarekit-dev/react-ui'"
+---
+
+`IncentiveEffectPanel` is the confirmation half of the Fast Update incentive: it
+reports what the chain says an offer bought, not what the offer asked for. The
+measurement is `getRange()` at the offer's own block minus the block before it,
+compared against the `IncentiveOffered` event in that same transaction.
+
+Two readings here would be easy to render as lies and are not. A widening that
+has decayed is the purchase ending, never a failed transaction. And
+`confirmed: false` means the delta **could not be attributed** to this offer —
+another offer landing in the same block moves that number — not that nothing was
+bought.
+
+## Live
+
+The panel has no gallery section of its own, because it has no standalone
+verified state: `IncentiveComposer` mounts it once an effect arrives, and that
+is where the gallery exercises it. So the cases below are `ftso-05`'s three
+effect cases, mounted exactly as the gallery mounts them — the panel is the
+block at the foot of each composer, under the offer terms.
+
+<IncentiveEffectPanelDemo />
+
+## Usage
+
+The panel reads nothing. The caller confirms the effect with
+`confirmIncentiveEffect`, which pins both reads to the offer's block, and hands
+the result over.
+
+```tsx
+import { confirmIncentiveEffect, isEffectExpired } from '@flarekit-dev/core'
+import { IncentiveEffectPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const effect = await confirmIncentiveEffect({
+  reader,
+  chainId: 114,
+  transactionHash: hash,
+  blockNumber: receipt.blockNumber,
+  event: { rangeIncrease, sampleSizeIncrease, offerAmount },
+})
+
+export function Effect() {
+  return (
+    <IncentiveEffectPanel
+      effect={effect}
+      durationSeconds={quote.durationSeconds}
+      expired={isEffectExpired(offeredAtSeconds, quote.durationSeconds, nowSeconds)}
+      nativeAsset="C2FLR"
+      now={Date.now()}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'effect', type: 'IncentiveEffect', required: true, description: "What the chain says the offer bought: the measured range delta, the range and sample-size increases from the transaction's own event, the amount paid, the block it was measured at, and whether the two agree." },
+  { name: 'nativeAsset', type: 'string', required: true, description: "The network's own token — C2FLR on Coston2, FLR on mainnet. The amount paid carries it." },
+  { name: 'now', type: 'number', required: true, description: 'The clock the transaction evidence chip stamps its observation with.' },
+  { name: 'durationSeconds', type: 'bigint', description: 'How long the widening lasts, from the quote that priced it. Omit it and the duration row is not rendered at all, rather than guessed.' },
+  { name: 'expired', type: 'boolean', defaultValue: 'false', description: 'Whether the duration has elapsed. Computed by the caller against a clock, with isEffectExpired — the panel does not decide it from now.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place it.' },
+]} />
+
+## What it renders
+
+A verdict chip, then the measurement: the range delta measured across the
+offer's block, the range increase the event says was bought, the sample-size
+increase, the amount paid in both the native asset and wei, the block it was
+pinned to, and the stated duration when one was supplied. The offer transaction
+appears as an evidence chip. There is no theme prop and no panel chrome — it is
+a block designed to sit inside a composer or a receipt.
+
+## States
+
+Each case below is the composer's, imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **effect confirmed** — the measured delta matches the event. The sample-size
+  increase is `0`, which was the real shape of the mainnet offer this fixture
+  was taken from, and it is rendered as exactly zero with a line saying that is
+  normal rather than a shortfall.
+- **effect expired** — the widening's duration has elapsed and the range has
+  returned to base. A read taken now showing no effect is the incentive ending,
+  and the panel says so.
+- **effect could not be attributed** — the measured delta did not match the
+  event, which happens when another offer lands in the same block. The
+  transaction is on chain and its event says what was bought; only the
+  attribution is unknown, and nothing here calls the offer failed.
+
+## Mock to live
+
+Nothing on this panel changes between mock and live, because it never reads. The
+swap is in the reader handed to `confirmIncentiveEffect`, whose incentive
+manager address comes from `@flarekit-dev/contracts` by chain id.
+
+```tsx
+// From this…
+const effect = await confirmIncentiveEffect({
+  reader: mockReader,
+  chainId: 114,
+  transactionHash,
+  blockNumber,
+  event,
+})
+
+// …to this. The component does not change.
+const effect = await confirmIncentiveEffect({
+  reader: publicClient,
+  chainId: 114,
+  transactionHash,
+  blockNumber,
+  event,
+})
+```
+
+## What it will not do
+
+It will not render a decayed widening as a failed offer, and it will not render
+an unattributable delta as a negative result. It will not compute expiry for
+you, and it will not invent a duration it was not given — an omitted
+`durationSeconds` is a missing row, not a default.

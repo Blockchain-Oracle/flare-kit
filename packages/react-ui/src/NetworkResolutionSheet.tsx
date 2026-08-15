@@ -5,7 +5,7 @@ import {
   type OperationBinding,
   checkBinding,
   describeMismatch,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { Note } from './primitives/Note.js'
 

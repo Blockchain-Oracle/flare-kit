@@ -1,4 +1,4 @@
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { smartAccountsFor } from '@flarekit-dev/contracts'
 import type { PublicClient } from 'viem'
 import { describe, expect, it } from 'vitest'
 import { scanInstructionHistory } from '../src/smart-accounts/watch.js'

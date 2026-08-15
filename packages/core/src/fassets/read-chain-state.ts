@@ -2,7 +2,7 @@ import {
   DIRECT_MINTING_DELAY_STATES,
   assetManagerAbi,
   registryFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { findEvidence } from '../evidence.js'
 import type { XrpPaymentProofRetriever } from '../fdc/families/xrp-payment.js'
 import { toProofStruct } from '../fdc/families/xrp-payment.js'

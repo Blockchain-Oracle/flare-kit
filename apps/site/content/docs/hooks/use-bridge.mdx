@@ -1,0 +1,106 @@
+---
+title: useBridge
+description: The delivery poll for a cross-chain send — it re-reads the destination chain while the operation is in flight, stops the moment it settles, and never concludes delivery from the source receipt.
+breadcrumb: ['Docs', 'Hooks', 'useBridge']
+importLine: "import { useBridge } from '@flarekit-dev/react'"
+---
+
+Cross-chain is the first capability whose outcome lives on a *different* chain
+than the signature. The source receipt proves only that the message was sent, so
+`useBridge` owns the one thing that can settle the question: a poll that re-reads
+the destination chain while the operation is in flight and stops the moment it
+reaches a terminal state. The record it advances is durable, so reopening the app
+re-reads the chain — there is no Resume button.
+
+## Live
+
+Both readouts below are the hook's actual return value, on this render, over the
+same `submitted` send. They differ only in what the destination read answers: the
+first mock adapter finds no `OFTReceived`, the second finds the one the live run
+observed. The first stays in `awaiting_external` with `isSettled: false`; the
+second reaches `succeeded`. Nothing but the destination read moved it.
+
+<UseBridgeDemo />
+
+## Usage
+
+The hook is driven by props, not by context — the host builds the quote and the
+unsigned plan with the core functions and signs through its own wallet, and
+`reconcile` closes over the read-only source and destination clients. Memoise it
+with `useCallback`, or the interval is torn down on every render.
+
+```tsx
+import { type BridgeOperation, reconcileDelivery } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
+import { useCallback } from 'react'
+
+function Delivery({ operation, adapter, guid, sinceBlock }) {
+  const reconcile = useCallback(
+    async (op: BridgeOperation) =>
+      reconcileDelivery(op, await adapter.reads.delivery(guid, sinceBlock), Date.now()),
+    [adapter, guid, sinceBlock],
+  )
+
+  const { operation: live, isSettled, error } = useBridge({ operation, reconcile })
+  return <BridgeCard operation={live ?? operation} networkLabel="Coston2" />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', required: true, description: 'The current operation. The host creates, quotes, plans and submits it with the core functions; the hook only reconciles it. A new operation is adopted by `id`, so re-creating the same record each render never clobbers the poll.' },
+  { name: 'reconcile', type: '(op: T) => Promise<T>', required: false, description: 'Re-read the destination and return the advanced operation. Read-only — it holds no key. Without it the hook polls nothing and returns what it was handed.' },
+  { name: 'pollMs', type: 'number', required: false, description: 'Poll cadence in milliseconds. Defaults to `15000`, because a LayerZero delivery takes minutes rather than seconds.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', description: 'The operation as the last successful read left it. `undefined` only when none was passed in.' },
+  { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state (`succeeded`, `failed`, `cancelled`). False while it is in flight, and false when there is no operation.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last reconcile that threw — a failed READING, never a failed delivery. A later successful poll clears it, so a lagged RPC leaves no sticky failure.' },
+]} />
+
+## States
+
+- **`submitted`** — the send is confirmed on the source chain. That is
+  *awaiting delivery*, never delivered; the destination has not been read yet.
+- **`awaiting_external`** — the poll read the destination and found nothing. The
+  operation carries `awaiting.actor: 'executor'` and the reason, so the surface
+  says who is being waited on rather than showing an unexplained spinner.
+- **`succeeded`** — the destination read found the delivery. This is the only
+  path into it.
+- **`error`** — the read itself failed. The operation stays exactly where the
+  chain last put it; an unknown outcome is never rendered as failed.
+
+For the redeem route, delivery to the composer is one leg of three: reconcile
+with `reconcileBridgeRedeem`, and `succeeded` comes only from the XRPL
+settlement read — the `FAssetRedeemed` event is the redemption *filed*, not XRP
+received.
+
+## Mock to live
+
+The hook and the reconciler are unchanged between the two. What swaps is the
+pair of clients the adapter reads:
+
+```tsx
+// Mock: the real adapter over the two labelled fake clients from the observed run.
+const adapter = createMockBridgeAdapter('coston2-sepolia', { delivered: true })
+
+// Live: the same adapter over your source and destination public clients.
+const adapter = makeBridgeAdapter(coston2, sepolia, routeByKey('coston2', 'coston2-sepolia')!)
+```
+
+The mock refuses a route it never drove live, and it never fabricates a
+delivery: absence is in-flight, and `delivered` is something a caller states
+explicitly.
+
+## What it will not do
+
+It will not conclude anything from the source receipt, and it will not move an
+operation to `failed` because a read failed. It signs and submits nothing — it
+holds no key and never asks for one. It will not keep polling a settled
+operation, and it will not adopt a re-created operation object whose `id` has
+not changed, because that would throw away the progress the poll has already
+made.

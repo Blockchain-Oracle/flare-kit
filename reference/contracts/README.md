@@ -53,6 +53,6 @@ npm --prefix reference/contracts run deploy:x402      # spends real C2FLR
 `deploy:gasless` deploys the forwarder, authorizes the operator as the relayer, and
 reads `fxrp()` back. `deploy:x402` deploys MockUSDT0 + the facilitator, registers
 MockUSDT0 as supported, and mints a demo balance to the payer. Both record every
-address into `deployments/coston2.json`, which `@flare-kit/contracts` reads.
+address into `deployments/coston2.json`, which `@flarekit-dev/contracts` reads.
 
 Public constants (RPC, chainId 114, explorer) live in `hardhat.config.ts`.

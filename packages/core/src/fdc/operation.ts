@@ -1,4 +1,4 @@
-import type { FamilySource } from '@flare-kit/contracts'
+import type { FamilySource } from '@flarekit-dev/contracts'
 import { type EvidenceItem, evidence } from '../evidence.js'
 import {
   type OperationRecord,
@@ -34,8 +34,8 @@ export type AttestationOperation = OperationRecord<AttestationIntent, never, nev
 /**
  * The spine. `verify` is separate from `retrieve` because a proof that arrives
  * and a proof that verifies are two facts, and separate from `consume` because
- * three of the four families have no deployed consumer — a step that is
- * declared absent is honest; a step that silently never runs is not.
+ * not every family has a deployed consumer (the shipped table says which) — a
+ * step that is declared absent is honest; a step that silently never runs is not.
  */
 export const ATTESTATION_STEPS = [
   'prepare',

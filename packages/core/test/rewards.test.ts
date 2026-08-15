@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { rewardsFor } from '@flare-kit/contracts'
+import { rewardsFor } from '@flarekit-dev/contracts'
 import { type FtsoReward, type RewardsReads, makeRewardsAdapter } from '../src/rewards-adapter.js'
 import { type ClaimIntent, buildRewardsClaimPlan } from '../src/rewards.js'
 

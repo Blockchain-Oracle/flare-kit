@@ -4,7 +4,7 @@ import {
   type VaultTypeName,
   VAULT_TYPE,
   masterAccountControllerAbi,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Abi, type PublicClient, hexToString } from 'viem'
 import type { toPaymentProofStruct } from '../fdc/families/payment.js'
 
@@ -12,7 +12,7 @@ import type { toPaymentProofStruct } from '../fdc/families/payment.js'
  * The live reads M13 needs off `MasterAccountController`, and the pure `executeInstruction`
  * call builder — the reads/call-builder seam `governance-adapter.ts` (M12) established.
  *
- * Everything here is READ FRESH. None of it is snapshotted into `@flare-kit/contracts`,
+ * Everything here is READ FRESH. None of it is snapshotted into `@flarekit-dev/contracts`,
  * because none of it is a protocol constant: the operator can retire an XRPL wallet, change
  * a fee, or add a vault, and a plan built on a stale copy would ask a user to sign an XRPL
  * payment that can never dispatch — after the XRP has already left.

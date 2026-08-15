@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { routeByKey } from '@flare-kit/contracts'
+import { routeByKey } from '@flarekit-dev/contracts'
 import type { BridgeAdapter, MessagingFee, SendParam } from '../src/bridge-adapter.js'
 import { quoteBridge } from '../src/bridge-quote.js'
 

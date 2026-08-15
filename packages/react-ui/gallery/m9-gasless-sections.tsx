@@ -5,9 +5,9 @@ import {
   type OperationStep,
   MOCK_EPOCH,
   amount,
-} from '@flare-kit/core'
-import { GaslessCard } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import { GaslessCard } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every required state of the M9 GaslessCard, in both themes (the one gallery

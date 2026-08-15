@@ -1,0 +1,153 @@
+---
+title: FeedCatalogue
+description: The table of FTSO feeds a deployment actually serves, where the feed list and the feed values are two separate claims with two separate provenance chips.
+breadcrumb: ['Docs', 'Components', 'FeedCatalogue']
+importLine: "import { FeedCatalogue } from '@flarekit-dev/react-ui'"
+---
+
+`FeedCatalogue` lists the feeds a deployment serves and, beside each one, the
+value that came back in the last read. Those are two claims, so they arrive as
+two props and carry two provenance chips: the feed list can be current while
+every value in it is minutes old, and one chip would hide that.
+
+Every value renders with the decimals that arrived in its own response. There is
+no per-feed exponent anywhere in this component to reuse — `FLR/USD` is `8`
+decimals at block latency and `6` on the anchor path, so a shared exponent is
+wrong by two orders of magnitude on the first feed anyone opens.
+
+## Live
+
+The preview runs the gallery's own states. The catalogue and the readings are
+driven through the real `readFeedCatalogue` and `readFeeds` against
+`createMockFtsoReader()`, so a change to how a rename resolves breaks this
+preview the same way it would break a live read.
+
+<FeedCatalogueDemo />
+
+## Usage
+
+Read the list and the values separately, hand both to the table. No provider is
+involved — this surface is driven by props.
+
+```tsx
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flarekit-dev/core'
+import { useFeedCatalogue, useFeeds } from '@flarekit-dev/react'
+import { FeedCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const reader = createMockFtsoReader()
+const chainId = FLARE_NETWORKS.coston2.id
+const feedIds = ['FLR/USD', 'BTC/USD', 'XRP/USD'].map((name) =>
+  encodeFeedId(FEED_CATEGORY.crypto, name),
+)
+
+export function Feeds() {
+  const catalogue = useFeedCatalogue(reader, chainId)
+  const readings = useFeeds({ reader, chainId, feedIds })
+
+  return (
+    <FeedCatalogue
+      catalogue={catalogue.data}
+      readings={readings.data}
+      loading={catalogue.loading}
+      now={Date.now()}
+      onRefresh={catalogue.refresh}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'now', type: 'number', required: true, description: 'The clock in milliseconds, used to age each observation. Passed in rather than read, so the same props always render the same table.' },
+  { name: 'catalogue', type: 'Observation<FeedCatalogue>', description: 'The metadata read: what the deployment serves. Free, and it changes rarely. An unavailable observation renders as an unread list, never as an empty one.' },
+  { name: 'readings', type: 'Observation<FeedReadResult>', description: 'The value read. Payable, and every reading in it carries its own decimals and its own timestamp. Omit it entirely and the value column says nothing was read.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the feed list is still being read. Only shows skeleton rows when there is no catalogue yet — a refresh never clears values already on screen.' },
+  { name: 'stale', type: 'boolean', defaultValue: 'false', description: "True when the metadata is older than its source class's freshness budget. The list stays rendered, carrying the time it was read." },
+  { name: 'onSelect', type: '(feedId: FeedId) => void', description: 'Called with the feed id when a row is opened. Omit it and feed names render as text instead of controls.' },
+  { name: 'onRefresh', type: '() => void', description: 'Offers a re-read on the unreadable-list and stale notes. Omit it and those notes state the situation without a control.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the table follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+Four columns — feed, class, value at block latency, availability — above the
+sentences a table cell cannot say. The value cell holds the exact price in the
+mono face with its own decimal count and its own timestamp beneath it. Below
+the table sit the notes the deployment's own shape requires: an unused
+configuration index stated rather than rendered as a row, a count of custom
+feeds and what makes them a different claim, the fee actually quoted for the
+read, and the fact that whether a feed is anchored is answered by the
+data-availability host for one specific voting round and never by this list.
+
+Availability is the outcome of the read rather than a property of the feed, and
+the ways a value can be absent stay apart. A feed that answered is `Serving`; one
+that was asked about and returned nothing is `No value`; a read that was
+attempted and failed is `No answer`; a feed nobody asked about is `Not read`.
+None of the four is ever a zero price.
+
+### FeedCatalogueRow
+
+The row is exported too, for building a table of your own:
+
+```tsx
+import { FeedCatalogueRow } from '@flarekit-dev/react-ui'
+```
+
+It takes an `entry: CatalogueEntry`, an optional `reading: FeedReading`, and
+the two booleans that keep the absent-value cases apart — `asked`, true whenever
+a value read was attempted at all, and `readFailed`, true when that attempt did
+not come back. It renders one `<tr>` and nothing else, so it needs a table
+around it. Its `onSelect` has the same signature as the catalogue's.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the feed list is still being read; skeleton rows, no values.
+- **no deployment selected** — nothing was asked for. Distinct from a
+  deployment that answered with nothing.
+- **BASE** — list and values together, with one renamed feed shown as a single
+  feed carrying a former name, and the unused configuration index stated
+  underneath.
+- **AVAIL, custom feeds** — custom feeds listed with their class, and their
+  updater contract having answered nothing in this read.
+- **legitimate empty** — the list was read and came back empty. Nothing failed.
+- **typed error** — the list could not be read, with the reason. No rows,
+  because a list that failed to load must not look like one the deployment
+  answered.
+- **SOURCE** — the list is current and the values are unknown. The feeds are
+  still the ones this deployment serves.
+- **stale metadata** — past the freshness budget and still rendered, because a
+  deployment can add or withdraw a feed between reads.
+- **paid read** — `3 wei` quoted from `FtsoV2` and actually paid, with the fee
+  stated. The zero-fee case hides two real failures, so this one exists.
+
+## Mock to live
+
+`createMockFtsoReader()` is a reader, not a second implementation: the same
+`readFeedCatalogue` and `readFeeds` run against it. Swapping in a viem public
+client for the network you want is the whole change, and addresses come from
+`@flarekit-dev/contracts`.
+
+```tsx
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. The component does not change.
+const reader = createPublicClient({ transport: http(FLARE_NETWORKS.coston2.rpcUrl) })
+```
+
+## What it will not do
+
+It will not render an unavailable read as a zero, an empty list or a stale
+value silently refreshed. It will not fold the feed list and the feed values
+into one freshness claim, and it will not reuse one feed's decimals for
+another. Whether a feed has retrievable anchor history is not claimed here at
+all — that answer belongs to a specific voting round, and you get it by opening
+the feed.

@@ -1,5 +1,5 @@
-import type { OperationRecord, OperationStore } from '@flare-kit/core'
-import { isTerminal } from '@flare-kit/core'
+import type { OperationRecord, OperationStore } from '@flarekit-dev/core'
+import { isTerminal } from '@flarekit-dev/core'
 
 /**
  * The provider's in-memory registry of live operations, with subscriptions.

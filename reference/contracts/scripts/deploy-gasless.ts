@@ -7,7 +7,7 @@
  * FXRP is resolved by the forwarder from the Flare Contract Registry; no token
  * address is passed. The deployer (operator) is authorized as the relayer that may
  * call executePayment. Addresses are recorded to deployments/coston2.json — the
- * single source @flare-kit/contracts (Task 3) reads; nothing hardcoded elsewhere.
+ * single source @flarekit-dev/contracts (Task 3) reads; nothing hardcoded elsewhere.
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { resolve } from "path";

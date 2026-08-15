@@ -10,12 +10,12 @@
 //   2) reads every OPERATOR-MUTABLE deployment setting (XRPL provider wallets, source id,
 //      proof validity window, default + per-instruction fees, registered vaults with their
 //      types, registered agent vaults, default executor). These are deliberately NOT
-//      snapshotted into @flare-kit/contracts: freezing an operator's wallet list would
+//      snapshotted into @flarekit-dev/contracts: freezing an operator's wallet list would
 //      produce a plan that asks a user to sign an XRPL payment to a retired destination;
 //   3) derives the personal account for the run's XRPL address on both networks, asserts
 //      the two agree, and records its deployment state, nonce, pinned executor and
 //      balances. A read that REVERTS is recorded as such, never fabricated as a zero;
-//   4) records the smart-accounts vault namespace against @flare-kit/contracts' M7 vault
+//   4) records the smart-accounts vault namespace against @flarekit-dev/contracts' M7 vault
 //      registry, because on Coston2 the two disagree and a plan that confused them would
 //      deposit somewhere the user did not choose;
 //   5) confirms the XRPL verifier serves the chain-agnostic `Payment` attestation route —
@@ -35,7 +35,7 @@ import {
   smartAccountsFor,
   vaultsFor,
   prepareRequestUrl,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-13-m13-probe.json`

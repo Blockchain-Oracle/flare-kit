@@ -1,4 +1,4 @@
-import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flare-kit/contracts'
+import { BUILT_IN_INSTRUCTIONS, smartAccountsFor } from '@flarekit-dev/contracts'
 import { describe, expect, it } from 'vitest'
 import type { DeploymentSettings } from '../src/smart-accounts/adapter.js'
 import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'

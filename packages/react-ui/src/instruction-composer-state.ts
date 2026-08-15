@@ -1,5 +1,5 @@
 // packages/react-ui/src/instruction-composer-state.ts
-import type { InstructionPlanResult, OperationRecord, PlanWarning, RefusalCode } from '@flare-kit/core'
+import type { InstructionPlanResult, OperationRecord, PlanWarning, RefusalCode } from '@flarekit-dev/core'
 import type { CardNote, Cta } from './card-chrome.js'
 
 /**

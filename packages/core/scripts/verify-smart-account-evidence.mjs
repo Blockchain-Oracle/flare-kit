@@ -29,7 +29,7 @@
 
 import { writeFileSync } from 'node:fs'
 import { createPublicClient, decodeFunctionData, http } from 'viem'
-import { FLARE_NETWORKS, masterAccountControllerAbi, smartAccountsFor } from '@flare-kit/contracts'
+import { FLARE_NETWORKS, masterAccountControllerAbi, smartAccountsFor } from '@flarekit-dev/contracts'
 
 const XRPL_TESTNET_RPC = FLARE_NETWORKS.coston2.underlying.jsonRpcUrl
 

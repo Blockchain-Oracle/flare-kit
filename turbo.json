@@ -4,17 +4,26 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "package.json", "tsup.config.ts", "tsconfig.json"],
-      "outputs": ["dist/**"]
+      "inputs": [
+        "src/**",
+        "app/**",
+        "components/**",
+        "public/**",
+        "package.json",
+        "tsup.config.ts",
+        "tsconfig.json",
+        "next.config.ts"
+      ],
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**"]
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "test/**", "tsconfig.json"],
+      "inputs": ["src/**", "app/**", "components/**", "test/**", "tsconfig.json"],
       "outputs": []
     },
     "test": {
       "dependsOn": ["^build"],
-      "inputs": ["src/**", "test/**", "vitest.config.ts"],
+      "inputs": ["src/**", "app/**", "components/**", "test/**", "vitest.config.ts"],
       "outputs": []
     },
     "publint": {

@@ -1,4 +1,4 @@
-import { ATTESTATION_TYPES, familyFor, sourceFor } from '@flare-kit/contracts'
+import { ATTESTATION_TYPES, familyFor, sourceFor } from '@flarekit-dev/contracts'
 import type { vi } from 'vitest'
 import { createFdcClient } from '../src/fdc/client.js'
 import { xrpPaymentFamily } from '../src/fdc/families/xrp-payment.js'

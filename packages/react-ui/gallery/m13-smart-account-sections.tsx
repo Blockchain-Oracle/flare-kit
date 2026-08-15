@@ -22,10 +22,10 @@ import {
   proofDeadlineMs,
   reconcileInstruction,
   smartAccountsFor,
-} from '@flare-kit/core'
-import { InstructionCatalogue, InstructionComposer, SmartAccountCard } from '../src/index.js'
-import type { SmartAccountNetworkView } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import { InstructionCatalogue, InstructionComposer, SmartAccountCard } from '@flarekit-dev/react-ui'
+import type { SmartAccountNetworkView } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every state of the M13 SmartAccountCard, InstructionCatalogue and

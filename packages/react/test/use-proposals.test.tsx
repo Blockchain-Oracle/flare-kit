@@ -1,4 +1,4 @@
-import { governanceFor } from '@flare-kit/core'
+import { governanceFor } from '@flarekit-dev/core'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useProposals, type ProposalsEvmClient } from '../src/use-proposals.js'

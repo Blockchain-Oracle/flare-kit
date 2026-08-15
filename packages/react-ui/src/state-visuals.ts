@@ -1,4 +1,4 @@
-import type { OperationState } from '@flare-kit/core'
+import type { OperationState } from '@flarekit-dev/core'
 
 /**
  * The one map from canonical state to how it reads.

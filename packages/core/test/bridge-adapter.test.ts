@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { PublicClient } from 'viem'
-import { routeByKey } from '@flare-kit/contracts'
+import { routeByKey } from '@flarekit-dev/contracts'
 import { buildSendParam, makeBridgeAdapter } from '../src/bridge-adapter.js'
 
 const OWNER = '0x00000000000000000000000000000000000000A1'

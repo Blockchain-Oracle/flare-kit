@@ -1,0 +1,120 @@
+---
+title: NetworkResolutionSheet
+description: The drift repair surface — what an action was approved for against what is connected now, what the mismatch invalidated, and the one action that moves forward.
+breadcrumb: ['Docs', 'Components', 'NetworkResolutionSheet']
+importLine: "import { NetworkResolutionSheet } from '@flarekit-dev/react-ui'"
+---
+
+A wallet can switch chain or account between the screen a person read and the
+button they pressed. `NetworkResolutionSheet` is the surface that handles that:
+it shows required against current, names what the drift invalidated, and offers
+the action that actually repairs it. It is the only surface that knows the cost
+of re-approving, which is why wrong network and wrong account leave
+[`AccountSheet`](/docs/components/account-sheet) and arrive here.
+
+## Live
+
+The preview runs the gallery's own states. The state switcher walks the six
+cases the sheet was verified against — every one of them derived from a real
+`checkBinding` result rather than a hand-written message.
+
+<NetworkResolutionSheetDemo />
+
+## Usage
+
+`useActionBinding` snapshots the accounts a quote was made for and re-checks
+them against what is connected now. Hand the sheet that binding and the current
+context; it derives the mismatches itself.
+
+```tsx
+import { useAccounts, useActionBinding } from '@flarekit-dev/react'
+import { NetworkResolutionSheet } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Resolve() {
+  const { context } = useAccounts()
+  const { binding, valid } = useActionBinding()
+
+  if (!binding || valid) return null
+
+  return (
+    <NetworkResolutionSheet
+      binding={binding}
+      context={context}
+      affected="your quote for 25.000000 XRP"
+      onSwitchNetwork={(family) => yourAdapter.switchNetwork(family)}
+      onReconnect={(family) => yourAdapter.connect(family)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'binding', type: 'OperationBinding', required: true, description: 'What the action was approved for — the address, network and custody per family, with the moment it was bound. Take it from `useActionBinding().record()` or `bindContext()`.' },
+  { name: 'context', type: 'AccountContext', required: true, description: 'What is connected now. The sheet runs `checkBinding` across the two and renders one block per mismatch.' },
+  { name: 'affected', type: 'string', description: 'What the mismatch invalidated, named — "your quote for 25.000000 XRP". Without it the sheet still states the drift, but a person cannot judge the cost of re-approving.' },
+  { name: 'status', type: "'switch-rejected' | 'unsupported-combination' | 'expired'", description: 'The three states that are not derivable from the binding, because nothing about the connected accounts reveals them.' },
+  { name: 'onSwitchNetwork', type: '(family: ChainFamily) => void', description: 'Offered on a network mismatch only. Your adapter requests the switch; the sheet does not.' },
+  { name: 'onReconnect', type: '(family: ChainFamily) => void', description: 'Offered on an account, absent or unsettled mismatch — the cases where switching chain would not help.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the sheet follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the sheet.' },
+]} />
+
+## What it renders
+
+One block per mismatch. Each names the drift in a sentence that carries both
+accounts, then shows the pair — `Required` above `Current`, and the account too
+when the two values are network names, since on a chain switch the account is
+the one thing that did not change. `Current` reads `Nothing connected` when
+nothing is, never a blank.
+
+Every block says `Nothing was sent`, because that is the fact a person most
+needs and the one a bare "wrong network" withholds. Below them, one line of
+policy: an approved action never follows your wallet to a different account, and
+re-approving will show the current terms first.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **wrong network** — approved on Coston2, wallet now on Flare Mainnet. Offers
+  `Switch to Coston2` and names the quote it invalidated.
+- **wrong account** — the same binding, a different address connected. Offers
+  `Reconnect Flare`, because switching chain would not help.
+- **switch rejected** — the wallet declined the switch. Neutral, not a protocol
+  failure: nothing was sent and nothing changed, and you can switch in the
+  wallet directly instead.
+- **unsupported combination** — the connected network and account pairing is not
+  supported. Named rather than shrugged at, so a person knows whether to change
+  wallet or abandon the operation.
+- **restored** — a session rebuilt from this device that the wallet has not
+  re-authorized. It reads as unsettled, not as connected.
+- **expired** — the approved terms are no longer current. Quote again to see
+  what the same request costs now.
+
+## Mock to live
+
+The sheet reads nothing from the network. What changes going live is the
+provenance of the binding: a gallery fixture becomes the snapshot your own quote
+took.
+
+```tsx
+// From a fixture…
+const binding = bindContext(createAccountContext({ evm: walletConnected('evm', EVM, COSTON2) }), now)
+
+// …to the real one. The sheet does not change.
+const { binding } = useActionBinding() // recorded when the quote was produced
+```
+
+## What it will not do
+
+It will not rebind. There is deliberately no verb for re-pointing an approved
+action at whatever is connected now — drift invalidates the approval, and
+re-approving is the only way forward. It will not describe a mismatch as merely
+"wrong": required and current are both on screen, always. It will not present a
+declined switch as a protocol failure, and it will not treat an unconfirmed
+outcome as a failed one — nothing here was sent.

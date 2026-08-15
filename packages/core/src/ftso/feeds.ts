@@ -5,7 +5,7 @@ import {
   ftsoRegistryFor,
   ftsoV2Abi,
   isRenderableFeedId,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Amount, amount } from '../amounts.js'
 import { FlareKitError } from '../errors.js'
 import { type Observation, observe } from '../observation.js'

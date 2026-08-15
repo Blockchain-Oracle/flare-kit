@@ -1,6 +1,6 @@
 // packages/core/src/mock-stake.ts
 import type { Address, PublicClient } from 'viem'
-import { type FlareNetworkKey, type StakingDeployment, stakingFor } from '@flare-kit/contracts'
+import { type FlareNetworkKey, type StakingDeployment, stakingFor } from '@flarekit-dev/contracts'
 import {
   readMirrorVotePower,
   readStakeLimits,

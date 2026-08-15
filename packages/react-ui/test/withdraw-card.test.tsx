@@ -5,7 +5,7 @@ import {
   type ExitRoute, type OperationStep, type VaultPositionResult, type WithdrawOperation,
   amount, applyWithdrawQuote, buildWithdrawPlan, createMockVaultAdapter, createWithdraw,
   quoteWithdraw, startQuoting, vaultByKey,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { WithdrawCard } from '../src/WithdrawCard.js'
 
 const OWNER = '0xA4b05cdB545FA7CA12Be9f866d64E8A843A31Bd9' as const

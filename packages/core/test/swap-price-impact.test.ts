@@ -1,4 +1,4 @@
-import type { DexToken } from '@flare-kit/contracts'
+import type { DexToken } from '@flarekit-dev/contracts'
 import { describe, expect, it } from 'vitest'
 import { amount } from '../src/amounts.js'
 import { type SwapQuote, priceImpactBips } from '../src/swap-quote.js'

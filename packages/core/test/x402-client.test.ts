@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address, Hex } from 'viem'
-import { x402For } from '@flare-kit/contracts'
+import { x402For } from '@flarekit-dev/contracts'
 import { parseChallenge, encodeXPayment, readXPaymentResponse } from '../src/x402-client.js'
 
 const D = x402For('coston2')!

@@ -1,13 +1,13 @@
-import { MOCK_EPOCH, type MockScenario, amount, createMockKit } from '@flare-kit/core'
-import { FlareProvider } from '@flare-kit/react'
+import { MOCK_EPOCH, type MockScenario, amount, createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
 import type { ReactNode } from 'react'
 import {
   MintFXRP,
   OperationTimeline,
   RecoveryPanel,
   RedeemFXRP,
-} from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * M1's four composed surfaces, added to the gallery in the M2 close-out.
@@ -352,6 +352,8 @@ export const M1_SECTIONS: readonly Section[] = [
                   movesNewValue: false,
                   signs: false,
                   broadcasts: true,
+                  preconditions: ['the original proof has not already been consumed'],
+                  nextState: 'submitted',
                   expiresAt: M1_NOW - 60_000,
                 },
               ],

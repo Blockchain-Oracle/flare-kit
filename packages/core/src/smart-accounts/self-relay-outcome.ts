@@ -2,7 +2,7 @@ import {
   ALREADY_SETTLED_ERRORS,
   UNAVAILABLE_ERRORS,
   WAIT_ERRORS,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import type { MemoObservation } from './memo-states.js'
 
 /**

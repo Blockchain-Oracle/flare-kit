@@ -9,7 +9,7 @@ import {
   FLARE_SYSTEMS_MANAGER_ABI,
   VALIDATOR_REWARD_MANAGER_ABI,
   stakingFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type StakingRewardState, readStakingRewardState } from './stake-adapter.js'
 
 /**

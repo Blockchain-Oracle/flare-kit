@@ -1,0 +1,118 @@
+---
+title: useGasless
+description: The delivery poll for a relayed FXRP payment — it re-reads the on-chain transfer while the relayer works, and reaches succeeded only from the PaymentExecuted read, never from the relayer's HTTP response.
+breadcrumb: ['Docs', 'Hooks', 'useGasless']
+importLine: "import { useGasless } from '@flarekit-dev/react'"
+---
+
+A relayer submits the payment on the payer's behalf, so the outcome is chain
+state rather than session state: the relayer's HTTP acceptance says the job was
+taken, not that the money moved. `useGasless` polls the read that can tell the
+difference — `PaymentExecuted` for the payer's nonce — and stops the moment the
+operation settles. It is the same durable poll as [useBridge](/docs/hooks/use-bridge)
+on a tighter cadence, because a relayer submits in seconds where a LayerZero
+delivery takes minutes.
+
+Gasless means the payer pays no native gas *for the payment*. It does not mean
+free: the one-time FXRP approval is signed and paid by the payer — the observed
+live run cost `0.03351725 C2FLR` — and the relayer is a named host, not the
+protocol.
+
+## Live
+
+Both readouts below are the hook's actual return value, on this render, over the
+same payment the relayer already accepted (`submitted`). They differ only in
+what the chain answers: the first mock adapter finds no `PaymentExecuted`, the
+second finds the one the live run observed. A silent relayer holds the operation
+in `awaiting_external` — the outcome is not confirmed yet, which is not the same
+claim as failure.
+
+<UseGaslessDemo />
+
+## Usage
+
+The hook is driven by props, not by context. The host builds the plan with
+`buildGaslessPlan`, signs the approval and the `PaymentRequest` through its own
+wallet, and posts to the relayer; `reconcile` closes over a read-only client and
+holds no key. Memoise it with `useCallback`, or the interval is torn down on
+every render.
+
+```tsx
+import { type GaslessOperation, reconcileGaslessPayment } from '@flarekit-dev/core'
+import { useGasless } from '@flarekit-dev/react'
+import { useCallback } from 'react'
+
+function Payment({ operation, adapter, payer, nonce, sinceBlock }) {
+  const reconcile = useCallback(
+    async (op: GaslessOperation) =>
+      reconcileGaslessPayment(
+        op,
+        await adapter.reads.paymentSince(payer, nonce, sinceBlock),
+        Date.now(),
+      ),
+    [adapter, payer, nonce, sinceBlock],
+  )
+
+  const { operation: live, error } = useGasless({ operation, reconcile })
+  return <GaslessCard operation={live ?? operation} networkLabel="Coston2" />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', required: true, description: 'The current operation. The host creates, plans, signs and relays it with the core functions; the hook only reconciles it. A new operation is adopted by `id`, so re-creating the same record each render never clobbers the poll.' },
+  { name: 'reconcile', type: '(op: T) => Promise<T>', required: false, description: 'Re-read `paymentSince` and return the advanced operation. Read-only — it holds no key. Without it the hook polls nothing and returns what it was handed.' },
+  { name: 'pollMs', type: 'number', required: false, description: 'Poll cadence in milliseconds. Defaults to `6000` — the relayer submits in seconds.' },
+]} />
+
+`UseGaslessInput` and `UseGaslessResult` are the bridge poll's types: the two
+capabilities differ in what they read, not in how they reconcile.
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'operation', type: 'T | undefined', description: 'The operation as the last successful read left it. `undefined` only when none was passed in.' },
+  { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state (`succeeded`, `failed`, `cancelled`). False while it is in flight, and false when there is no operation.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last reconcile that threw — a failed READING, never a failed payment. A later successful poll clears it, so a lagged RPC leaves no sticky failure.' },
+]} />
+
+## States
+
+- **`submitted`** — the relayer accepted the job. Nothing has been read on
+  chain; this is never rendered as paid.
+- **`awaiting_external`** — the poll ran and found no `PaymentExecuted` for this
+  nonce. The operation carries `awaiting.actor: 'relayer'` and its reason, so
+  the surface names who is being waited on.
+- **`succeeded`** — the transfer was observed on chain. This is the only path
+  into it: a `PaymentExecuted` log matched on the payer's nonce, carrying the
+  transaction hash and the exact amount.
+- **`error`** — the read itself failed. The outcome is not confirmed yet; the
+  operation stays where the chain last put it.
+
+## Mock to live
+
+The hook and the reconciler are unchanged between the two. What swaps is the
+client the adapter reads, and whether `relay` is a real POST:
+
+```tsx
+// Mock: the real adapter over a labelled fake client from the observed run.
+const adapter = createMockGaslessAdapter({ confirmed: true })
+
+// Live: the same adapter over your public client and the deployment the
+// registry carries (`gaslessFor` comes from @flarekit-dev/contracts).
+const adapter = makeGaslessAdapter(coston2, gaslessFor('coston2')!)
+```
+
+The mock refuses a network it never drove live, and it never fabricates a
+confirmation: absence is in-flight, and `confirmed` is something a caller states
+explicitly.
+
+## What it will not do
+
+It will not treat the relayer's acceptance as the transfer, and it will not move
+an operation to `failed` because a read failed or because the relayer went
+quiet. It signs and submits nothing — it holds no key, and the approval and the
+`PaymentRequest` are signed by the payer's own wallet. It will not keep polling
+a settled operation, and it will not adopt a re-created operation object whose
+`id` has not changed.

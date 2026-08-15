@@ -6,7 +6,7 @@ import {
   type SerializedError,
   isTerminal,
   toSerializedError,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useState, useSyncExternalStore } from 'react'
 import { useFlareContext } from './provider.js'
 import { type ActionBinding, useActionBinding } from './use-accounts.js'

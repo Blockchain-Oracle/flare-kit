@@ -1,4 +1,4 @@
-import { OBSERVED_SETTINGS, smartAccountsFor } from '@flare-kit/core'
+import { OBSERVED_SETTINGS, smartAccountsFor } from '@flarekit-dev/core'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { type SmartAccountEvmClient, useSmartAccount } from '../src/use-smart-account.js'

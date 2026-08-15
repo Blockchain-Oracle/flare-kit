@@ -1,0 +1,140 @@
+---
+title: useDelegation
+description: Wrap, delegate and undelegate as one polled operation, where the position and the operation's progress both come from the same on-chain read.
+breadcrumb: ['Docs', 'Hooks', 'useDelegation']
+importLine: "import { useDelegation } from '@flarekit-dev/react'"
+---
+
+`useDelegation` polls one read and gets two answers from it: the account's live
+wrap/delegate/mode position, and whatever delegation operation is in flight. That
+is deliberate. `succeeded` for a delegation means `delegatesOf` shows the
+provider — so the read that renders the position is the same read that is allowed
+to advance the operation, and there is no second source that could disagree with
+it. A submitted transaction never advances the operation on its own.
+
+Reading and planning need no key. `buildPlan` is pure and synchronous, `submit`
+only hands the plan to the wallet the host already owns, and the hook never
+signs.
+
+## Live
+
+The readout below is the hook's actual return value, running against the mock
+delegation adapter on this render — the shape the live Coston2 round trip
+observed on 2026-08-12: 5 C2FLR wrapped, 100% (`10000` bips) delegated to one
+FTSO provider, mode PERCENTAGE, vote power fully delegated away. No wallet is
+connected and no `onSubmit` is wired, so `operation` is honestly `null`;
+everything visible came from the keyless read and the pure planner.
+
+<UseDelegationDemo />
+
+## Usage
+
+```tsx
+import { makeDelegationAdapter, type DelegationIntent } from '@flarekit-dev/core'
+import { delegationFor } from '@flarekit-dev/contracts'
+import { useDelegation } from '@flarekit-dev/react'
+import { DelegationCard } from '@flarekit-dev/react-ui'
+
+const adapter = makeDelegationAdapter(publicClient, delegationFor('coston2'))
+const reconcile = (owner: `0x${string}`) => adapter.read(owner)
+
+function Delegate({ account, provider }: { account: `0x${string}`; provider: `0x${string}` }) {
+  const { position, operation, error, buildPlan, submit } = useDelegation({
+    account,
+    adapter,
+    operation: undefined,
+    reconcile,
+    onSubmit: sendWithWallet, // the host's own wallet; the hook never signs
+  })
+
+  const intent: DelegationIntent = { kind: 'delegate', targets: [{ to: provider, bips: 10_000 }] }
+  const planResult = buildPlan(intent)
+
+  return (
+    <DelegationCard
+      position={position}
+      operation={operation}
+      planResult={planResult}
+      onSubmit={() => planResult?.kind === 'plan' && submit(planResult.plan)}
+    />
+  )
+}
+```
+
+`reconcile` is an effect dependency, so hold it steady — a closure rebuilt on
+every render restarts the poll on every render. `adapter` only shapes the next
+`buildPlan`, so its identity does not gate the poll.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'account', type: '0x${string} | undefined', required: true, description: 'The account read and planned for. Without it the hook does not poll.' },
+  { name: 'adapter', type: 'DelegationAdapter | undefined', required: true, description: 'The reads and call-builder seam. Carries the deployment, whose delegationVerified flag is the first gate buildPlan runs.' },
+  { name: 'operation', type: 'DelegationOperation | undefined', required: true, description: 'The operation to adopt. Only a genuinely new id replaces what the hook is already tracking, so a host that rebuilds the object each render never clobbers progress.' },
+  { name: 'reconcile', type: '(account: 0x${string}) => Promise<DelegationReads>', required: false, description: 'Re-reads the wrap/delegate/mode position. Read-only and keyless. Without it the hook holds no position and never advances an operation.' },
+  { name: 'onSubmit', type: '(plan: DelegationPlan) => Promise<DelegationOperation>', required: false, description: 'Executes the plan through the host’s own wallet. Absent means submit is a no-op returning undefined.' },
+  { name: 'pollMs', type: 'number', defaultValue: '15_000', required: false, description: 'Poll cadence in milliseconds. The host owns the clock.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'operation', type: 'DelegationOperation | undefined', description: 'The tracked operation, advanced only by the confirmed read.' },
+  { name: 'isSettled', type: 'boolean', description: 'True once the operation reaches a terminal state. False when there is no operation at all.' },
+  { name: 'position', type: 'DelegationPositionView', description: 'observed (wrappedBalance, delegates, votePower, mode) or unavailable. An absent read is never a confident zero-delegation.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'The last failed reading or wallet submit. It never moves the operation to failed, and a later successful poll clears it — a submit failure is visible for at most one poll interval.' },
+  { name: 'buildPlan', type: '(intent: DelegationIntent) => DelegationPlanResult | undefined', description: 'Pure and synchronous once a read has landed; undefined before that, because the hook will not plan off reads it has not observed.' },
+  { name: 'submit', type: '(plan: DelegationPlan) => Promise<DelegationOperation | undefined>', description: 'Forwards the plan to onSubmit and adopts the returned operation. Returns undefined when no onSubmit was given or the wallet threw.' },
+]} />
+
+## States
+
+- **`position.status: 'unavailable'`** — no read has landed, or every read so far
+  threw. It renders as an unknown, never as "delegates 0".
+- **`position.status: 'observed'`** — a real read, including one that observes an
+  empty position. Note that `mode` stays `1` (PERCENTAGE) after undelegating:
+  `delegationModeOf` never resets, so an undelegated account is mode `1` with an
+  empty delegate list, not mode `0`.
+- **in flight** — the operation sits at `submitted` and then
+  `awaiting_external` while the chain has not yet reflected the intent. It
+  reaches `succeeded` only when the `delegatesOf` read confirms it.
+- **`error`** — the read failed. The position and the operation stay exactly where
+  the last good read left them; a lagged RPC is not a failed delegation.
+- **refusals** — `buildPlan` returns `{ kind: 'error' }` for `not-verified`
+  (the deployment has no live round trip behind it), `too-many-delegates`
+  (`max: 2`), `bips-over-100` (the targets sum past `10000`), `mode-conflict`
+  (percentage and explicit-amount delegation are exclusive, and the mode never
+  resets — not even after undelegating — so the other style stays refused for
+  this account)
+  and `insufficient-wrapped`.
+
+## Mock to live
+
+The hook takes the adapter as a parameter, so the swap is the adapter alone:
+
+```tsx
+// Mock: the observed Coston2 round trip, no network.
+const adapter = createMockDelegationAdapter()
+
+// Live: the real adapter over your own viem client.
+const adapter = makeDelegationAdapter(publicClient, delegationFor('coston2'))
+```
+
+Both drive the same `buildDelegationPlan` and `reconcileDelegation`. The mock is
+explicit — a caller constructs it — and it refuses what the live run never
+observed: an unobserved network throws, and an explicit AMOUNT-mode request
+throws rather than fabricate a succeeded delegation for a path never driven.
+
+## What it will not do
+
+It will not sign. `submit` forwards the plan to the wallet the host controls and
+adopts whatever record comes back; there is no key in this hook and no key in
+the read path.
+
+It will not mark a delegation `succeeded` from the submission. Only the
+confirmed `delegatesOf` read does that, and a read that fails leaves the
+operation where it was rather than moving it to failed.
+
+It will not plan before it has read. `buildPlan` is `undefined` until the first
+read lands, because a plan built on assumed balances is a plan that can silently
+no-op on chain.

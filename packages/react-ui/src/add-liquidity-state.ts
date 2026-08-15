@@ -1,5 +1,5 @@
 // packages/react-ui/src/add-liquidity-state.ts
-import type { AddLiquidityOperation, AddLiquidityQuoteResult } from '@flare-kit/core'
+import type { AddLiquidityOperation, AddLiquidityQuoteResult } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /** How an add-liquidity operation's state becomes the card's CTA and note. The

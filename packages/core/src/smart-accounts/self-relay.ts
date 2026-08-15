@@ -1,4 +1,4 @@
-import { directMintingAbi } from '@flare-kit/contracts'
+import { directMintingAbi } from '@flarekit-dev/contracts'
 import { type Abi, keccak256 } from 'viem'
 import { FlareKitError } from '../errors.js'
 import { type XrpPaymentInput, type XrpPaymentProof, toProofStruct } from '../fdc/families/xrp-payment.js'

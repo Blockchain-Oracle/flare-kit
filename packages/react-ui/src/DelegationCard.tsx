@@ -1,5 +1,5 @@
-import { type Amount, type DexToken, amount, formatExact, truncateAddress } from '@flare-kit/core'
-import type { DelegationPlanResult, DelegationPositionView } from '@flare-kit/core'
+import { type Amount, type DexToken, amount, formatExact, truncateAddress } from '@flarekit-dev/core'
+import type { DelegationPlanResult, DelegationPositionView } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'
@@ -27,7 +27,8 @@ import {
  * wrap→delegate lifecycle on the shared `OperationTimeline` spine (DEL-03).
  *
  * Honesty (M10): an `unavailable` read renders `—`, never a confident zero-delegation and
- * never `no-balance`; a mode conflict reads "undelegate first", never a silent no-op; and a
+ * never `no-balance`; a mode conflict states the style is fixed for the account (the chain
+ * never resets delegation mode, even after undelegating), never a silent no-op; and a
  * delegate with zero provider rows is never submittable — the card refuses to emit a no-op
  * `batchDelegate([],[])`. Sign only via `onSubmit`; the card never holds a key.
  */

@@ -1,21 +1,51 @@
 {
-  "name": "@flare-kit/react",
+  "name": "@flarekit-dev/react",
   "version": "0.1.0",
   "description": "React provider and hooks over the Flare operation lifecycle. Works against a live kit or the mock, unchanged.",
+  "keywords": [
+    "flare",
+    "react",
+    "hooks",
+    "fassets",
+    "fxrp",
+    "ftso",
+    "fdc",
+    "viem",
+    "wagmi",
+    "web3"
+  ],
+  "homepage": "https://flare-kit.xyz",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blockchain-Oracle/flare-kit.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/Blockchain-Oracle/flare-kit/issues"
+  },
   "license": "MIT",
+  "author": "Abubakr Jimoh",
   "engines": {
     "node": ">=21"
   },
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-      "require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./package.json": "./package.json"
   },
@@ -27,12 +57,14 @@
     "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@flare-kit/core": "workspace:^"
+    "@flarekit-dev/core": "workspace:^"
   },
   "peerDependencies": {
-    "react": "^18.3.0 || ^19.0.0"
+    "react": "^18.3.0 || ^19.0.0",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
+    "@flarekit-dev/contracts": "workspace:^",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

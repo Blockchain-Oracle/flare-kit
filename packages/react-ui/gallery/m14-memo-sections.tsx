@@ -14,10 +14,10 @@ import {
   planMemoRecovery,
   reconcileMemoInstruction,
   smartAccountsFor,
-} from '@flare-kit/core'
-import type { MemoRecoveryKind, MemoRecoveryResult } from '@flare-kit/core'
-import { MemoInstructionComposer, RecoveryComposer } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import type { MemoRecoveryKind, MemoRecoveryResult } from '@flarekit-dev/core'
+import { MemoInstructionComposer, RecoveryComposer } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every state of the M14 memo surfaces, in both themes (M14-AC6).

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { delegationFor, IWNAT_ABI, IVPTOKEN_ABI } from '@flare-kit/contracts'
+import { delegationFor, IWNAT_ABI, IVPTOKEN_ABI } from '@flarekit-dev/contracts'
 import { delegationAbiFor, makeDelegationAdapter } from '../src/delegation-adapter.js'
 
 const DEPLOYMENT = delegationFor('coston2')!

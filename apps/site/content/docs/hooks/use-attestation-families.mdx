@@ -1,0 +1,132 @@
+---
+title: useAttestationFamilies
+description: The attestation catalogue as React state — what this deployment actually serves, compared per family against the shipped table, with "the verifier disagreed" and "we could not ask" kept as different answers.
+breadcrumb: ['Docs', 'Hooks', 'useAttestationFamilies']
+importLine: "import { useAttestationFamilies } from '@flarekit-dev/react'"
+---
+
+`useAttestationFamilies` loads the FDC family catalogue and hands it over as the
+`Observation` it arrived in, rather than unwrapping it to an array. That is the
+one design choice everything else follows from: `AttestationCatalogue` has to
+render *the verifier disagreed with the built-in table* and *we could not reach
+the verifier* as different screens, and a plain `rows: FamilyRow[]` would make
+the second look like the first with nothing in it. The only route to the rows is
+through `isObserved`.
+
+`loading` is the absence of an answer, never an answer of zero families.
+
+## Live
+
+The readout below is the hook's actual return value, running against the mock
+catalogue on this render. Two things in it are worth reading closely.
+
+`stale` is `true`, and that is the hook working rather than a mock artefact. The
+fixture carries the instant it was observed — the live Coston2 run of
+2026-08-04 — and staleness is evaluated per render against the wall clock, so a
+family list from that day is not today's answer about this deployment.
+
+`disagreements` and `unchecked` are both empty because this fixture is the case
+where everything agrees. `mockCatalogueDisagreement()` and
+`mockCatalogueUnreachableGroup()` are the other two, and the
+[AttestationCatalogue](/docs/components/attestation-catalogue) page renders all
+of them.
+
+<UseAttestationFamiliesDemo />
+
+## Usage
+
+Hand it a loader. The host decides which one — the live comparison or the
+mock's fixture — and the hook never branches on that.
+
+```tsx
+import { loadFamilyCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
+
+function Families({ services, chainId }) {
+  const { catalogue, loading, stale, refresh } = useAttestationFamilies({
+    load: ({ now }) => loadFamilyCatalogue({ services, chainId, now }),
+  })
+
+  return (
+    <AttestationCatalogue
+      catalogue={catalogue}
+      loading={loading}
+      stale={stale}
+      now={Date.now()}
+      onRefresh={refresh}
+      onSelect={(family) => console.log('build a request for', family)}
+    />
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'load', type: 'LoadCatalogue', required: true, description: 'The loader: ({ now }) => Promise<Observation<readonly FamilyRow[]>>. A host passes loadFamilyCatalogue over its configured services; the mock passes a labelled fixture.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'catalogue', type: 'Observation<readonly FamilyRow[]> | undefined', description: 'undefined until the first answer lands. Handed over whole, so an unavailable catalogue keeps its reason, its source and the time it was asked.' },
+  { name: 'rows', type: 'readonly FamilyRow[]', description: 'The rows, unwrapped through isObserved — and empty when the catalogue is unavailable, which is why the catalogue itself is what a surface should render from.' },
+  { name: 'loading', type: 'boolean', description: 'True only until the first answer arrives, whatever that answer is. Never an answer of zero families.' },
+  { name: 'stale', type: 'boolean', description: "Evaluated per render against the wall clock: the observation's own budget, sixty seconds for a provider unless it sets its own freshFor." },
+  { name: 'disagreements', type: 'readonly FamilyRow[]', description: 'Rows where the table and the deployment do not agree — agreement is table_claims_more or verifier_serves_more. Never hidden.' },
+  { name: 'unchecked', type: 'readonly FamilyRow[]', description: 'Rows whose verifier group could not be reached, so nothing was compared. Not the same claim as the family being unavailable.' },
+  { name: 'error', type: 'string | undefined', description: 'The load that threw, if the last attempt did. Never a fabricated table, and the built-in table is never substituted in its place.' },
+  { name: 'refresh', type: '() => void', description: 'Ask again. Whatever the hook already holds stays until a new answer lands.' },
+]} />
+
+## States
+
+- **loading** — no answer has arrived yet. Distinct from an empty catalogue,
+  and distinct from an unavailable one.
+- **observed** — `catalogue.status` is `observed`. Each row carries the status
+  the deployment supports, the status the table `claimed`, and how the two
+  `agree`. A family the verifier does not serve reads `Unavailable` however the
+  table describes it: the live deployment wins.
+- **unavailable** — no verifier group answered, so `catalogue.status` is
+  `unavailable` and carries the reason in words. `rows` is empty here, which is
+  precisely why a surface reads the catalogue rather than the array.
+- **stale** — the list on screen is older than its budget. It stays on screen,
+  marked, rather than vanishing.
+- **disagreements** — the table claims a route the verifier does not serve, or
+  the verifier serves one the table does not claim. Both are named per family.
+- **unchecked** — a group was unreachable. The row is the built-in table's
+  claim and has not been checked against this deployment, and it says so.
+- **error** — the load threw. Nothing is invented to fill the gap.
+
+## Mock to live
+
+The loader is the parameter, so the swap is the loader alone:
+
+```tsx
+// Mock: the labelled fixture. Its source reads "Simulated — flare-kit mock,
+// not a live verifier", so a surface showing provenance says so on screen.
+useAttestationFamilies({ load: async () => mockCatalogue() })
+
+// Live: each verifier group's own OpenAPI document, compared against the
+// shipped table, per family.
+useAttestationFamilies({ load: ({ now }) => loadFamilyCatalogue({ services, chainId, now }) })
+```
+
+## What it will not do
+
+It will not poll. There is no interval in this hook; `refresh` is how you ask
+again, and the answer you have stays on screen until a new one lands.
+
+It will not present the built-in table alone as protocol truth. A load that
+threw leaves `error` set and the catalogue as it was — substituting the shipped
+table would be presenting a claim about 2026-08-04 as though it had been checked
+against your deployment today.
+
+It will not turn an unreachable verifier into an unavailable family. "We could
+not check this" and "this deployment does not serve it" are different facts, and
+the hook keeps them in different fields.
+
+It will not call a family `Supported` because the table says so. `Planned` means
+this project ships no request builder for it, and `Unavailable` means the
+deployment does not serve it — neither is ever rendered as support.

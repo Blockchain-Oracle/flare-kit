@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address, PublicClient } from 'viem'
-import { stakingFor } from '@flare-kit/contracts'
+import { stakingFor } from '@flarekit-dev/contracts'
 import { readMirrorVotePower, readStakeLimits, readStakingReward } from '../src/stake-adapter.js'
 
 const DEPLOYMENT = stakingFor('coston2')!

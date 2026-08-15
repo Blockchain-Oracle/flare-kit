@@ -1,5 +1,5 @@
-import type { X402Challenge, X402Operation } from '@flare-kit/core'
-import { applyTransition, applyX402Challenge, createX402, mockX402Challenge, mockX402Outcome, reconcileX402 } from '@flare-kit/core'
+import type { X402Challenge, X402Operation } from '@flarekit-dev/core'
+import { applyTransition, applyX402Challenge, createX402, mockX402Challenge, mockX402Outcome, reconcileX402 } from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { X402Card } from '../src/X402Card.js'

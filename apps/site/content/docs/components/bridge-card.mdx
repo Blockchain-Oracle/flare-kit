@@ -1,0 +1,169 @@
+---
+title: BridgeCard
+description: The cross-chain card — one send leg, one receive leg, the real quoted fee, and a delivery timeline that reaches Delivered only from a read of the destination chain.
+breadcrumb: ['Docs', 'Components', 'BridgeCard']
+importLine: "import { BridgeCard } from '@flarekit-dev/react-ui'"
+---
+
+`BridgeCard` moves FXRP across a LayerZero V2 route and — on the redeem route —
+on through the FAssets redemption to native XRP on the XRPL. Cross-chain is the
+first capability whose outcome lives on a different chain than the signature, so
+the card is built around one rule: a confirmed send is `Submitted`, never
+`Delivered`. Delivery is a separate read, on the other chain.
+
+## Live
+
+The preview runs the gallery's own states. The switcher walks both routes — the
+`bridge ·` cases are Coston2 → Sepolia, the `redeem ·` cases are Sepolia FXRP →
+native XRP — so nothing here shows a state the card never actually reaches.
+
+<BridgeCardDemo />
+
+## Usage
+
+Hand it the operation, the route and the two tokens. It signs nothing: `onSubmit`
+hands the send back to you. Because delivery settles elsewhere, pair it with
+`useBridge`, which re-reads the destination while the operation is in flight and
+stops the moment it settles.
+
+```tsx
+import { type BridgeOperation, type BridgeQuote, routeByKey } from '@flarekit-dev/core'
+import { useBridge } from '@flarekit-dev/react'
+import { BridgeCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const route = routeByKey('coston2', 'coston2-sepolia')!
+
+export function Bridge({ operation, quote, reconcile, onSend }: {
+  operation: BridgeOperation
+  quote?: BridgeQuote
+  reconcile: (op: BridgeOperation) => Promise<BridgeOperation>
+  onSend: () => void
+}) {
+  const { operation: live } = useBridge({ operation, reconcile })
+
+  return (
+    <BridgeCard
+      operation={live ?? operation}
+      route={route}
+      sendToken={route.asset}
+      receiveToken={route.asset}
+      quote={quote}
+      networkLabel="Coston2"
+      onSubmit={onSend}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'operation', type: 'OperationRecord', required: true, description: 'The record to read. Its canonical state drives the chip, the CTA and every leg of the delivery timeline — the card derives nothing about the outcome on its own.' },
+  { name: 'route', type: 'BridgeRoute', required: true, description: 'The route from `@flarekit-dev/contracts`, carrying the chain pair, the OFT addresses and the kind (`bridge` or `redeem`). The kind decides whether the timeline ends at delivery or continues to the XRPL settlement.' },
+  { name: 'sendToken', type: 'DexToken', required: true, description: 'The token on the source chain — the leg you pay from.' },
+  { name: 'receiveToken', type: 'DexToken', required: true, description: 'The token on the destination chain. On the redeem route this is native XRP, not FXRP.' },
+  { name: 'quote', type: 'BridgeQuote', description: 'The quoted terms: the real `quoteSend` fee, the dust-adjusted amount that would be delivered, the exact minimum under slippage. Absent, the card shows no terms rather than estimates any.' },
+  { name: 'planResult', type: 'BridgePlanResult', description: 'The unsigned plan, or the specific reason there is none — not verified, no peer, insufficient balance, insufficient fee, dust below minimum, expired. Each renders its own note; none of them collapse into a generic error.' },
+  { name: 'unavailable', type: 'string', description: 'A live read failed. Rendered as its own note, so a failed read is never shown as a confident no-balance.' },
+  { name: 'amountInText', type: 'string', description: "Overrides the send leg's text. Without it the leg shows the quote's input amount." },
+  { name: 'receiveValueText', type: 'string', description: 'Overrides the receive leg, for a value the quote does not carry — the native-XRP amount on a redeem, for instance.' },
+  { name: 'fromBalance', type: 'Amount', description: 'The balance on the source chain, shown against the send leg when the host knows it.' },
+  { name: 'sourceExplorerUrl', type: 'string', description: "The source transaction's explorer link, shown on the Submitted leg." },
+  { name: 'scanUrl', type: 'string', description: "The LayerZeroScan link for the message, shown on the Submitted leg. It is evidence you can open — never the card's source of delivery truth." },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the card. Present only when the host is explicitly in mock mode; never a fallback.' },
+  { name: 'networkLabel', type: 'string', description: 'The network named in the card header, e.g. `Coston2`.' },
+  { name: 'onAmountInChange', type: '(text: string) => void', description: 'Called as the reader edits the send amount. Omit it and the amount is display-only.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader takes the CTA. The card holds no key and broadcasts nothing — signing is yours.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+Two legs: what you send on the source chain, and what you receive on the
+destination. The receive leg is the dust-adjusted `amountReceivedLD` the OFT would
+actually deliver, not the amount you typed — and once the operation has concluded
+it reads `—`, because a pre-send quote is no longer a live estimate of anything.
+
+Below the legs sits one note. It is the failed-read note if a read failed, the
+specific plan error if there is one, and otherwise the statement that delivery is
+asynchronous: the send confirms on the source chain, LayerZero delivers on the
+destination, and the card holds the operation in flight until the destination
+confirms receipt.
+
+When there is a live quote, four terms are on screen before you sign: the
+cross-chain fee, the minimum received, the maximum slippage and the route. While
+the operation is in flight, the approve and send render on the operation spine as
+the real steps they are, followed by the delivery timeline — `Submitted`,
+`Awaiting delivery`, `Delivered` for a bridge; `Submitted`, `Awaiting LayerZero
+delivery`, `Awaiting FAssets redemption`, `Native XRP redeemed` for a redeem. The
+`Submitted` leg carries the source transaction and the LayerZeroScan link when the
+host has them.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs. The bridge route (Coston2 → Sepolia):
+
+- **quote** — the real quoted fee, the dust-adjusted receive amount, the exact
+  minimum.
+- **no balance** — an honest empty, and distinct from a read that failed.
+- **unavailable** — the read failed. It says so, rather than rendering as a zero
+  balance.
+- **needs approval** — the approve is its own step, stated before the send.
+- **approving** — the approve transaction in flight on the spine.
+- **sending** — approval done, the send in flight.
+- **submitted** — a confirmed send, and not a delivery. The timeline's `Delivered`
+  leg is still pending; the LayerZeroScan link is there to follow.
+- **awaiting delivery** — held in flight, waiting on the destination read.
+- **delivered** — `succeeded`, reached only because the destination chain
+  confirmed receipt.
+- **insufficient fee** — the native fee gates the send. Its own note, distinct
+  from having no FXRP.
+- **dust below minimum** — what would land after the OFT removes sub-shared-decimal
+  dust is under your floor. Its own state, not a failure and not a send left to
+  revert on chain.
+
+The redeem route (Sepolia FXRP → native XRP):
+
+- **quote** — delivery as native XRP, with the fee paid in ETH on Sepolia.
+- **awaiting LayerZero delivery** — leg one, to the composer on Coston2.
+- **awaiting FAssets redemption** — the redemption is filed and an agent is paying
+  native XRP to your XRPL address. Filed is not settled; this is not yet redeemed.
+- **native XRP redeemed** — `succeeded`, reached only from the XRPL settlement
+  read.
+
+## Mock to live
+
+The card is prop-driven, so the swap happens under it. `createMockBridgeAdapter`
+runs the real adapter, quote and plan code over an offline reader of what the live
+Coston2 ↔ Sepolia run actually observed; a live host passes real clients to the
+same `makeBridgeAdapter`. Mock mode is something a host constructs on purpose —
+nothing falls back to it.
+
+```tsx
+// From this…
+const adapter = createMockBridgeAdapter('coston2-sepolia')
+
+// …to this. The card does not change.
+const adapter = makeBridgeAdapter(sourceClient, destinationClient, route)
+```
+
+## What it will not do
+
+It will not conclude anything from the source receipt. `Delivered` on a bridge and
+`Native XRP redeemed` on a redeem are entered only from a read of the destination
+chain or the XRPL settlement, and a message that is still in flight stays in
+flight — an unconfirmed outcome is never rendered as failed. It will not treat a
+failed read as a zero balance, and it will not emit a send on a route whose
+delivery has never been confirmed: `buildBridgePlan` refuses an unverified route
+before it reads anything, and the card renders that refusal rather than a plan.
+
+Nor will it mint. The cross-chain mint — an XRPL payment, an FDC automint, then a
+bridge out through the shim — is configured but has not been driven live in this
+build. It ships present and reasoned, never faked. The shim's address is recorded in
+the M8 spec, not in `@flarekit-dev/contracts` — it enters the registry with the
+milestone that verifies the path, because the registry carries only what a
+recorded run stands behind.

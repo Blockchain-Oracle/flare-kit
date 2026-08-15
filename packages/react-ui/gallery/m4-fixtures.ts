@@ -8,7 +8,7 @@ import {
   observe,
   readFeedCatalogue,
   readFeeds,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 
 /**
  * Every value the M4 gallery renders.

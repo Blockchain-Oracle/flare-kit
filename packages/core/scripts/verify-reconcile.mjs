@@ -7,9 +7,9 @@
  * is and believes the answer.
  */
 import { createPublicClient, http } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import { createFlareKit, createFdcClient, evidence, applyTransition } from '../dist/index.js'
-import { registryFor } from '@flare-kit/contracts'
+import { registryFor } from '@flarekit-dev/contracts'
 
 const CHAIN_ID = 114
 const XRPL_TX = '3F8394997FD81D36C6DA3B626B4CE6D1FA594911FE97C150977B14E5B6AB6C03'

@@ -1,4 +1,4 @@
-import { fastUpdateIncentiveManagerAbi, ftsoRegistryFor } from '@flare-kit/contracts'
+import { fastUpdateIncentiveManagerAbi, ftsoRegistryFor } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import type { RoundReader } from '../voting-round.js'
 

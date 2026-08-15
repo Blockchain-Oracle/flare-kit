@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { zeroAddress, type Address, type PublicClient } from 'viem'
-import { governanceFor } from '@flare-kit/contracts'
+import { governanceFor } from '@flarekit-dev/contracts'
 import {
   discoverProposals,
   mapProposalState,

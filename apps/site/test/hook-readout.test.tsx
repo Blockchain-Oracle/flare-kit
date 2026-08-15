@@ -1,0 +1,145 @@
+import { render, screen } from '@testing-library/react'
+import { renderToString } from 'react-dom/server'
+import { describe, expect, it } from 'vitest'
+import { HookReadout } from '../components/docs/demos/hook-readout'
+
+/**
+ * The pane every hook page shares. It used to `JSON.stringify` the hook's
+ * return value, which is the wrong notation for an API return shape and told
+ * three outright lies about it:
+ *
+ * - `undefined` was replaced with `null`. Those are different states, and this
+ *   kit distinguishes "not read" from "read as empty" everywhere else.
+ * - a bigint became the STRING "123n", so an exact value was rendered as prose.
+ * - a function became the string "[function]", which names nothing.
+ *
+ * It also rendered through the kit's CodeWindow, which is deliberately never
+ * highlighted — correct for a product surface showing exact values, wrong for
+ * a documentation pane sitting beside highlighted code blocks.
+ */
+
+/** The rendered code, with the highlighter's span boundaries collapsed away. */
+function readoutText(): string {
+  return screen.getByRole('code').textContent ?? ''
+}
+
+describe('HookReadout notation', () => {
+  it('writes an absent value as undefined, not as null', () => {
+    render(<HookReadout name="useThing" value={{ delegate: undefined }} />)
+    expect(readoutText()).toMatch(/delegate: undefined/)
+    expect(readoutText()).not.toMatch(/null/)
+  })
+
+  it('writes a bigint as an exact literal, not as a quoted string', () => {
+    render(<HookReadout name="useThing" value={{ vp: 2354308387975507843417n }} />)
+    expect(readoutText()).toMatch(/vp: 2354308387975507843417n/)
+    expect(readoutText()).not.toMatch(/"2354308387975507843417n"/)
+  })
+
+  it('writes a function as a call signature naming its parameters', () => {
+    render(<HookReadout name="useThing" value={{ submit: (plan: unknown) => plan }} />)
+    expect(readoutText()).toMatch(/submit: \(plan\) => …/)
+    expect(readoutText()).not.toMatch(/\[function\]/)
+  })
+
+  it('writes keys as identifiers, the way a return type is written', () => {
+    render(<HookReadout name="useThing" value={{ position: 1 }} />)
+    expect(readoutText()).toMatch(/\bposition:/)
+    expect(readoutText()).not.toMatch(/"position":/)
+  })
+
+  it('keeps a string a quoted string', () => {
+    render(<HookReadout name="useThing" value={{ network: 'coston2' }} />)
+    expect(readoutText()).toMatch(/network: 'coston2'/)
+  })
+
+  it('names the return type in the title when the page states one', () => {
+    render(<HookReadout name="useGovernance" value={{}} returnType="UseGovernanceResult" />)
+    expect(screen.getByText('UseGovernanceResult')).toBeInTheDocument()
+  })
+})
+
+/**
+ * A plan result carries the contract call it would make, and that carries the
+ * ABI fragment — so the honest full serialisation of `useGovernance` ran to
+ * hundreds of lines of `stateMutability` / `inputs` / `outputs` before reaching
+ * anything a reader came for. A pane documenting a RETURN SHAPE has to show the
+ * shape.
+ *
+ * Depth is capped rather than filtered: what is elided is COUNTED and named, so
+ * the pane never implies a structure is smaller or simpler than it is.
+ */
+describe('HookReadout depth', () => {
+  const deep = { a: { b: { c: { d: { e: 'buried' } } } } }
+
+  it('elides past the readable depth rather than running for hundreds of lines', () => {
+    render(<HookReadout name="useThing" value={deep} />)
+    expect(readoutText()).not.toMatch(/buried/)
+  })
+
+  it('says how many keys it elided, so nothing looks smaller than it is', () => {
+    render(<HookReadout name="useThing" value={{ abi: { x: 1, y: 2, z: 3 } }} depth={1} />)
+    expect(readoutText()).toMatch(/\{…3 keys\}/)
+  })
+
+  it('says how many items a long array holds', () => {
+    render(<HookReadout name="useThing" value={{ abi: [1, 2, 3, 4] }} depth={1} />)
+    expect(readoutText()).toMatch(/\[…4 items\]/)
+  })
+
+  it('keeps an empty collection literal, which is a real answer', () => {
+    render(<HookReadout name="useThing" value={{ conflicts: [], meta: {} }} depth={1} />)
+    expect(readoutText()).toMatch(/conflicts: \[\]/)
+    expect(readoutText()).toMatch(/meta: \{\}/)
+  })
+})
+
+/**
+ * The pane renders LIVE hook state, so the server's pre-read snapshot and the
+ * client's settled one differ by construction — the server rendered
+ * `position: { status: 'unavailable' }` in 12 lines while the client rendered
+ * the settled value in 42, and React failed hydration.
+ *
+ * Every hook demo shares this pane, so every one of them has the same race.
+ * `useDelegation` escaped it only on timing: its mock read takes several
+ * microtasks and lands after hydration finishes, while `useGovernance`'s
+ * resolves in one and lands during it. A bug that only some pages show, for
+ * reasons that have nothing to do with those pages, is a bug in the shared
+ * thing.
+ *
+ * So the pane renders nothing live until it has mounted: both passes then agree,
+ * and the value arrives afterwards. It was never a static value to begin with.
+ */
+describe('HookReadout hydration', () => {
+  /**
+   * Tags stripped before asserting: the highlighter splits every value across
+   * span boundaries, so a raw `toContain` on the HTML passes whether or not the
+   * value is there. That version of this test passed against the UNFIXED
+   * component, which is the only reason this comment exists.
+   */
+  const serverText = (node: Parameters<typeof renderToString>[0]) =>
+    renderToString(node).replace(/<[^>]*>/g, '')
+
+  it('renders no live value on the server, so the two passes cannot disagree', () => {
+    expect(serverText(<HookReadout name="useThing" value={{ vp: 1n }} />)).not.toMatch(/vp: 1n/)
+  })
+
+  it('still names the pane on the server, so the layout does not jump', () => {
+    const html = renderToString(
+      <HookReadout name="useThing" value={{ vp: 1n }} returnType="UseThingResult" />,
+    )
+    expect(html).toContain('UseThingResult')
+  })
+
+  it('renders the value once mounted', () => {
+    render(<HookReadout name="useThing" value={{ vp: 1n }} />)
+    expect(readoutText()).toMatch(/vp: 1n/)
+  })
+})
+
+describe('HookReadout rendering', () => {
+  it('is syntax-highlighted, like every other code surface on the page', () => {
+    const { container } = render(<HookReadout name="useThing" value={{ vp: 1n }} />)
+    expect(container.querySelectorAll('[class^="tok-"]').length).toBeGreaterThan(0)
+  })
+})

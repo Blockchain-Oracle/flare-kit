@@ -1,4 +1,4 @@
-import { FDC_PROTOCOL_ID, expectedFinalizationSeconds } from '@flare-kit/contracts'
+import { FDC_PROTOCOL_ID, expectedFinalizationSeconds } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import {
   type RoundReader,

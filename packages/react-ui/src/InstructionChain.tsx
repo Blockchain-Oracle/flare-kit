@@ -1,6 +1,6 @@
 // packages/react-ui/src/InstructionChain.tsx
-import type { InstructionPlan } from '@flare-kit/core'
-import { amount, formatExact } from '@flare-kit/core'
+import type { InstructionPlan } from '@flarekit-dev/core'
+import { amount, formatExact } from '@flarekit-dev/core'
 import type { ReactNode } from 'react'
 import { Countdown } from './primitives/Countdown.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'

@@ -1,0 +1,141 @@
+---
+title: FeedHistoryTable
+description: Anchor-feed history as one row per voting round, including the rounds that answered nothing, with the four ways a round can fail to produce a value kept as four distinct answers.
+breadcrumb: ['Docs', 'Components', 'FeedHistoryTable']
+importLine: "import { FeedHistoryTable } from '@flarekit-dev/react-ui'"
+---
+
+`FeedHistoryTable` renders anchor-feed history one row per voting round,
+including the rounds that came back with nothing. It is a table rather than a
+chart, and that is a correctness decision: a line drawn across a gap interpolates
+between the two values either side of it and puts a price on screen that no round
+ever committed to.
+
+The row this component exists for is **committed, not retrievable**. The Relay's
+merkle root outlives the data-availability host's leaves by roughly 297 days, so
+the chain genuinely asserts a commitment for a value that can no longer be
+fetched. Nothing failed and nothing is missing — the commitment is real and the
+leaf is gone, and that is its own answer.
+
+## Live
+
+The preview runs the gallery's own states. A retention boundary and an
+unreachable host are conditions of the network rather than of a read, so those
+cases are built from the rounds the live Coston2 bisection actually returned —
+it put the retrievable floor at round `1130920`, with `1130919` committed and
+gone.
+
+<FeedHistoryTableDemo />
+
+## Usage
+
+One read over a round range, handed straight to the table. No provider is
+involved — this surface is driven by props.
+
+```tsx
+import { FLARE_NETWORKS } from '@flarekit-dev/contracts'
+import { FEED_CATEGORY, createMockFtsoReader, encodeFeedId } from '@flarekit-dev/core'
+import { useFeedHistory } from '@flarekit-dev/react'
+import { FeedHistoryTable } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+const reader = createMockFtsoReader()
+const chainId = FLARE_NETWORKS.coston2.id
+const feedId = encodeFeedId(FEED_CATEGORY.crypto, 'FLR/USD')
+
+export function History() {
+  const history = useFeedHistory({
+    reader,
+    chainId,
+    feedId,
+    fromRound: 1_415_856n,
+    toRound: 1_415_859n,
+  })
+
+  return (
+    <FeedHistoryTable
+      history={history.data}
+      feedName="FLR/USD"
+      loading={history.loading}
+      now={Date.now()}
+      onRefresh={history.refresh}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'history', type: 'Observation<FeedHistory>', description: 'The rounds, carrying who served them and when. An unavailable observation renders as an unread range, never as an empty one.' },
+  { name: 'feedName', type: 'string', description: 'Which feed these rounds belong to, named in the table caption. Without it the caption drops the subject, and the rounds are a column of prices with nothing to attach them to.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the range is being walked. Skeleton rows appear only when no history has arrived yet.' },
+  { name: 'stale', type: 'boolean', defaultValue: 'false', description: "True when the reading is past its source class's freshness budget. The rounds stay rendered, carrying the time they were read — the retention boundary moves, so an old reading can name a floor that has since advanced." },
+  { name: 'now', type: 'number', description: 'The clock in milliseconds. Omit it and the provenance chip is not shown, because an age cannot be stated without one.' },
+  { name: 'onRefresh', type: '() => void', description: 'Offers a re-read on the nothing-retrievable and stale notes. Omit it and those notes state the situation without a control.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the table follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+Four columns — voting round, value, turnout, and what this round answered — with
+the exact price in the mono face carrying the decimals of that round's own
+response. Decimals are per reading, never per feed: one live batch returned `8`,
+`9` and `2` decimals for three feeds, and the anchor path disagrees with the
+block-latency path for the same asset.
+
+The fourth column is the point of the table. It says one of four things:
+`Retrieved`, `Committed, not retrievable`, `No root published`, or `Host could
+not be asked`. `No root published` states what was seen rather than asserting a
+permanent negative, because a zero root reads identically for a round that was
+never finalized and one that has not been finalized yet. Beneath the table sit
+the notes that give a range its shape — where the retention boundary falls and
+which round is the oldest the host actually served, discovered by asking rather
+than assumed.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the round range is still being walked; skeleton rows.
+- **no range selected** — nothing was asked for. Distinct from a range that came
+  back holding no rounds.
+- **BASE** — four consecutive rounds, every one retrieved, with the provenance
+  of the host that served them.
+- **retention boundary inside the range** — retrievable above it, committed and
+  gone below, with the newest such round named exactly.
+- **nothing retrievable** — all three non-retrieved answers at once, so none of
+  them can be conflated: committed but not retrievable, no root published, and
+  a round the host could not be asked about.
+- **stale** — rounds read hours ago, still shown, carrying the time they were
+  read.
+- **the host could not be asked at all** — the range failed with its reason. No
+  rows, because an unread range is not an empty one.
+- **empty range** — the range holds no rounds. Nothing was asked and nothing
+  failed.
+
+## Mock to live
+
+`createMockFtsoReader()` is a reader, not a second implementation: the same
+`readFeedHistory` runs against it. Swapping in a viem public client for the
+network you want is the whole change, and addresses come from
+`@flarekit-dev/contracts`.
+
+```tsx
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. The component does not change.
+const reader = createPublicClient({ transport: http(FLARE_NETWORKS.coston2.rpcUrl) })
+```
+
+## What it will not do
+
+It will not draw a line through a gap, interpolate a missing round, or drop a
+round that answered nothing. It will not collapse the four non-answers into one
+"unavailable", and it will not present a round the host could not be asked about
+as evidence that the price did not exist. It renders no chart at all, because
+the shape of this data is exactly what a chart would smooth away.

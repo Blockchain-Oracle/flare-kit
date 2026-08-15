@@ -1,4 +1,4 @@
-import { assetManagerAbi, fassetAbi, registryFor } from '@flare-kit/contracts'
+import { assetManagerAbi, fassetAbi, registryFor } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import type { DirectMintProtocolState } from './direct-mint-quote.js'
 

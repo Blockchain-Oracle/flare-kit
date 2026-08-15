@@ -1,0 +1,207 @@
+---
+title: The mock kit
+description: createMockKit at the API level — a seeded clock feeding the real state machine, scenarios that are real paths, and mock readers that refuse what the live run never observed.
+breadcrumb: ['Docs', 'Headless', 'The mock kit']
+importLine: "import { createMockKit, type MockKit } from '@flarekit-dev/core'"
+---
+
+[Mock mode](/docs/mock-mode) covers what the mock is for and how a provider
+takes one. This page is the contract underneath it: what `createMockKit`
+returns, what a scenario changes, and why the mock readers throw on a read
+nobody ever performed live.
+
+## It does not reimplement the state machine
+
+The single most important property of the mock kit is what it *is not*. It does
+not have its own lifecycle. It supplies observed chain state on a simulated
+clock and lets the real `reconcileDirectMint` run, so a component driven by the
+mock exercises exactly the code a live mint does.
+
+A parallel implementation would drift, and every state it showed would be a
+claim about the product rather than a demonstration of it.
+
+```ts
+import { createMockKit } from '@flarekit-dev/core'
+
+const kit = createMockKit({ seed: 'demo', scenario: 'happy' })
+
+kit.isMock // true
+kit.label // 'mock kit'
+kit.chainId // 0 — not on a network at all
+```
+
+`chainId` is `0`, and an operation the mock creates records `network: 0` too,
+so the kit and the record never disagree about where the work happened.
+
+## Options
+
+```ts
+interface MockKitOptions {
+  scenario?: MockScenario
+  timings?: Partial<MockTimings>
+  seed?: string
+  startedAt?: number
+  speed?: number
+  stepMs?: number
+}
+```
+
+`seed` makes ids and timestamps deterministic — `hashSeed` is a plain FNV walk
+over the string, with no `Math.random` anywhere, so docs and tests never flake.
+`startedAt` defaults to `MOCK_EPOCH`.
+
+`speed` is how much simulated time passes per second of real time, defaulting
+to `200`: a fifteen-minute mint plays out in about four seconds, so a preview
+shows the real waits instead of skipping them. `stepMs` is the least simulated
+time each `reconcile()` advances regardless of the wall clock, defaulting to
+`30_000`, so a caller polling in a tight loop still makes progress. Only
+`reconcile()` consults either; `reconcileAt` and `trace` are clock-free.
+
+## Scenarios
+
+A scenario is a real path the operation can take, expressed as stage timings —
+not a cosmetic flag and not a rendering override.
+
+```ts
+import { MOCK_SCENARIOS, type MockScenario } from '@flarekit-dev/core'
+
+// ['happy', 'large-delayed', 'executor-late', 'proof-slow', 'protocol-unavailable']
+```
+
+| Scenario | What it changes |
+| --- | --- |
+| `happy` | Default timings. The mint settles. |
+| `large-delayed` | A one-hour protocol delay window opens before the mint can complete. |
+| `executor-late` | A ten-minute executor exclusivity period, during which no action is safe. |
+| `proof-slow` | FDC attestation takes ten minutes instead of ninety seconds. |
+| `protocol-unavailable` | A named configuration gap. Nothing settles, and the redemption agent never pays. |
+
+`SCENARIO_TIMINGS` holds those deltas over `DEFAULT_TIMINGS`, and `timings`
+overrides both. Under `protocol-unavailable` the chain reading carries an
+`unavailableReason` and `alreadySettled` stays false — so the operation reaches
+`action_required` with `operator` as the awaited actor and an empty action
+list. It never reaches `succeeded` on silence, and it never reaches `failed`.
+
+## The kit surface
+
+`MockKit` extends `DirectMintKit`, the interface a surface actually depends on,
+so a component tree runs against the mock or a live kit with no branch:
+
+```ts
+// DirectMintKit — the shared contract.
+kit.protocolState
+kit.quote(intent, now?)
+kit.start(intent)
+kit.reconcile(record) // Promise<DirectMintOperation>
+kit.redeemState
+kit.quoteRedeem(intent, now?, context?)
+kit.startRedeem(intent)
+kit.reconcileRedeem(record)
+```
+
+`start` applies the same guard a live kit does: a quote that cannot proceed
+throws `QUOTE_NOT_PROCEEDABLE`, so the mock cannot demonstrate something the
+product forbids.
+
+On top of that, `MockKit` adds the clock-free methods a doc page or a test
+needs:
+
+```ts
+kit.pay(record) // attach the simulated XRPL payment
+kit.chainAt(record, now) // the DirectMintChainState at a simulated instant
+kit.reconcileAt(record, elapsedMs) // reconcile at an exact offset
+kit.trace(record) // every distinct record, in order
+kit.runToCompletion(record) // the last record of that trace
+
+kit.redeemChainAt(record, now)
+kit.reconcileRedeemAt(record, elapsedMs)
+kit.traceRedeem(record)
+```
+
+## trace
+
+`trace` walks the stage boundaries — payment, XRPL finality, the proof, the
+delay window, executor exclusivity, settlement — reconciling at each and
+keeping a record only when the state or `updatedAt` actually changed. It is the
+honest way to enumerate what an operation passes through, because every entry
+came out of the real reconciler.
+
+```ts
+const record = kit.start(intent)
+const states = kit.trace(record).map((r) => r.state)
+```
+
+That is what drives the state switchers in these docs: a switcher can only
+offer states the operation genuinely reaches.
+
+## The simulated protocol state
+
+`MOCK_PROTOCOL_STATE` and `MOCK_REDEEM_STATE` are the settings both mock
+capabilities quote from. Their values are deliberately not a real network's:
+the FAsset symbol is `FMockXRP` and the core-vault destination is
+`rMOCKCoreVau1tAddressNotARea1Ledger`. A screenshot must not be able to pass as
+live. The redeem state otherwise mirrors the observed Coston2 shape — 10 XRP
+lots, a 0.5% redemption fee, a 105% default premium.
+
+## The mock readers and adapters
+
+The mint kit is not the only mock in the package. Each capability ships one,
+and each is the *real* adapter or reader code driven against labelled fakes:
+
+```ts
+import {
+  createMockSwapReader,
+  createMockLiquidityReader,
+  createMockVaultAdapter,
+  createMockBridgeAdapter,
+  createMockGaslessAdapter,
+  createMockDelegationAdapter,
+  createMockRewardsAdapter,
+  createMockFtsoReader,
+  createMockStakeReads,
+  mockPortfolio,
+  mockOperationRecords,
+  mockX402Challenge,
+  mockX402Outcome,
+} from '@flarekit-dev/core'
+```
+
+Three rules govern all of them.
+
+**They are written after the live run, not before.** Each module carries the
+date and the evidence file of the run it was written from, and exports the
+observed values as a constant — `MOCK_BRIDGE_OBSERVED`, `MOCK_VAULT_OBSERVED`,
+`MOCK_GASLESS_OBSERVED`, `MOCK_REWARDS_OBSERVED`, `MOCK_STAKE_OBSERVED`,
+`MOCK_DELEGATION_OBSERVED`, `MOCK_X402_OBSERVED`. The numbers in a mock are
+transcriptions, not inventions.
+
+**They refuse the unobserved.** A bridge route the live run never drove throws.
+A read the run never captured throws loudly rather than returning a plausible
+zero. A `delivered` result is never fabricated without an observed destination
+read — delivery and redemption states come from explicit configuration a caller
+passes in.
+
+**They drive the real code.** `createMockBridgeAdapter` returns a
+`BridgeAdapter` built by `makeBridgeAdapter` over fake source and destination
+clients; `createMockVaultAdapter` does the same through `makeVaultAdapter`. The
+quote, plan and reconcile paths under test are the shipped ones.
+
+## Explicit, labelled, never a fallback
+
+A caller constructs a mock. Nothing in this package ever falls back to one.
+`createFlareKit` throws `KIT_UNAVAILABLE` when it cannot read protocol state,
+with a message that says to retry or use an explicitly labelled mock kit — it
+does not quietly become a simulation. The live kit module must never even
+import the mock, and a test asserts the file contains no textual reference to
+it at all.
+
+Every mock surface reports `isMock` and carries the label `mock kit`, so the
+labelling is a property of the kit rather than something a screen remembers to
+render.
+
+## What it will not do
+
+The mock will not show a state the real reconciler cannot produce, will not
+quote terms the live guard would refuse, and will not settle an operation its
+scenario says is unavailable. It is not a fixture set and it is not a fallback:
+it is the same lifecycle, on a clock you control.

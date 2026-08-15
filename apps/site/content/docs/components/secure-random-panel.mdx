@@ -1,0 +1,139 @@
+---
+title: SecureRandomPanel
+description: The protocol's randomness with its security flag as the headline rather than a footnote — and when a secure value was required and the protocol reports an insecure one, no value on screen at all.
+breadcrumb: ['Docs', 'Components', 'SecureRandomPanel']
+importLine: "import { SecureRandomPanel } from '@flarekit-dev/react-ui'"
+---
+
+`SecureRandomPanel` renders one reading from the Relay's `RandomNumberV2`:
+the value at full precision, whether the protocol reports it as secure, and the
+round and timestamp it belongs to. The security flag is the point of the surface,
+not a note beside a usable number — because a flag next to a number is an
+invitation to use the number.
+
+`isSecureRandom = false` genuinely occurs. Sampling 401 rounds across the full
+retained range on Coston2 found four insecure ones — `872874`, `882520`,
+`951420` and `1167766` — roughly 1%.
+
+## Live
+
+The preview runs the gallery's own states. The refusal case is driven through
+the real `readSecureRandom` against round `872874`, so it is a read that
+returned no value rather than a staged screen.
+
+<SecureRandomPanelDemo />
+
+## Usage
+
+Read with `useSecureRandom` and pass the observation straight through. The
+policy lives on the read, not on the panel.
+
+```tsx
+import type { RoundReader } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Random({ reader }: { reader: RoundReader }) {
+  const { data, loading, refresh } = useSecureRandom({
+    reader,
+    chainId: 114,
+    requireSecure: true,
+  })
+
+  return (
+    <SecureRandomPanel
+      requireSecure
+      loading={loading}
+      now={Date.now()}
+      onRefresh={refresh}
+      {...(data ? { random: data } : {})}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'random', type: 'Observation<RandomResult>', description: 'What the read returned, with its source and observation time. The result is itself either a reading or a refusal, and the panel renders whichever it is — it never reaches past a refusal for a value.' },
+  { name: 'requireSecure', type: 'boolean', defaultValue: 'false', description: 'Whether the read demanded a secure value. Stated in the header so the reader knows which policy produced what is below. Pass the same value you passed to the read.' },
+  { name: 'votingRoundId', type: 'bigint', description: 'The round asked for. Absent means the current random, and the header says so rather than implying a round.' },
+  { name: 'floorRound', type: 'bigint', description: 'The oldest round the historical read reaches, discovered by the caller. Never a constant here: the floor moves, and a compiled-in one goes stale.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'The read is still running. Only renders a skeleton while there is no reading at all — a refresh never blanks a value already on screen.' },
+  { name: 'now', type: 'number', required: true, description: 'The clock, for the reading’s own freshness against its observation time.' },
+  { name: 'stale', type: 'boolean', defaultValue: 'false', description: 'The reading is past its freshness budget. It stays rendered, carrying the time it was read at, rather than being hidden or replaced.' },
+  { name: 'onRefresh', type: '() => void', description: 'Offered on a stale reading and on a read that could not complete. Omit it and the panel is read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+A panel headed by the round — or `The current value` when none was asked for —
+with a chip stating whether a secure value was required. The reading itself is
+the `uint256` written out in full, every digit, in the mono face: a 39-digit
+number through any shortening is a different number. Beside it are what the
+protocol reports, the reading's own timestamp, the round when one was asked for,
+and the contract it came from, named `Relay (RandomNumberV2)` after the contract
+rather than the registry alias so it matches an explorer.
+
+When the read refused, there is no value anywhere on the surface. The refusal
+carries its reason and the timestamp of the reading it was taken against, so
+"no" is attached to a specific moment rather than being a bare denial.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the read is running; no value is asserted.
+- **current value, secure, nothing required** — a secure reading returned under
+  no policy.
+- **policy accepted** — a secure value was required and the protocol reports
+  this one as secure. The check happened at the read, not here.
+- **not secure, returned anyway** — nothing required otherwise, so the value is
+  shown, and the panel says plainly that the protocol reports it insecure and
+  which option would have refused instead.
+- **policy rejected** — round `872874` with `requireSecure`. The read returned a
+  refusal and no value, and there is deliberately nothing on the surface that
+  could reach the underlying number.
+- **historical, insecure, no requirement set** — the same round read without the
+  requirement, so the value is present and flagged.
+- **below the retained range** — round `800000` against a floor of `864606`.
+  Nothing is retrievable, which is the range's edge, not a failure and not a
+  claim that the round had no randomness.
+- **the random could not be read** — a typed error from the Relay call. No value
+  is shown, and none is inferred from the last one.
+- **stale, still rendered** — past its freshness budget, still on screen,
+  carrying the time it was read at.
+
+## Mock to live
+
+The panel reads nothing itself; it renders what a `RoundReader` produced. Moving
+from the mock to a live network swaps the reader, not the screen. Addresses come
+from `@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+import { chainFor } from '@flarekit-dev/contracts'
+import { createMockFtsoReader } from '@flarekit-dev/core'
+import { createPublicClient, http } from 'viem'
+
+// From this…
+const reader = createMockFtsoReader()
+
+// …to this. The component does not change.
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+## What it will not do
+
+It will not show a value that a required-secure read refused. There is no flag
+to override and no field to read past — refusing is the complete answer, and the
+panel renders the refusal rather than reaching around it.
+
+It will not leave `isSecure = false` sitting quietly beside a perfectly usable
+number, it will not hardcode `secure`, and it will not carry a compiled-in
+retention floor. It will not infer a value from a previous read when the current
+one could not complete.

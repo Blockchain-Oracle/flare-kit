@@ -1,5 +1,5 @@
 import { FlareKitError } from '../errors.js'
-import type { UnsignedXrplPayment } from '../xrpl.js'
+import { type UnsignedXrplPayment, assembleXrplPayment } from '../xrpl.js'
 import { MEMO_MAX_BYTES, decodeMemo } from './memo.js'
 
 /**
@@ -57,14 +57,6 @@ export interface BuildInstructionPaymentInput {
 export function buildInstructionPayment(
   input: BuildInstructionPaymentInput,
 ): UnsignedXrplPayment {
-  if (input.amountDrops <= 0n) {
-    throw new FlareKitError('INVALID_AMOUNT', {
-      domain: 'input',
-      message: `A payment must be for a positive number of drops, received ${input.amountDrops}.`,
-      recovery: 'terminal',
-      valueMoved: 'no',
-    })
-  }
   if (!/^0x[0-9a-fA-F]{64}$/.test(input.reference)) {
     throw new FlareKitError('INVALID_PAYMENT_REFERENCE', {
       domain: 'input',
@@ -74,19 +66,18 @@ export function buildInstructionPayment(
     })
   }
 
-  return {
-    TransactionType: 'Payment',
-    Account: input.account,
-    Destination: input.destination,
-    Amount: input.amountDrops.toString(),
-    Fee: input.ledgerFeeDrops.toString(),
-    Sequence: input.sequence,
-    // Bounds the payment: past this ledger it can never be applied, so a payment not found
-    // by then is definitively not going to land.
-    LastLedgerSequence: input.lastLedgerSequence,
-    Memos: [{ Memo: { MemoData: input.reference.slice(2).toUpperCase() } }],
-    // No DestinationTag. See the file comment — this is a safety property, not a default.
-  }
+  // The envelope is shared with the direct-mint builder; only the memo differs.
+  // The positive-amount check and the no-DestinationTag rule live there, so
+  // they cannot hold on one payment path and not the other.
+  return assembleXrplPayment({
+    account: input.account,
+    destination: input.destination,
+    amountDrops: input.amountDrops,
+    ledgerFeeDrops: input.ledgerFeeDrops,
+    sequence: input.sequence,
+    lastLedgerSequence: input.lastLedgerSequence,
+    memoData: input.reference.slice(2).toUpperCase(),
+  })
 }
 
 /**

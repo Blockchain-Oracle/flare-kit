@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId } from '@flarekit-dev/contracts'
 import { isRefusal, readSecureRandom } from '../src/ftso/random.js'
 import { assertOfferWithinLimit, priceFor, quoteIncentive } from '../src/ftso/incentive.js'
 import { confirmIncentiveEffect, isEffectExpired } from '../src/ftso/incentive-effect.js'

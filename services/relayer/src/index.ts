@@ -1,17 +1,17 @@
 import express from 'express'
 import { createPublicClient, createWalletClient, http, getAddress, type Hex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { FLARE_NETWORKS, FORWARDER_ABI, gaslessFor, type FlareNetworkKey } from '@flare-kit/contracts'
+import { FLARE_NETWORKS, FORWARDER_ABI, gaslessFor, type FlareNetworkKey } from '@flarekit-dev/contracts'
 import { executePayment, type RelayerContext } from './relayer-execute.js'
 
 /**
  * The flare-kit reference fee-free gasless relayer (M9-R5). `GET /nonce/:addr` and
- * `POST /execute`. It imports the EIP-712 crypto and validation from `@flare-kit/core`
+ * `POST /execute`. It imports the EIP-712 crypto and validation from `@flarekit-dev/core`
  * (via relayer-execute.ts), absorbs its own gas, and adds no fee or quota.
  *
  * The operator key is read from `RELAYER_PRIVATE_KEY` — never an env-echoed public
  * value, never logged, never included in any response body. Public config (RPC, chain
- * id, addresses) comes from the constants in `@flare-kit/contracts`.
+ * id, addresses) comes from the constants in `@flarekit-dev/contracts`.
  */
 
 const NETWORK = (process.env.RELAYER_NETWORK ?? 'coston2') as FlareNetworkKey

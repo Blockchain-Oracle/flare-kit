@@ -4,7 +4,7 @@ import type {
   GovernanceOperation,
   GovernancePlan,
   GovernancePositionView,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   applyTransition,
   createOperation,
@@ -13,7 +13,7 @@ import {
   governancePosition,
   planGovernance,
   reconcileGovernance,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'

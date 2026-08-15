@@ -1,11 +1,11 @@
 import type { Address, Hex, PublicClient, WalletClient } from 'viem'
-import { recoverPaymentSigner } from '@flare-kit/core'
-import { ERC20_ABI, FORWARDER_ABI } from '@flare-kit/contracts'
+import { recoverPaymentSigner } from '@flarekit-dev/core'
+import { ERC20_ABI, FORWARDER_ABI } from '@flarekit-dev/contracts'
 
 /**
  * The fee-free relayer's validate-and-submit core (M9-R5), split from the express
  * wiring in `index.ts` to stay under 300 lines. It imports `recoverPaymentSigner` from
- * `@flare-kit/core` — the SAME EIP-712 vocabulary the client signs with (M9-R2/R8), so
+ * `@flarekit-dev/core` — the SAME EIP-712 vocabulary the client signs with (M9-R2/R8), so
  * the crypto cannot drift. It re-declares no domain, no types.
  *
  * It absorbs its own gas and adds no fee or quota. The operator key lives only in the

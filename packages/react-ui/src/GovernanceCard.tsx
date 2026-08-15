@@ -1,5 +1,5 @@
-import { amount, truncateAddress } from '@flare-kit/core'
-import type { Eligibility, GovernanceOperation, GovernancePlanResult, GovernancePositionView } from '@flare-kit/core'
+import { amount, truncateAddress } from '@flarekit-dev/core'
+import type { Eligibility, GovernanceOperation, GovernancePlanResult, GovernancePositionView } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

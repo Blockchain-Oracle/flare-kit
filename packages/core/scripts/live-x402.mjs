@@ -10,14 +10,14 @@
  * token throughout. `succeeded` is reached only from the observed settlement + delivery.
  *
  * Requires the x402 server running (operator key) at the registry serverUrl:
- *   X402_PRIVATE_KEY=… pnpm --filter @flare-kit/x402-server start   # in another shell
+ *   X402_PRIVATE_KEY=… pnpm --filter @flarekit-dev/x402-server start   # in another shell
  *   node packages/core/scripts/live-x402.mjs
  */
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { randomBytes } from 'node:crypto'
 import { createPublicClient, createWalletClient, http, erc20Abi, formatUnits } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { x402For } from '@flare-kit/contracts'
+import { x402For } from '@flarekit-dev/contracts'
 import {
   eip3009Domain,
   signAuthorization,

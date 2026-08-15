@@ -1,4 +1,4 @@
-import { type OperationRecord, type SerializedError, isTerminal, toSerializedError } from '@flare-kit/core'
+import { type OperationRecord, type SerializedError, isTerminal, toSerializedError } from '@flarekit-dev/core'
 import { useEffect, useRef, useState } from 'react'
 
 /**

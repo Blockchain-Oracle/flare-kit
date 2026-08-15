@@ -1,0 +1,137 @@
+---
+title: useGovernance
+description: The governance vote-power position, the eligibility read and the delegate/undelegate lifecycle, where Done is reached only from the read-back that proves it.
+breadcrumb: ['Docs', 'Hooks', 'useGovernance']
+importLine: "import { useGovernance } from '@flarekit-dev/react'"
+---
+
+`useGovernance` polls the keyless reads that describe an account's governance
+standing — its vote power, its current delegate and its proposer eligibility —
+and drives the delegate/undelegate lifecycle off the same read. A submitted
+transaction never advances the operation on its own: `succeeded` arrives only
+when `getDelegateOfAtNow` comes back showing the target.
+
+This is not `useDelegation`. FTSO delegation splits WNat vote power across up to
+two providers in bips. Governance vote power lives on a **different contract**,
+`GovernanceVotePower`, and moves **all-or-nothing to one address** through
+`delegate(to)` / `undelegate()`. There is no share argument, because the protocol
+has none.
+
+Reading and planning need no key. `plan` is pure and synchronous, `delegate` and
+`undelegate` only hand a call to the `walletClient` the host already owns, and
+the hook never signs.
+
+## Live
+
+The readout below is the hook's actual return value on this render, running
+against the mock governance adapter — which pairs a labelled fake client with the
+**real** Coston2 deployment, so `governanceVerified` is exactly what the live
+round trip left it and the mock can never make an unverified network look
+signable.
+
+No wallet is connected here, which is what makes the readout worth reading.
+`canWrite` is `false`, `operation` is `undefined` because nothing was signed, and
+the position is the observed blank slate rather than a fabricated holding.
+
+<UseGovernanceDemo />
+
+Note `eligibility.isMember`: it is `undefined`, not `false`. `PollingFtso.isMember`
+reverts for a non-member, and a revert is not a "no".
+
+## Usage
+
+```tsx
+import { governanceFor } from '@flarekit-dev/contracts'
+import { useGovernance } from '@flarekit-dev/react'
+import { GovernanceCard } from '@flarekit-dev/react-ui'
+
+function Governance({ account, publicClient, walletClient, target }) {
+  const { position, eligibility, operation, canWrite, plan, delegate, undelegate } =
+    useGovernance({
+      deployment: governanceFor('coston2'),
+      account,
+      publicClient, // keyless: the VP, delegate and eligibility reads
+      walletClient, // the ONLY signing seam; absent = read and plan only
+    })
+
+  // undefined until the first read lands — never plans off a read it has not observed
+  const planResult = plan({ kind: 'delegate', to: target })
+
+  return (
+    <GovernanceCard
+      position={position}
+      eligibility={eligibility}
+      operation={operation}
+      planResult={planResult}
+      targetText={target}
+      onDelegate={() => delegate(target)}
+      onUndelegate={undelegate}
+    />
+  )
+}
+```
+
+## Parameters
+
+`deployment` is the governance deployment from `@flarekit-dev/contracts`
+(`governanceFor(network)`), never a literal address. `account` is the address to
+read. `publicClient` performs every read and needs no key. `walletClient` is
+optional and is the only seam that can sign; without it the hook reads and plans
+and nothing else.
+
+## Return type
+
+`reads` is the raw keyless VP and delegate read, `undefined` before the first one
+lands. `eligibility` is the proposer-eligibility read, whose `isMember` is
+`undefined` on the observed revert. `position` is `observed | unavailable` — an
+absent read is never a confident zero. `operation` is the in-flight or settled
+lifecycle. `isSettled` reports whether it has stopped moving.
+
+`canWrite` is `true` only once a `walletClient` is injected **and** a read has
+landed, because `delegate` and `undelegate` are a no-op until both hold. It
+reports the write path's actual availability rather than merely the presence of a
+wallet.
+
+`error` carries a refused or failed **write**, or an unexpected failure of a poll
+tick. It does not carry a failed read: `position: 'unavailable'` and
+`eligibility: undefined` report those. A write refusal wins while it stands — the
+two are held in separate slots internally, because when they shared one, every
+successful poll silently wiped a standing refusal within one 15-second interval.
+
+`plan(intent)` is pure and synchronous once a read has landed, and `undefined`
+before.
+
+## States
+
+The delegate round trip runs `composing → delegating → submitted → awaiting →
+succeeded`, and `succeeded` is reached **only** from the read-back. `awaiting` is
+the honest state for a transaction that landed while the read has not caught up
+yet — the same submitted record yields `awaiting` under a read that has not
+reflected it and `succeeded` under one that has.
+
+Delegation moves a **pointer, not weight**. The observed position after a
+successful round trip still reads `0.000000000000000000` VP, because the account
+held none to move. That is not a bug and the surfaces do not smooth it over.
+
+Four refusals are produced before any call is built: self-delegation (a no-op the
+protocol would silently accept), the zero address, undelegating when there is no
+delegate, and an unverified deployment.
+
+## Mock to live
+
+`createMockGovernanceAdapter()` returns a labelled client paired with the real
+deployment. Going live is replacing that client with your own `publicClient` and
+the deployment with `governanceFor(network)` — the hook code does not change.
+
+On Flare mainnet `governanceVerified` is `false`. That network is a **read lens**:
+the hook reads and refuses to compose a signable plan, and it says so rather than
+failing quietly.
+
+## What it will not do
+
+It will not sign, hold a key, or acquire one. It will not report `succeeded` from
+a submission. It will not render an unread value as zero, or a revert as a `false`.
+It will not delegate a share — the protocol has no such call.
+
+`castVote`, `propose` and `execute` are **carried, and declared unbuilt**. They are
+not implemented here and this page does not imply otherwise.

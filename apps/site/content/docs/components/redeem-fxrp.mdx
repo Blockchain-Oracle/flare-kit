@@ -1,0 +1,109 @@
+---
+title: RedeemFXRP
+description: The redemption composer — takes whole lots because the protocol does, and says before you commit that an agent pays you and what happens if that agent does not.
+breadcrumb: ['Docs', 'Components', 'RedeemFXRP']
+importLine: "import { RedeemFXRP } from '@flarekit-dev/react-ui'"
+---
+
+`RedeemFXRP` burns FAsset and asks for XRP back on the XRP Ledger. Two things
+separate it from `MintFXRP`, and both are on screen rather than implied. It takes
+**lots**, because the protocol does and a free amount field would misrepresent
+it. And it names the counterparty: an **agent** pays you, not the protocol — so
+the quote also states what you can claim if that agent does not pay.
+
+## Live
+
+The preview runs the gallery's own states against `createMockKit()`. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the composer never actually reaches.
+
+<RedeemFXRPDemo />
+
+## Usage
+
+Mount it under a `FlareProvider` and hand it the XRP Ledger address that should
+receive the XRP. It quotes on its own; you handle `onSubmit`.
+
+```tsx
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider } from '@flarekit-dev/react'
+import { RedeemFXRP } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Redeem() {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <RedeemFXRP
+        redeemerUnderlyingAddress="rPT1Sjq…bpAYe"
+        onSubmit={(lots) => console.log('redeem', lots)}
+      />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'redeemerUnderlyingAddress', type: 'string', required: true, description: 'The XRP Ledger address the agent must send the XRP to. It is shown in the quote as evidence, not just held in state.' },
+  { name: 'defaultLots', type: 'number', description: 'Seeds the lots field. Uncontrolled — the initial value, not a binding, so typing still owns the field. Without it the refusals and the agent-pays note are reachable only by typing, which is how they went unlooked-at in a browser.' },
+  { name: 'fAssetBalance', type: 'Amount', description: "The holder's FAsset balance, when the host knows it. It is shown beside the field and drives the refusal on a redemption larger than the account holds." },
+  { name: 'now', type: 'number', description: "The clock, for the quote's own expiry. Omit and expiry is simply not evaluated — a surface that guessed the time would be inventing one." },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the host is still fetching protocol state. The terms render as skeletons and the field is disabled.' },
+  { name: 'onSubmit', type: '(lots: number) => void', description: 'Called with the number of lots when the reader submits a quoted, in-window redemption. Omit it and the composer is read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the composer.' },
+]} />
+
+## What it renders
+
+A single panel that owns the lots field, holds the quote it fetched, and shows
+the exact terms before anything is signed: what you burn, the redemption fee,
+when the quote expires, what you receive, the XRP Ledger address it goes to, and
+the line that says it is `an agent, not the protocol` paying you. Under a quote
+that can proceed it also carries the agent-pays note — the percentage of value
+claimable in collateral on Flare if the agent misses the window, stated as
+collateral rather than XRP.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — protocol state is still being fetched; the terms are skeletons.
+- **empty** — no lots entered; the form states the lot size and nothing else.
+- **ready** — quoted, with every term on screen and the agent-pays note under it.
+- **more lots than held** — the refusal names the exact amount the redemption
+  would burn against an account that does not hold it. Nothing to sign.
+- **quote expired** — terms the protocol will no longer honour. Not an error and
+  not a refusal: the quote was right when it was computed, so the note says when
+  it was computed and when it expired, and the action is disabled rather than the
+  form being cleared.
+- **balance known, nothing entered** — the balance is shown before any amount is
+  typed, so the field is not the only place the account's size appears.
+
+A part lot is not a redemption. Enter anything other than a whole number and the
+composer refuses with the lot size rather than rounding for you.
+
+## Mock to live
+
+`RedeemFXRP` reads protocol state and quotes through the kit on the provider, so
+moving from the mock to a live network swaps the kit, not the screen. Addresses
+come from `@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not accept a part lot, and it will not present an expired quote as live.
+It will not describe the agent's payment as guaranteed — the recovery pays
+collateral on Flare, not XRP, and the composer says so before you commit rather
+than after. Requesting a redemption burns your FAsset immediately; the panel
+never implies the XRP has arrived because the request went through.

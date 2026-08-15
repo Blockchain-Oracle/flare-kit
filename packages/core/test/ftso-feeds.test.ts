@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FEED_CATEGORY, encodeFeedId, ftsoRegistryFor } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId, ftsoRegistryFor } from '@flarekit-dev/contracts'
 import { listSupportedFeedIds, quoteAssetOf, readFeeds, readFeedRenames } from '../src/ftso/feeds.js'
 import { assertFeeWithinCeiling, quoteFeedFee } from '../src/ftso/fee.js'
 import { formatExact } from '../src/amounts.js'

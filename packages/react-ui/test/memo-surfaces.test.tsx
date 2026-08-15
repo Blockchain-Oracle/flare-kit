@@ -8,7 +8,7 @@ import {
   planMemoInstruction,
   planMemoRecovery,
   smartAccountsFor,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { MemoInstructionComposer } from '../src/MemoInstructionComposer.js'

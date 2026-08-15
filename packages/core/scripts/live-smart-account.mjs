@@ -49,7 +49,7 @@ import {
   roundForSubmission,
   smartAccountsFor,
   toPaymentProofStruct,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import {
   FDC_PROTOCOL_ID,
   familyFor,
@@ -57,7 +57,7 @@ import {
   masterAccountControllerAbi,
   registryFor,
   sourceFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-13-coston2-live-smart-account.json`

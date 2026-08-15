@@ -1,5 +1,5 @@
 // packages/react-ui/src/MemoInstructionComposer.tsx
-import type { MemoPlanResult, OperationRecord } from '@flare-kit/core'
+import type { MemoPlanResult, OperationRecord } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { Note } from './primitives/Note.js'
 import { Panel } from './primitives/Panel.js'

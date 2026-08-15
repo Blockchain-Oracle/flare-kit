@@ -6,7 +6,7 @@ import {
   ERC20_ABI,
   OFT_ADAPTER_ABI,
   OFT_DEST_ABI,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { encodeExecutorOptions } from './bridge-options.js'
 
 /**

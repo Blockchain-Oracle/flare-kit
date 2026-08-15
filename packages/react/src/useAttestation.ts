@@ -8,7 +8,7 @@ import {
   isTerminal,
   reconcileAttestation,
   toSerializedError,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { useFlareContext } from './provider.js'
 

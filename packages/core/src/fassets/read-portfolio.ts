@@ -1,4 +1,4 @@
-import { chainFor, fassetFor } from '@flare-kit/contracts'
+import { chainFor, fassetFor } from '@flarekit-dev/contracts'
 import { erc20Abi } from 'viem'
 import { type Amount, amount } from '../amounts.js'
 import { type AccountContext, identityFor } from '../account.js'

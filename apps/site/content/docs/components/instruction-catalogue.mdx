@@ -1,0 +1,159 @@
+---
+title: InstructionCatalogue
+description: The protocol's eleven built-in instructions with availability READ off the live deployment — where "we could not look" and "this deployment cannot serve it" stay two different answers.
+breadcrumb: ['Docs', 'Components', 'InstructionCatalogue']
+importLine: "import { InstructionCatalogue } from '@flarekit-dev/react-ui'"
+---
+
+`InstructionCatalogue` is capability **discovery**, not a menu. The rows are the
+eleven instructions the Smart Accounts controller can dispatch — the protocol's
+vocabulary — and each row's availability is read off the deployment in front of
+you rather than declared here.
+
+Four availability answers, and the difference between the last two is the whole
+point:
+
+- **Available** — this deployment can serve it.
+- **Superseded** — the protocol moved on. The three legacy collateral-reservation
+  commands (`0x00`, `0x10`, `0x20`) are redirected to FAssets minting by the
+  deployment's own documentation, which the kit already drives at
+  [MintFXRP](/docs/components/mint-fxrp). They are catalogued for completeness
+  and are never composable.
+- **Not served here** — the read succeeded and the deployment registers no vault
+  of the type the instruction needs. A claim about the deployment.
+- **Unknown** — the state needed to decide could not be read. Not a claim about
+  anything.
+
+Collapsing `unknown` into `Not served here` would tell someone their deployment
+lacks a vault when in truth an RPC call failed. Collapsing `superseded` into
+either would blame the deployment for a protocol decision.
+
+## Live
+
+The preview runs the gallery's own states. The Coston2 rows are the deployment
+read live on `2026-08-13`: eight available, three superseded, and every fee the
+controller's own `1000` drops. The mainnet rows are the same read against Flare
+mainnet, where four ids — `0x00`, `0x02`, `0x10` and `0x20` — charge `950000`
+drops against a `500000` default, which is exactly why a fee is never
+substituted.
+
+<InstructionCatalogueDemo />
+
+## Usage
+
+The catalogue is derived from the deployment read `useSmartAccount` already
+performs, so there is no second fetch. Hand the rows straight through.
+
+```tsx
+import { smartAccountsFor } from '@flarekit-dev/contracts'
+import { useSmartAccount } from '@flarekit-dev/react'
+import { InstructionCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Catalogue({ xrplOwner, publicClient, onSelect }) {
+  const { catalogue, loading } = useSmartAccount({
+    deployment: smartAccountsFor('coston2'),
+    xrplOwner,
+    publicClient, // keyless throughout: nothing here signs
+  })
+
+  return (
+    <InstructionCatalogue
+      rows={catalogue}
+      loading={loading}
+      networkLabel="Coston2"
+      onSelect={onSelect}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'rows', type: 'readonly InstructionRow[]', description: 'Always the full vocabulary, from `buildInstructionCatalogue`. Omitted entirely means no read has been attempted yet, which the table states in words rather than rendering as an empty deployment.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the deployment read is in flight. Skeleton rows appear only when there are no rows yet, so a refresh never blanks a catalogue already on screen.' },
+  { name: 'networkLabel', type: 'string', description: 'The network the rows were read from, shown above the table. Network is configuration, so this is a label, not a switch.' },
+  { name: 'mockLabel', type: 'string', description: 'The mock-mode label, shown as a chip beside the network. Present only when the host is in mock mode; never a fallback.' },
+  { name: 'onSelect', type: '(instructionId: number) => void', description: 'Called with the instruction id when a row is chosen. Offered ONLY for rows the deployment can actually serve — superseded, unavailable and unknown rows render as text, so the table cannot hand a composer an instruction that could not dispatch. Omit it and every row is text.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the table follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+Four columns — instruction, value field, fee, availability — and the sentences a
+table cell cannot hold.
+
+The **instruction** cell carries the id as the byte that actually travels
+(`0x11`, always two digits), the controller's own action name under its
+instruction type, a sentence describing what the personal account would do, and,
+where the instruction targets one, the vault ids this controller registers.
+
+The **value field** column names what the reference's 80-bit value counts, because
+the same field means five different things across the eleven rows: `drops`,
+`lots`, `shares`, a Firelight `withdrawal period`, or an Upshift
+`claim date (yyyymmdd)`. A period index and a date are identifiers, not
+quantities, and rendering them as bare numbers in a fee-shaped column would make
+`20260813` look like an amount.
+
+The **fee** is the controller's own `getInstructionFee(id)` in drops. An unread
+fee is `—`. It is never the default: on Flare mainnet four ids charge `950000`
+against a `500000` default, so a substituted number would quote a payment
+`450000` drops short of what the controller requires — with the XRP already gone.
+
+Below the table sit the notes that belong to the whole table rather than to a
+row: that vault ids come from the **controller's** namespace and not from the
+kit's own vault registry (the two disagree on these networks, so an id taken from
+the wrong one names a different vault), the one reason every row shares when they
+all share one, and a statement that unknown rows are undetermined rather than
+unavailable.
+
+The list is never empty and never filtered down to the composable rows. An
+instruction hidden because this deployment cannot serve it would read as an
+instruction the protocol does not have.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **coston2** — the live deployment: eight available, three superseded, every fee
+  the controller's own `1000` drops, and the Firelight and Upshift vault ids it
+  registers.
+- **mainnet** — the read lens, showing the fee divergence the no-fallback rule
+  exists for: `950000` drops on `0x00`, `0x02`, `0x10` and `0x20` against a
+  `500000` default on the rest.
+- **unknown** — the controller could not be read. Every row is `Unknown`, the
+  vocabulary is still listed, every fee is `—`, and nothing is claimed about the
+  deployment. The reason is stated once beneath the table rather than eleven
+  times inside it.
+- **not-served** — no observed deployment produces this, because both live
+  networks register vaults of both types. It is driven from a controller with an
+  empty vault registry, because a state has to be visible to be checked, and the
+  gallery case says so on its own label.
+- **loading** — the deployment read is in flight. Skeleton rows; neither an empty
+  catalogue nor a failure is claimed yet.
+
+## Mock to live
+
+`buildInstructionCatalogue(settings)` is the only thing that builds a row, and
+the preview above runs it over the settings the live deployments returned. Going
+live means handing it settings your own client read:
+
+```tsx
+// From this…
+const rows = buildInstructionCatalogue(OBSERVED_SETTINGS)
+
+// …to this. The component does not change.
+const { catalogue } = useSmartAccount({ deployment, xrplOwner, publicClient })
+```
+
+## What it will not do
+
+It will not quote the default fee for an instruction whose own fee did not read,
+and it will not render an unread fee as `0`. It will not hide a row it cannot
+serve, offer a superseded or unknown row as selectable, or report a failed read
+as a deployment that lacks a vault. It renders no availability it did not get
+from the deployment.

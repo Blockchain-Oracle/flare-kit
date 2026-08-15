@@ -1,7 +1,7 @@
 // packages/core/scripts/probe-governance.mjs
 // M12 Task 1 — read-only, KEYLESS governance probe (no product code, no signing,
 // no chain writes). Confirms the substrate for the M12 governance milestone BEFORE
-// any @flare-kit/contracts registry entry exists. Governance spans TWO networks:
+// any @flarekit-dev/contracts registry entry exists. Governance spans TWO networks:
 //   - Coston2 (id 114) — the write/verify target (VP delegation round trip lives here),
 //   - Flare mainnet (id 14) — the proposal read lens (real proposals exist here).
 // This run:
@@ -30,7 +30,7 @@
 // is the run that verifies them before Task 2 makes them the registry's source of truth.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http, getAddress, decodeAbiParameters, toFunctionSelector } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-13-m12-probe.json`

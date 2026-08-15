@@ -1,0 +1,138 @@
+---
+title: PositionCard
+description: The live LP position — its composition read from reserves, partial withdrawal by percent, and a read that failed rendered as unavailable rather than as no position.
+breadcrumb: ['Docs', 'Components', 'PositionCard']
+importLine: "import { PositionCard } from '@flarekit-dev/react-ui'"
+---
+
+`PositionCard` shows what an LP balance is currently worth in the two underlying
+assets, read straight from the pool's reserves, and lets you withdraw any part of
+it. A V2 position earns by its share of a growing pool, so there is no separate
+fee to claim — the card says that instead of inventing a claimable balance.
+
+## Live
+
+The preview runs the gallery's own states. Each record is built by walking the
+real remove-liquidity state machine over fixture pool readings, so the switcher
+only offers states the card actually reaches.
+
+<PositionCardDemo />
+
+## Usage
+
+Hand it the outcome of a position read. The three outcomes stay three: a
+position, no position, and a read that could not be made — the card renders each
+differently, and the last is never collapsed into the second.
+
+```tsx
+import { readPosition } from '@flarekit-dev/core'
+import { PositionCard } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+import { useState } from 'react'
+
+const CHAIN = 114 // Coston2
+
+export function readLiquidity(reader, owner) {
+  return readPosition({ reader, chainId: CHAIN, tokenAKey: 'FXRP', tokenBKey: 'USDT0', owner })
+}
+
+export function Liquidity({ result, tokenA, tokenB }) {
+  const [percent, setPercent] = useState(0)
+
+  return (
+    <PositionCard
+      position={result.kind === 'position' ? result.position : null}
+      unavailable={result.kind === 'unavailable' ? result.reason : undefined}
+      tokenA={tokenA}
+      tokenB={tokenB}
+      networkLabel="Coston2"
+      percent={percent}
+      onPercentChange={setPercent}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'position', type: 'Position | null', required: true, description: 'The position, or `null` when there is none to show. Always passed — `null` is an answer, not an omission.' },
+  { name: 'unavailable', type: 'string', description: 'The reason the position could not be read. With `position={null}`, this is what turns an unread position into an unavailable read instead of a confident "no position".' },
+  { name: 'networkLabel', type: 'string', description: 'The network shown in the panel subtitle, e.g. `Coston2`.' },
+  { name: 'tokenA', type: 'DexToken', description: 'The first token of the pair. Used to name the pool in the no-position and unavailable states, where there is no position to read the pair from.' },
+  { name: 'tokenB', type: 'DexToken', description: 'The second token of the pair, on the same terms as tokenA.' },
+  { name: 'removeOperation', type: 'RemoveLiquidityOperation', description: 'The withdrawal record, once one exists. Drives the CTA, the note and the spine. Without it the card is a read-only view of the position.' },
+  { name: 'removeQuoteResult', type: 'RemoveLiquidityQuoteResult', description: 'The withdrawal quote outcome. A quote adds the `You would receive` row with its post-slippage minimums; `no_pool` and `unavailable` are stated with their own reason.' },
+  { name: 'basis', type: '{ amountA: Amount; amountB: Amount }', description: 'What was supplied when the kit opened this position, from the durable add operation. Present only when the kit recorded the add — a position read from chain with no recorded add carries no basis, and the card then shows composition only.' },
+  { name: 'percent', type: 'number', defaultValue: '0', description: 'The selected portion of the LP balance to withdraw, 0–100. Any value is accepted, not only the four presets.' },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the card, which renders a mock note at the top. Mock mode is explicit and labelled — never a fallback the card enters on its own.' },
+  { name: 'onPercentChange', type: '(percent: number) => void', description: 'Called with the new percent from either a preset pill or the exact-entry field.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader takes the CTA. The card signs nothing and broadcasts nothing — the host owns the transaction.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the card.' },
+]} />
+
+## What it renders
+
+The two held legs and the `Pool share`, all in the mono face with their assets
+and full precision. Then the withdrawal control: `25%`, `50%`, `75%` and `Max`,
+plus an exact-percent field beside them for anything the presets do not cover.
+The active preset is distinguished by shape, weight and border rather than colour
+alone, and every target meets the 24px minimum.
+
+With a withdrawal quote, a `You would receive` row appears carrying both assets
+and the minimums after slippage. With a `basis`, a `Change since supplied` row
+shows the signed per-asset delta — a raw difference against what went in, not a
+priced valuation, because the card has no price and will not fabricate one.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **no position** — you genuinely hold none of this pool. Stated with its reason
+  and the pair named.
+- **unavailable** — the read failed, and the card says so: `This is not a zero —
+  retry when the network settles.` An RPC outage is never rendered as a confident
+  "no position", which is the one state this card exists to keep separate.
+- **position** — the current composition, read from reserves, with the pool
+  share.
+- **remove approval** — the LP token allowance is short. Removing liquidity
+  spends the LP token, so the approval is its own transaction before the
+  withdrawal.
+- **removing** — the approval is done and the withdrawal transaction is
+  submitted, with the approval hash on the spine. Submitted, not withdrawn.
+- **removed** — `Withdrawn`, with the remove transaction as evidence. The exact
+  amounts returned are the transaction's, not the quote's.
+- **partial** — a percent is selected and the withdrawal is previewed, before any
+  operation exists to sign.
+- **value change vs supplied basis** — the per-asset change against what the kit
+  recorded at add time.
+- **exact-entry** — a percent typed in that is none of the four presets, so a
+  partial withdrawal is never rounded to the nearest pill.
+
+## Mock to live
+
+The card takes a position and, optionally, a withdrawal record; it never reaches
+for a network itself. Whatever produces them — a mock or a live reader — the
+component is the same, so moving to a live network swaps what feeds it, not the
+screen. Pair and token addresses come from `@flarekit-dev/contracts`; network is
+configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not render a failed read as an empty position, and it will not show a
+claimable fee balance, because a V2 position has none — the fees are already in
+the reserves your share is measured against. It will not price your position or
+report a profit: without a `basis` it shows composition only, and with one it
+shows the raw per-asset change and nothing more. A submitted withdrawal is never
+labelled `Withdrawn`.

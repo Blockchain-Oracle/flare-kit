@@ -1,4 +1,4 @@
-import { chainFor, registryFor, sourceFor } from '@flare-kit/contracts'
+import { chainFor, registryFor, sourceFor } from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 import { createFdcClient } from '../fdc/client.js'
 import { type XrpPaymentProofRetriever, xrpPaymentFamily } from '../fdc/families/xrp-payment.js'

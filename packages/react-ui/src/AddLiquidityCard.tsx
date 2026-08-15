@@ -1,5 +1,5 @@
 // packages/react-ui/src/AddLiquidityCard.tsx
-import { type AddLiquidityOperation, type AddLiquidityQuoteResult, type Amount, type DexToken, amount, formatExact } from '@flare-kit/core'
+import { type AddLiquidityOperation, type AddLiquidityQuoteResult, type Amount, type DexToken, amount, formatExact } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

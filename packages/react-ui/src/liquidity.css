@@ -1,5 +1,5 @@
 /* ============================================================
-   @flare-kit/react-ui — the liquidity surfaces (M6).
+   @flarekit-dev/react-ui — the liquidity surfaces (M6).
 
    AddLiquidityCard reuses SwapLeg and the shared Panel/Note/DetailRow/
    OperationTimeline chrome, so this file adds only what liquidity needs

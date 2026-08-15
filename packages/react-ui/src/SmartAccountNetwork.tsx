@@ -1,5 +1,5 @@
 // packages/react-ui/src/SmartAccountNetwork.tsx
-import { accountExplorerLink, amount, formatExact } from '@flare-kit/core'
+import { accountExplorerLink, amount, formatExact } from '@flarekit-dev/core'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { ExplorerLink } from './primitives/ExplorerLink.js'
 import { Note } from './primitives/Note.js'

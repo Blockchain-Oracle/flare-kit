@@ -1,5 +1,5 @@
 // packages/core/src/staking.ts
-import type { StakingDeployment } from '@flare-kit/contracts'
+import type { StakingDeployment } from '@flarekit-dev/contracts'
 import type { OperationStep } from './operation.js'
 import type { StakeIntent, StakeLimits } from './stake-adapter.js'
 import type { ValidatorInfo } from './pchain-rpc.js'

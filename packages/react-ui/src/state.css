@@ -1,5 +1,5 @@
 /* ============================================================
-   @flare-kit/react-ui — state and evidence.
+   @flarekit-dev/react-ui — state and evidence.
 
    The part every surface shares verbatim: the state chip, the
    fixed glyph vocabulary, and the one evidence-chip anatomy.
@@ -34,12 +34,12 @@
   background: var(--fk-brand-soft);
 }
 .fk-chip-ok {
-  color: var(--fk-success);
+  color: var(--fk-success-text);
   border-color: var(--fk-success-line);
   background: var(--fk-success-soft);
 }
 .fk-chip-att {
-  color: var(--fk-attention);
+  color: var(--fk-attention-text);
   border-color: var(--fk-attention-line);
   background: var(--fk-attention-soft);
 }

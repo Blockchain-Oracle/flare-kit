@@ -14,7 +14,7 @@ import {
   readFeedCatalogue,
   readFeeds,
   readSecureRandom,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 
 /**
  * Fixtures for the FTSO surface tests.

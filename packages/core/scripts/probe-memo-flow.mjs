@@ -48,7 +48,7 @@ import {
   prepareRequestUrl,
   registryFor,
   smartAccountsFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-14-m14-probe.json`

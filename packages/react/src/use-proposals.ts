@@ -6,7 +6,7 @@ import {
   type ProposalUnknown,
   discoverProposals,
   readProposalDetail,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useState } from 'react'
 
 /**

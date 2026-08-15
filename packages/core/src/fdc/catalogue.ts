@@ -7,20 +7,20 @@ import {
   apiDocJsonUrl,
   chainFor,
   claimedStatus,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Observation, observe, unavailable } from '../observation.js'
 
 /**
  * The contracts-level types a consumer of the catalogue needs. Re-exported so a
- * UI package can render a row without also depending on `@flare-kit/contracts`.
+ * UI package can render a row without also depending on `@flarekit-dev/contracts`.
  */
 export type {
   AttestationFamilyRow,
   FamilySource,
   FamilyStatus,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 /** The bytes32 → name decoder a surface needs to render an attested source. */
-export { decodeAttestationName } from '@flare-kit/contracts'
+export { decodeAttestationName } from '@flarekit-dev/contracts'
 
 /**
  * What this deployment actually serves, versus what the table claims.

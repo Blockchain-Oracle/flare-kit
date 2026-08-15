@@ -13,7 +13,7 @@ import {
   mockObservation,
   mockPlan,
 } from '../src/mock-smart-accounts.js'
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { smartAccountsFor } from '@flarekit-dev/contracts'
 import { smartAccountPosition } from '../src/portfolio.js'
 import { buildInstructionCatalogue } from '../src/smart-accounts/catalogue.js'
 import { encodePaymentReference } from '../src/smart-accounts/payment-reference.js'

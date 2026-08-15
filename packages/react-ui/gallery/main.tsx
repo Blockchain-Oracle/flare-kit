@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { Gallery } from './Gallery.js'
-import { auditA11y } from './a11y-audit.js'
+import { Gallery } from './Gallery'
+import { auditA11y } from './a11y-audit'
 import '../src/styles.css'
 import './gallery.css'
 

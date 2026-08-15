@@ -1,10 +1,10 @@
 import type { Address, Hex, PublicClient, TypedDataDomain, WalletClient } from 'viem'
-import { recoverAuthorizationSigner } from '@flare-kit/core'
-import { FACILITATOR_ABI } from '@flare-kit/contracts'
+import { recoverAuthorizationSigner } from '@flarekit-dev/core'
+import { FACILITATOR_ABI } from '@flarekit-dev/contracts'
 
 /**
  * The x402 fixture's challenge + settle core (M9-R6/R7), split from the express wiring.
- * It imports `recoverAuthorizationSigner` from `@flare-kit/core` — the SAME EIP-3009
+ * It imports `recoverAuthorizationSigner` from `@flarekit-dev/core` — the SAME EIP-3009
  * vocabulary the client signs with (no re-declaration). The demo token is labelled at
  * every turn; the settlement is real (a facilitator transaction). The served resource
  * is obviously synthetic with NO fabricated data.

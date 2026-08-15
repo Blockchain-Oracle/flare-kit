@@ -1,0 +1,117 @@
+---
+title: useRedeem
+description: Quote a redemption in whole lots, say up front what happens if the agent does not pay, and track the request as an operation that reconciles itself.
+breadcrumb: ['Docs', 'Hooks', 'useRedeem']
+importLine: "import { useRedeem } from '@flarekit-dev/react'"
+---
+
+`useRedeem` is the mirror of [`useDirectMint`](/docs/hooks/use-direct-mint), and
+a separate hook rather than a mode on it. The two capabilities have different
+intents, different quotes and different waits — a redemption waits on a
+counterparty who might not perform — so sharing one hook would mean a union type
+at every call site and a component that has to ask which half it is in.
+
+Three protocol facts shape the quote, and each is stated rather than assumed:
+redemption is **lot-based**, **an agent pays you** in XRP from their own
+underlying address within a window, and if they do not, the recovery pays
+**collateral on Flare, not XRP**.
+
+## Live
+
+The readout below is the hook's actual return value against the mock kit on this
+render, for `3` lots. The keyless leg is driven: `quote` is pure over the
+protocol snapshot, so it burns nothing and needs no wallet. `start` would burn
+FAsset immediately, so the demo does not press it — `operation` is `null`, not a
+redemption nobody requested.
+
+Read `ifAgentDoesNotPay` in the readout: that sentence is computed from
+`defaultPremiumBIPS`, and it is shown before a person commits rather than after
+a counterparty fails to.
+
+<UseRedeemDemo />
+
+## Usage
+
+```tsx
+import { formatExact } from '@flarekit-dev/core'
+import { useRedeem } from '@flarekit-dev/react'
+
+const intent = { lots: 3, redeemerUnderlyingAddress: 'rPT1Sjq2…dyfzbpAYe' }
+
+function Redeem({ balance }) {
+  const { quote, start, error } = useRedeem()
+  // Pass the holding and the quote refuses a redemption larger than it.
+  const terms = quote(intent, { fAssetBalance: balance })
+
+  if (!terms.canProceed) return <p>{terms.blockedReason}</p>
+
+  return (
+    <>
+      <p>{terms.ifAgentDoesNotPay}</p>
+      <button type="button" onClick={() => start(intent)}>
+        Redeem {formatExact(terms.burned)}
+      </button>
+    </>
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'operationId', type: 'string | undefined', required: false, description: 'A redemption to adopt on mount — restored from a durable store, or started by another surface. Omit it and the hook holds nothing until start() returns a record.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'quote', type: '(intent: RedeemIntent, context?: RedeemContext) => RedeemQuote', description: 'The terms: burned, fee, receives (XRP on the XRP Ledger, not FAsset on Flare), lots, agentDeadline, defaultPremiumBIPS, ifAgentDoesNotPay, canProceed and blockedReason. Pure, and safe to call during render. Pass fAssetBalance in the context to have it refuse an over-balance redemption.' },
+  { name: 'start', type: '(intent: RedeemIntent) => RedeemOperation | undefined', description: 'Creates the durable operation and registers it. Returns undefined when it refuses; the reason lands in error rather than being thrown at the component.' },
+  { name: 'operation', type: 'RedeemOperation | undefined', description: 'The record this hook is holding, live from the registry. undefined until one is adopted or started.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class — never a bare string. Set by a refused start, or by a reconciliation read that threw.' },
+  { name: 'isSettled', type: 'boolean', description: 'True only when the redemption has reached a terminal state. False when there is no operation.' },
+  { name: 'binding', type: 'ActionBinding', description: 'The accounts the quote was made for and whether they still hold. A redemption burns FXRP from one account and pays XRP to another, so both identities are bound, not just the signer.' },
+]} />
+
+## States
+
+- **refused before anything burns** — `canProceed` is false and `blockedReason`
+  says which rule: a part lot, a missing XRP Ledger address, a redemption larger
+  than the holding, or an emergency-paused asset manager.
+- **requested** — the FAsset is burned on request and an agent now owes the
+  payment. The spine names the agent as the actor for that step and records the
+  agent vault as evidence; the quote carries the deadline. The wait belongs to
+  the counterparty, not to you.
+- **agent has not paid yet** — before `agentDeadline`, this is a wait, not a
+  failure. The outcome is not confirmed yet, and nothing here calls it one.
+- **default available** — past the deadline, non-payment can be proved and the
+  recovery action is to claim the collateral premium on Flare. That pays
+  collateral, not XRP — which is why the quote said so up front.
+- **read failed** — a reconcile threw. `error` is set and the operation stays
+  where the chain last put it: a failed reading is not a failed redemption.
+- **settled** — `isSettled` is true. Only `succeeded` is success.
+
+## Mock to live
+
+The kit comes from the provider, so this component does not change:
+
+```tsx
+// Mock: including the scenario where the agent never pays, so the surface has
+// to stay honest about an unfinished redemption instead of inventing an end.
+<FlareProvider kit={createMockKit({ scenario: 'protocol-unavailable' })}>
+
+// Live: the same tree against a configured network.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not let you redeem a part lot or a free amount. `lotSize()` is the
+indivisible unit, and offering anything else would misrepresent the protocol.
+
+It will not describe the collateral default as being paid in XRP, and it will
+not hide it until it happens. It will not present an unpaid redemption inside
+its window as failed, and it will not present `submitted` as success.
+
+It will not connect a wallet, poll on a clock of its own, or offer a Resume —
+the provider's one interval reconciles every open operation.

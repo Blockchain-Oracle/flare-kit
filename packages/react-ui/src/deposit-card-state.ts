@@ -1,5 +1,5 @@
 // packages/react-ui/src/deposit-card-state.ts
-import { type DepositOperation, type DepositPlanResult, type DepositQuoteResult, type VaultError, amount, formatExact } from '@flare-kit/core'
+import { type DepositOperation, type DepositPlanResult, type DepositQuoteResult, type VaultError, amount, formatExact } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /**

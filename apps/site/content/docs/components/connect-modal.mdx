@@ -1,0 +1,119 @@
+---
+title: ConnectModal
+description: The wallet picker — the wallets your host discovered, grouped under the network each one connects to, with the real network mark and its name.
+breadcrumb: ['Docs', 'Components', 'ConnectModal']
+importLine: "import { ConnectModal } from '@flarekit-dev/react-ui'"
+---
+
+`ConnectModal` is the wallet picker, and it is presentational on purpose. The
+kit does not connect wallets: your host owns its adapters, so this renders the
+wallets you discovered and calls back with the one that was chosen. It never
+opens a connection itself.
+
+## Live
+
+Both cases below are the gallery's own, and both are live — press
+`Connect wallet` to open the modal, `Esc` to close it. No wallet icons are
+supplied here, so every row shows the neutral glyph. That is the honest default
+and worth seeing.
+
+<ConnectModalDemo />
+
+## Usage
+
+Hand it the wallets you found and a network label per family. Selection returns
+the wallet's `id`, which is the value your host maps back to its connector.
+
+```tsx
+import { ConnectModal, type WalletOption } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+import { useState } from 'react'
+
+// EIP-6963 for the EVM leg; your own adapter for the XRP Ledger.
+const wallets: WalletOption[] = [
+  { id: 'io.metamask', name: 'MetaMask', family: 'evm', detected: true, recent: true },
+  { id: 'xaman', name: 'Xaman', family: 'xrpl', detected: true },
+]
+
+export function Connect() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <ConnectModal
+      open={open}
+      wallets={wallets}
+      evmNetwork={{ name: 'Coston2', testnet: true }}
+      xrplNetwork={{ name: 'XRPL Testnet', testnet: true }}
+      onSelect={(walletId) => yourAdapter.connect(walletId)}
+      onClose={() => setOpen(false)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'open', type: 'boolean', required: true, description: 'Whether the modal is showing. The host owns this — the picker has no trigger of its own.' },
+  { name: 'wallets', type: 'readonly WalletOption[]', required: true, description: 'Every wallet the host discovered, both families in one array. The component splits them by `family`.' },
+  { name: 'evmNetwork', type: 'NetworkLabel', description: "The Flare-family network as `{ name, testnet? }`. Omit it and the section is headed 'Flare network' rather than a network it cannot name." },
+  { name: 'xrplNetwork', type: 'NetworkLabel', description: 'The same, for the XRP Ledger section.' },
+  { name: 'onSelect', type: '(walletId: string) => void', required: true, description: "Called with the chosen wallet's `id`. The host connects; the modal does not." },
+  { name: 'onClose', type: '() => void', required: true, description: 'Called on dismissal — the close control, the backdrop, or Esc.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the modal follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the modal overlay element, which is where the theme attribute lands too.' },
+]} />
+
+A `WalletOption` is `{ id, name, family }` plus three optional fields: `icon`,
+the wallet's own advertised EIP-6963 icon; `detected`, announced or installed
+right now; and `recent`, last used on this device. A `NetworkLabel` is
+`{ name, testnet? }` — `testnet` draws the secondary ring on the mark, and the
+name is the authority.
+
+## What it renders
+
+One section per chain family, always both, each headed by the real network mark
+and the network's name. Under it, a row per wallet: the wallet's own icon when
+it advertised one, a bundled brand mark when it did not but is recognised, and a
+neutral wallet glyph otherwise. `Recent` and `Detected` are separate badges,
+because they answer different questions.
+
+The footer states the arrangement plainly: your wallet approves every
+connection, and the kit never holds your keys.
+
+## States
+
+Both states in the switcher above are imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **wallets detected** — four EVM wallets and one XRP Ledger wallet, with the
+  real Coston2 and XRPL Testnet marks. `MetaMask` carries both badges.
+- **no wallet found** — nothing discovered for either family. Each section says
+  so in its own words and points at watching an address instead, rather than
+  disappearing and leaving a person to guess whether the chain is supported.
+
+## Mock to live
+
+There is nothing to swap. `ConnectModal` never touches a network, so the only
+change from a hardcoded list to production is where the array comes from:
+
+```tsx
+// From a fixture list…
+const wallets = [{ id: 'io.metamask', name: 'MetaMask', family: 'evm', detected: true }]
+
+// …to real discovery. The modal does not change.
+const wallets = yourEip6963Listener.announced()
+```
+
+Passing each wallet's advertised `icon` through is what turns the neutral glyphs
+in the preview into real brand marks.
+
+## What it will not do
+
+It will not connect anything — owning a picker but not the connection is what
+keeps the kit from claiming custody it lacks. It will not invent a brand mark
+for a wallet that advertised no icon, because a wrong logo on a wallet row is a
+phishing lesson taught by the interface. It will not hide a family that has no
+detected wallet, and it will not show a network mark without the network's name
+beside it.

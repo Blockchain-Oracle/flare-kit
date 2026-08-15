@@ -33,3 +33,12 @@ developer-hub
 
 # Signing keys for a live testnet run. Never committed.
 .secrets/
+
+# fumadocs-mdx generated content layer, rewritten on every build.
+.source/
+
+# Pagefind static index, emitted by the post-build step.
+apps/site/public/pagefind/
+
+# npm auth lives in ~/.npmrc, never in the repo
+.npmrc

@@ -1,4 +1,4 @@
-import type { SmartAccountsDeployment } from '@flare-kit/contracts'
+import type { SmartAccountsDeployment } from '@flarekit-dev/contracts'
 import type { PersonalAccountState } from './personal-account.js'
 import type { PersonalAccountCall } from './user-operation.js'
 

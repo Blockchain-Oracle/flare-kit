@@ -1,0 +1,160 @@
+---
+title: useAttestation
+description: An attestation as one durable, non-blocking operation — request returns the moment the record exists, and the provider's interval advances it from prepare through consume without a Resume button.
+breadcrumb: ['Docs', 'Hooks', 'useAttestation']
+importLine: "import { useAttestation } from '@flarekit-dev/react'"
+---
+
+`useAttestation` runs an FDC attestation as a single operation record. `request`
+returns the moment that record exists: it does not await the verifier, the
+voting round, the data availability layer or the chain. A round is ninety
+seconds and finalization roughly twice that, so awaiting any of it would lock a
+surface for minutes.
+
+There is no resume call and no retry button. The record persists its own state
+and evidence, and the provider's interval advances every open attestation
+through `reconcileAttestation` — so opening the page and receiving a tick are
+the same code path, and a request submitted before a reload is picked up from
+its own evidence.
+
+## Live
+
+The readout below is the hook's actual return value against the mock kit. The
+demo calls `request` once on mount, which moves nothing: it creates the durable
+record and registers it, with no wallet, no fee and no submission. What the mock
+stands in for is the *reading*, and it goes no further than the two honest waits:
+a request on chain in a round that has not finalized, then a round that has
+finalized with no proof published yet.
+
+The record starts at `ready` with six pending steps — six because `XRPPayment`
+has a deployed consumer. On the first reading it reconciles to
+`awaiting_external` with `prepare` and `submit` done, `finalize` active, and
+`waitingReason` reading `The voting round has not finalized yet.` About six
+seconds in, the reading changes to a round that has finalized with no proof
+published, `retrieve` becomes the active step, and the reason becomes `The round
+is finalized; the data availability layer has not published the proof yet.`
+
+That second state is the one to look at. It is what the live Coston2 run hit on
+2026-08-04, and it is neither a success nor a failure: `isSettled` stays `false`
+and `error` stays `null` throughout. `recovery` is `null` for the same reason —
+the one action an attestation offers, making the request again and paying a
+second fee, belongs to an unknown outcome, and a round still being indexed is
+not one.
+
+<UseAttestationDemo />
+
+## Usage
+
+Mount it under a `FlareProvider`, hand it a reader, and call `request` from an
+event handler. `hasConsumer` decides whether the record has a sixth step at all:
+of the four families this project ships a request builder for, two have a
+deployed consumer and two do not, and a step declared absent is honest where a
+step that silently never runs is not.
+
+```tsx
+import { useAttestation } from '@flarekit-dev/react'
+import { AttestationTimeline } from '@flarekit-dev/react-ui'
+
+function Attest({ intent, hasConsumer }) {
+  const { request, operation, waitingReason } = useAttestation({
+    read: readAttestationState,
+  })
+
+  if (!operation) {
+    return (
+      <button type="button" onClick={() => request(intent, hasConsumer)}>
+        Request the attestation
+      </button>
+    )
+  }
+
+  return (
+    <AttestationTimeline
+      operation={operation}
+      now={Date.now()}
+      unknownReason={waitingReason}
+    />
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'read', type: 'ReadAttestationState', required: true, description: '(operation: AttestationOperation) => Promise<AttestationChainState>. What the protocol has shown about this request: the request bytes, the submission transaction, the voting round, whether the round finalized, whether a proof is available, and the chain\'s own verification boolean.' },
+  { name: 'operationId', type: 'string | undefined', required: false, description: 'Resume an attestation already in the registry — a record restored from a durable store, or one another surface started. There is nothing to press: the record is adopted and reconciled from wherever it already is.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'request', type: '(intent: AttestationIntent, hasConsumer: boolean) => AttestationOperation | undefined', description: 'Creates the record, persists it before anything is sent, and returns it immediately. Returns undefined when it refuses, and the reason lands in error — a refused request is a state to render, not an exception thrown at a component.' },
+  { name: 'operation', type: 'AttestationOperation | undefined', description: 'The record, live from the registry. undefined until one is requested or adopted.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class and evidence — never a bare string. Set by a refused request, or by a reconciliation read that threw a FlareKitError. A reader that throws anything else is swallowed silently — wrap a hand-written reader so its failures surface as FlareKitError.' },
+  { name: 'isSettled', type: 'boolean', description: 'True only when the operation has reached a terminal state. False when there is no operation.' },
+  { name: 'waitingReason', type: 'string | undefined', description: 'Why the operation is waiting, in words, when it is. Deliberately separate from error: a round that has not finalized is not a failure, and rendering it as one would be inventing a negative fact.' },
+]} />
+
+## States
+
+The record's own `state` is what a surface reads; these are the ones this
+capability reaches.
+
+- **ready** — requested, nothing prepared yet. Nothing is reconciled against on
+  the first tick either, because there is no reading to take.
+- **executing** — the request bytes exist; the submission has not been observed.
+- **awaiting_external** — submitted, and the FDC is the actor. `waitingReason`
+  says which wait it is: the round has not finalized, or the round is finalized
+  and the data availability layer has not published the proof yet. Measured on
+  2026-08-04, that second gap ran to minutes — a finalized round does not mean a
+  fetchable proof, and one absent proof is not "no proof".
+- **action_required** — the outcome is unknown and nothing further will happen
+  unless a person decides something: the round finalized without this request
+  reaching consensus, the round timed out, the verifier answered 5xx, or the
+  data availability layer has not indexed it. Every one of those is an unknown.
+  None of them says the attested data is false. `recovery` offers exactly one
+  action, marked as moving new value because a second request pays a second fee.
+- **partially_succeeded** — the proof exists and the chain accepted it. Not
+  `succeeded`: for a family with no deployed consumer there is nothing further
+  to do, and for `XRPPayment` the consumption has not happened yet.
+- **failed** — the chain said the proof does not verify. A fact about the proof,
+  and the only genuinely terminal negative here.
+- **succeeded** — a consumption transaction exists. Nothing short of that is
+  rendered as success.
+
+## Mock to live
+
+The reader is the parameter and the kit is the provider's prop, so nothing in
+your component changes:
+
+```tsx
+// Mock: a reading that never touches a network.
+useAttestation({ read: async () => ({ ...mockChainState }) })
+
+// Live: what the FDC, the data availability host and the chain actually say.
+useAttestation({ read: readAttestationState })
+```
+
+## What it will not do
+
+It will not block. `request` returns before anything is submitted, and no call
+on this hook awaits a round.
+
+It will not turn a failed reading into a failed attestation. When a reconcile
+throws a `FlareKitError`, `error` is set and the operation stays exactly where
+the chain last put it: the round may be perfectly healthy and the request on
+its way to consensus. A reader that throws anything else is swallowed without
+setting `error` — so a hand-written reader should wrap its failures in
+`FlareKitError` if it wants them on screen.
+
+It will not render `submitted` as succeeded, and it will not render a wait or an
+unknown as a failure. `partially_succeeded` is where a verified proof stops.
+
+It will not price the request. The fee is read on chain for the exact bytes
+being submitted — 1000 wei on Coston2, 20 FLR on Flare mainnet and 3 FLR for
+`ConfirmedBlockHeightExists`, all measured 2026-08-04 — so a constant would be
+wrong on one network and wrong again the first time governance changes it.
+
+It will not sign, submit or consume anything. It creates and reconciles the
+record; the submit path is the caller's, and consumption belongs to whichever
+contract the family names.

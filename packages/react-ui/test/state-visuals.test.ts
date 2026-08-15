@@ -1,4 +1,4 @@
-import { OPERATION_STATES } from '@flare-kit/core'
+import { OPERATION_STATES } from '@flarekit-dev/core'
 import { describe, expect, it } from 'vitest'
 import { GLYPHS, visualFor } from '../src/state-visuals.js'
 

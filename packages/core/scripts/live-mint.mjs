@@ -21,7 +21,7 @@ import {
   chainFor,
   votingRoundIdAt,
   FDC_PROTOCOL_ID,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import {
   createFdcClient,
   createXrplClient,

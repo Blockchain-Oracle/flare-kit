@@ -1,5 +1,5 @@
 // packages/react-ui/src/RecoveryComposer.tsx
-import type { MemoRecoveryKind, MemoRecoveryResult } from '@flare-kit/core'
+import type { MemoRecoveryKind, MemoRecoveryResult } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { CodeWindow } from './primitives/CodeWindow.js'
 import { Note } from './primitives/Note.js'

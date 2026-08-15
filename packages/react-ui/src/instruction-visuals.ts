@@ -1,14 +1,14 @@
 // packages/react-ui/src/instruction-visuals.ts
-// The instruction vocabulary comes through `@flare-kit/core`, which re-exports it from
-// `@flare-kit/contracts` precisely so this package needs no second dependency on the
+// The instruction vocabulary comes through `@flarekit-dev/core`, which re-exports it from
+// `@flarekit-dev/contracts` precisely so this package needs no second dependency on the
 // registry — the treatment every other registry type gets here.
 import type {
   Amount,
   BuiltInInstruction,
   InstructionAvailability,
   ValueDenomination,
-} from '@flare-kit/core'
-import { amount, formatExact } from '@flare-kit/core'
+} from '@flarekit-dev/core'
+import { amount, formatExact } from '@flarekit-dev/core'
 import type { Glyph, Tone } from './state-visuals.js'
 
 /**

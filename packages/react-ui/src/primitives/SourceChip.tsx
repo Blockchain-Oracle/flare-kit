@@ -1,5 +1,5 @@
-import type { Observation, SourceClass } from '@flare-kit/core'
-import { staleness } from '@flare-kit/core'
+import type { Observation, SourceClass } from '@flarekit-dev/core'
+import { staleness } from '@flarekit-dev/core'
 import type { Glyph, Tone } from '../state-visuals.js'
 import { GlyphMark } from './StateChip.js'
 

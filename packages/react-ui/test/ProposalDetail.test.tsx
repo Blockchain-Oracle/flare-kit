@@ -1,5 +1,5 @@
-import type { ProposalDetailView, ProposalUnknown } from '@flare-kit/core'
-import { planCastVote } from '@flare-kit/core'
+import type { ProposalDetailView, ProposalUnknown } from '@flarekit-dev/core'
+import { planCastVote } from '@flarekit-dev/core'
 import { render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { ProposalDetail } from '../src/ProposalDetail.js'

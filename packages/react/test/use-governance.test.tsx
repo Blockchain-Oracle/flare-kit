@@ -1,4 +1,4 @@
-import { applyTransition, createOperation, governanceFor, type GovernanceIntent, type GovernancePlan } from '@flare-kit/core'
+import { applyTransition, createOperation, governanceFor, type GovernanceIntent, type GovernancePlan } from '@flarekit-dev/core'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import { useGovernance, type GovernanceEvmClient, type GovernanceWalletClient } from '../src/use-governance.js'

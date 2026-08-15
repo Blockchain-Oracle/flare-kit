@@ -1,0 +1,118 @@
+---
+title: PendingTray
+description: The persistent list of operations still in flight, so navigating away from a mint does not mean losing it — with no Resume button, because operations reconcile themselves.
+breadcrumb: ['Docs', 'Components', 'PendingTray']
+importLine: "import { PendingTray } from '@flarekit-dev/react-ui'"
+---
+
+`PendingTray` keeps every open operation visible while you do something else.
+Operations are non-blocking and self-reconciling, so this is never a queue you
+have to work through and there is no Resume button — the tray exists so that
+navigating away from a mint does not mean losing it.
+
+## Live
+
+The preview renders the gallery's own cases — records the mock state machine
+produced, mounted as fixtures rather than re-authored here. The state
+switcher walks the cases the surface was verified against, so nothing here shows
+a state the tray never actually reaches.
+
+<PendingTrayDemo />
+
+## Usage
+
+Mount it under a `FlareProvider`. `usePending` returns everything in the
+operation registry that has not reached a terminal state, newest first.
+
+```tsx
+import { createMockKit } from '@flarekit-dev/core'
+import { FlareProvider, usePending } from '@flarekit-dev/react'
+import { PendingTray } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+function Tray() {
+  const { pending } = usePending()
+
+  return (
+    <PendingTray
+      pending={pending}
+      now={Date.now()}
+      onOpen={(operationId) => console.log('open', operationId)}
+    />
+  )
+}
+
+export function InFlight() {
+  return (
+    <FlareProvider kit={createMockKit({ seed: 'demo' })}>
+      <Tray />
+    </FlareProvider>
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'pending', type: 'readonly PendingOperation[]', required: true, description: 'The operations still open. An empty array is a real answer — nothing is in flight — which is why it is required rather than optional.' },
+  { name: 'loading', type: 'boolean', description: 'True while the registry is still being checked. Rendered as a live status line, not as an empty tray, because "still looking" and "nothing found" are different claims.' },
+  { name: 'degraded', type: 'boolean', description: 'True when the list is what this device knows rather than what the chain knows. Surfaces the coverage limit: an operation started in another browser was never in reach.' },
+  { name: 'restored', type: 'boolean', description: 'True on the first render after a reconnect, before reconciliation lands. What is shown is the last recorded state, and the tray says so.' },
+  { name: 'now', type: 'number', required: true, description: "The clock each entry's source chip is aged against. Required, because a freshness claim with no reference time is a guess." },
+  { name: 'onOpen', type: '(operationId: string) => void', description: 'Called with the operation id when the reader opens an entry. Omit it and the tray is a read-only list.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the tray.' },
+]} />
+
+## What it renders
+
+One row per open operation: a state chip carrying a glyph and a word as well as
+a colour, the capability, the operation id, and a source chip naming where the
+record came from and how old it is. An `Open` control appears per row only when
+`onOpen` is given.
+
+Above the list sit the claims that change what it means — restored from this
+device, this device only, and a summary when an operation cannot move without a
+decision from you. When nothing is open the tray says `Nothing is in flight`
+rather than rendering blank.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the registry is still being checked, announced as a live status.
+- **empty** — the check finished and nothing is open.
+- **active** — one operation waiting on an external actor, chipped `Waiting`.
+- **action required** — one operation that cannot move without a decision from
+  you, called out above the list as well as in the row.
+- **partial** — two operations at once: one only `Submitted`, one needing you.
+  `Submitted` is submitted, not succeeded, and the tray never upgrades it.
+- **degraded source** — the list covers operations started here. An operation
+  you started in another browser will not appear, and that is stated rather than
+  implied by absence.
+- **restored** — the entries came back from this device and are being reconciled
+  against the chain now; what is on screen is the last state recorded.
+
+## Mock to live
+
+`PendingTray` renders whatever `usePending` found in the operation registry on
+the provider, so moving from the mock to a live network swaps the kit, not the
+screen. Addresses come from `@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+// From this…
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// …to this. The component does not change.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not present a submitted operation as a finished one, and it will not
+render an unconfirmed outcome as a failure. It will not imply completeness it
+does not have — when the list is only what this device knows, it says so. And it
+offers no Resume, because there is nothing to resume: every operation persists
+its own state and reconciles when the app opens.

@@ -1,5 +1,5 @@
-import type { FamilyRow, PreparedRequest, SerializedError } from '@flare-kit/core'
-import { evidence, formatExact } from '@flare-kit/core'
+import type { FamilyRow, PreparedRequest, SerializedError } from '@flarekit-dev/core'
+import { evidence, formatExact } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { EvidenceChip } from './primitives/EvidenceChip.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'

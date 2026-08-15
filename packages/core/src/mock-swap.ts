@@ -1,4 +1,4 @@
-import { type Address, dexFor } from '@flare-kit/contracts'
+import { type Address, dexFor } from '@flarekit-dev/contracts'
 import type { SwapReader } from './swap-quote.js'
 
 /**

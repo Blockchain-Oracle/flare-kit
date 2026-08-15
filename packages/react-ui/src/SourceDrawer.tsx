@@ -5,7 +5,7 @@ import {
   formatExact,
   isObserved,
   staleness,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { Note } from './primitives/Note.js'
 import { SourceChip, SourceLine } from './primitives/SourceChip.js'
 

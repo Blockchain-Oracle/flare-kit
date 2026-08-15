@@ -1,6 +1,6 @@
 // packages/core/src/x402-client.ts
 import type { Address, Hex } from 'viem'
-import { type FlareNetworkKey, X402 } from '@flare-kit/contracts'
+import { type FlareNetworkKey, X402 } from '@flarekit-dev/contracts'
 import type { Authorization, SplitSignature } from './x402-eip3009.js'
 
 /**

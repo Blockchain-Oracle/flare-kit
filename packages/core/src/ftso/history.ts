@@ -4,7 +4,7 @@ import {
   chainFor,
   randomNumberAbi,
   registryFor,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Observation, isObserved, observe } from '../observation.js'
 import type { RoundReader } from '../voting-round.js'
 import { type AnchorFeedWithProof, fetchAnchorFeeds } from './anchor.js'

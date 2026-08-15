@@ -1,6 +1,6 @@
-import { createMockFtsoReader, readSecureRandom } from '@flare-kit/core'
-import { ScalingProofDetail, SecureRandomPanel } from '../src/index.js'
-import type { GallerySection } from './m3-sections.js'
+import { createMockFtsoReader, readSecureRandom } from '@flarekit-dev/core'
+import { ScalingProofDetail, SecureRandomPanel } from '@flarekit-dev/react-ui'
+import type { GallerySection } from './m3-sections'
 import {
   ANCHOR_FLR,
   ANCHOR_SINGLE_LEAF,
@@ -8,7 +8,7 @@ import {
   FLR_USD,
   M4_NOW,
   SOURCE,
-} from './m4-fixtures.js'
+} from './m4-fixtures'
 
 /**
  * FTSO-03 and FTSO-04, in every state the M4 spec requires.

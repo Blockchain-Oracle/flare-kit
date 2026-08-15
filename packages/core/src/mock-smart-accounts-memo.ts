@@ -3,7 +3,7 @@ import type { MemoFeeSettings, MemoIntent, MemoPlanResult } from './smart-accoun
 import { planMemoInstruction } from './smart-accounts/memo-plan.js'
 import type { MemoObservation } from './smart-accounts/memo-states.js'
 import type { PersonalAccountState } from './smart-accounts/personal-account.js'
-import { smartAccountsFor } from '@flare-kit/contracts'
+import { smartAccountsFor } from '@flarekit-dev/contracts'
 
 /**
  * The memo flow's mock, written AFTER the live run and copying only what it observed

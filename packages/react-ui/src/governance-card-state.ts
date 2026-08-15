@@ -4,7 +4,7 @@ import type {
   GovernanceOperation,
   GovernancePlanResult,
   GovernancePositionView,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /**

@@ -1,5 +1,5 @@
-import { type Amount, evidence, formatExact, subAmounts } from '@flare-kit/core'
-import { useDirectMint, useFlareKit } from '@flare-kit/react'
+import { type Amount, evidence, formatExact, subAmounts } from '@flarekit-dev/core'
+import { useDirectMint, useFlareKit } from '@flarekit-dev/react'
 import { useId, useMemo, useState } from 'react'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'

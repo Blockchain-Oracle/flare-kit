@@ -43,7 +43,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, createWalletClient, formatUnits, getAddress, http, isAddress, zeroAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { chainFor, governanceFor } from '@flare-kit/contracts'
+import { chainFor, governanceFor } from '@flarekit-dev/contracts'
 import {
   buildDelegateCall,
   discoverProposals,

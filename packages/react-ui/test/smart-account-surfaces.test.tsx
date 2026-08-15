@@ -17,7 +17,7 @@ import {
   proofDeadlineMs,
   reconcileInstruction,
   smartAccountsFor,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { InstructionCatalogue } from '../src/InstructionCatalogue.js'

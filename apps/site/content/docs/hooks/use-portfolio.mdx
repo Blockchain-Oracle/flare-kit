@@ -1,0 +1,87 @@
+---
+title: usePortfolio
+description: The portfolio as React state — undefined until a read lands, never an object full of zeroes, and a refresh that never clears what is already on screen.
+breadcrumb: ['Docs', 'Hooks', 'usePortfolio']
+importLine: "import { usePortfolio } from '@flarekit-dev/react'"
+---
+
+`usePortfolio` turns a portfolio reader into React state. Two of its choices
+are the point: `portfolio` is `undefined` until a read lands — *loading* and
+*no assets* are different claims and never share a representation — and a
+refresh never replaces good values with a spinner. The previous portfolio
+stays on screen, with its own observation times, until better values arrive.
+
+## Live
+
+The readout below is the hook's actual return value, running against the mock
+portfolio reader on this render.
+
+<UsePortfolioDemo />
+
+## Usage
+
+Mount it under a `FlareProvider` and hand it a reader. The host decides which
+reader — the live one or the mock's — and the hook never branches on it.
+
+```tsx
+import { FlareProvider, usePortfolio } from '@flarekit-dev/react'
+import { PortfolioTable } from '@flarekit-dev/react-ui'
+
+function Balances() {
+  const { portfolio, loading, stale, error } = usePortfolio({
+    read: myPortfolioReader,
+  })
+
+  if (loading) return <PortfolioTable loading now={Date.now()} />
+  if (error) return <p>The read failed: {error}</p>
+  return <PortfolioTable portfolio={portfolio} now={Date.now()} />
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'read', type: 'ReadPortfolio', required: true, description: 'The reader: ({ context, now }) => Promise<Portfolio>. A host passes the live one; the mock passes its own.' },
+  { name: 'compareWith', type: 'readonly PortfolioPosition[]', required: false, description: 'Positions from a second source, compared against the chain read to surface a source conflict.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'portfolio', type: 'Portfolio | undefined', description: 'undefined until the first read lands. Never a placeholder object.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no portfolio has ever arrived.' },
+  { name: 'stale', type: 'boolean', description: 'Evaluated per render against the wall clock — a portfolio that was fresh when it arrived goes stale while it sits on screen.' },
+  { name: 'conflicts', type: 'readonly SourceConflict[]', description: 'Disagreements between the read and compareWith. Empty when compareWith is not given.' },
+  { name: 'error', type: 'string | undefined', description: 'The read that failed, if the last attempt threw. Never a fake portfolio, and it never overwrites values already held.' },
+  { name: 'refresh', type: '() => void', description: 'Ask for another read. What is on screen stays until the new read lands.' },
+]} />
+
+## States
+
+- **loading** — no portfolio has ever arrived. Distinct from an empty
+  portfolio, which is a real read that found no assets.
+- **stale** — the values on screen are older than their freshness window says
+  they should be. They stay on screen, marked, rather than vanishing.
+- **error** — the last read threw. The error carries the reader's message; any
+  previously read portfolio is still there beside it.
+- **conflicts** — the chain read and `compareWith` disagree about a position.
+  Both claims are reported; neither is silently preferred.
+
+## Mock to live
+
+The hook takes its reader as a parameter, so the swap is the reader alone:
+
+```tsx
+// Mock: the seeded portfolio the gallery uses.
+usePortfolio({ read: async ({ now }) => mockPortfolio('ready', now) })
+
+// Live: the real reader over your configured networks.
+usePortfolio({ read: readPortfolio })
+```
+
+## What it will not do
+
+It will not poll on its own — the provider owns this package's one polling
+knob, and a second clock would mean two answers to "how often does this
+refresh". It will not render a failed read as an empty portfolio, and it will
+not clear a good portfolio because a newer read failed.

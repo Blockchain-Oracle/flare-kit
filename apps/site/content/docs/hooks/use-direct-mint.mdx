@@ -1,0 +1,123 @@
+---
+title: useDirectMint
+description: Quote a direct mint before a drop moves, start it as a durable operation, and let it reconcile itself on the provider's clock — with the refusal as a state you can render.
+breadcrumb: ['Docs', 'Hooks', 'useDirectMint']
+importLine: "import { useDirectMint } from '@flarekit-dev/react'"
+---
+
+`useDirectMint` is the direct-mint capability as React state. `quote` is pure
+arithmetic over a protocol snapshot, so the terms can be computed and shown
+before anything moves. `start` turns approved terms into a durable operation,
+and from that moment the provider's interval advances it — there is no resume
+call and no retry-polling API, because opening the page is the same code path as
+receiving an event.
+
+## Live
+
+The readout below is the hook's actual return value, running against the mock
+kit on this render. Only the keyless leg is driven: `quote` needs no wallet and
+moves nothing, so the demo computes real terms for `25.000000 XRP`. Nothing is
+started here — a docs page does not press a button that commits a payment — so
+`operation` is `null` rather than a record nobody asked for, and `isSettled` is
+`false` because there is nothing to settle.
+
+The symbol reads `FMockXRP` and the destination `rMOCKCoreVau1tAddress…`
+deliberately: a screenshot of the mock must not pass as live.
+
+<UseDirectMintDemo />
+
+## Usage
+
+Quote during render — the terms on screen are then the terms of that render —
+and start from an event handler.
+
+```tsx
+import { formatExact } from '@flarekit-dev/core'
+import { useDirectMint } from '@flarekit-dev/react'
+
+const intent = {
+  amountXrp: '25.000000', // an exact decimal string, never a float
+  recipient: '0xDeaDbeef…dEaDbeeF',
+  xrplAccount: 'rPT1Sjq2…dyfzbpAYe',
+}
+
+function Mint() {
+  const { quote, start, operation, error } = useDirectMint()
+  const terms = quote(intent)
+
+  if (!terms.canProceed) return <p>{terms.blockedReason}</p>
+  if (error) return <p>{error.message}</p>
+
+  return (
+    <button type="button" onClick={() => start(intent)}>
+      Send {formatExact(terms.input)}
+    </button>
+  )
+}
+```
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'operationId', type: 'string | undefined', required: false, description: 'An operation to adopt on mount — a record restored from a durable store, or one another surface started. Omit it and the hook holds nothing until start() returns a record.' },
+]} />
+
+## Return type
+
+<PropsTable rows={[
+  { name: 'quote', type: '(intent: DirectMintIntent) => DirectMintQuote', description: 'The exact terms: input, mintedEstimate, mintingFee, executorFee, the memo that binds the recipient, expectedDuration, willBeDelayed, canProceed and blockedReason. Pure, and safe to call during render. It also snapshots the accounts the terms were computed for.' },
+  { name: 'start', type: '(intent: DirectMintIntent) => DirectMintOperation | undefined', description: 'Creates the durable operation and registers it. Returns undefined when it refuses — a blocked quote is a state to render, not an exception thrown at a component — and the reason lands in error.' },
+  { name: 'operation', type: 'DirectMintOperation | undefined', description: 'The record this hook is holding, live from the registry. undefined until an operation is adopted or started.' },
+  { name: 'error', type: 'SerializedError | undefined', description: 'Typed, with its recovery class — never a bare string. Set by a refused start, or by a reconciliation read that threw.' },
+  { name: 'isSettled', type: 'boolean', description: 'True only when the operation has reached a terminal state. False when there is no operation.' },
+  { name: 'binding', type: 'ActionBinding', description: 'The accounts the quote was made for and whether they are still the connected ones. Hand it to NetworkResolutionSheet when binding.valid is false.' },
+]} />
+
+## States
+
+- **no operation** — `operation` is `undefined`. Quoting is still free: terms
+  can be shown, and refused, before anything exists to track.
+- **refused** — `start` returned `undefined` and `error` carries why, with its
+  recovery class. The commonest refusal is AC7: below the minimum useful
+  payment the protocol takes the whole amount as its fee and mints nothing,
+  with no refund, so the operation is never created.
+- **in flight** — the record advances on the provider's interval. A `ready`
+  operation waits for the first tick because no payment exists yet to reconcile
+  against; anything already moving reconciles immediately on mount, so opening
+  the page shows current truth.
+- **read failed** — a reconciliation read threw. `error` is set and the
+  operation stays where the chain last put it: a failed reading is a failed
+  reading, and the canonical outcome is still unknown.
+- **settled** — `isSettled` is true. `succeeded` is the only success; `submitted`
+  is submitted, and this hook never upgrades it.
+- **binding invalid** — the wallet switched account or chain between the quote
+  and the press. `start` refuses before anything executes and `error` carries
+  `ACCOUNT_BINDING_MISMATCH`, naming both accounts, rather than executing terms
+  against an account the person never saw.
+
+## Mock to live
+
+The hook reads its kit from the provider, so the swap is the provider's prop and
+nothing in this component changes:
+
+```tsx
+// Mock: the whole lifecycle with no wallet, no key and no network.
+<FlareProvider kit={createMockKit({ seed: 'demo' })}>
+
+// Live: the same tree against a configured network.
+<FlareProvider kit={createFlareKit({ network: 'coston2', signer })}>
+```
+
+## What it will not do
+
+It will not resume, retry or poll on your behalf beyond the provider's one
+interval — there is nothing to resume, because the record persists its own state
+and reconciles from wherever it is.
+
+It will not turn a failed reading into a failed operation. When a reconcile
+throws, the outcome is not confirmed yet, and rendering that as a failure would
+be a claim the chain never made.
+
+It will not connect a wallet, and it will not create an operation for terms that
+cannot safely be signed. The guard lives in core as well as in the widget,
+because core is also what an agent calls.

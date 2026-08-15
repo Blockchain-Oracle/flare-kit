@@ -1,5 +1,5 @@
 // packages/react-ui/src/card-chrome.ts
-import type { OperationState } from '@flare-kit/core'
+import type { OperationState } from '@flarekit-dev/core'
 import type { NoteTone } from './primitives/Note.js'
 
 /**

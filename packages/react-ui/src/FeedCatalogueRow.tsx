@@ -1,5 +1,5 @@
-import type { CatalogueEntry, FeedId, FeedReading } from '@flare-kit/core'
-import { formatExact, truncateHash } from '@flare-kit/core'
+import type { CatalogueEntry, FeedId, FeedReading } from '@flarekit-dev/core'
+import { formatExact, truncateHash } from '@flarekit-dev/core'
 import { AssetLogo } from './primitives/AssetLogo.js'
 import { ToneChip } from './primitives/StateChip.js'
 import { Timestamp } from './primitives/Timestamp.js'

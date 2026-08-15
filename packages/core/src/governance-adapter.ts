@@ -1,6 +1,6 @@
 // packages/core/src/governance-adapter.ts
 import { type Abi, type PublicClient } from 'viem'
-import { type GovernanceDeployment, GOVERNANCE_VOTE_POWER_ABI, GOVERNOR_ABI, POLLING_FTSO_ABI } from '@flare-kit/contracts'
+import { type GovernanceDeployment, GOVERNANCE_VOTE_POWER_ABI, GOVERNOR_ABI, POLLING_FTSO_ABI } from '@flarekit-dev/contracts'
 
 /**
  * The governance-VP + eligibility READS and the pure delegate/undelegate call BUILDERS —

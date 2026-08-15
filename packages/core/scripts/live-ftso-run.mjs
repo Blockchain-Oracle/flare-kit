@@ -21,7 +21,7 @@
  *   node scripts/live-ftso-run.mjs --submit-incentive  # SPENDS ~0.37 C2FLR
  */
 import { createPublicClient, http } from 'viem'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 import {
   probeCatalogue,
   probeCustomFeeds,

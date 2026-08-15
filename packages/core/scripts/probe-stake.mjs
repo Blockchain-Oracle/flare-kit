@@ -1,6 +1,6 @@
 // packages/core/scripts/probe-stake.mjs
 // M11 Task 1 — read-only staking probe (no product code, no signing, no writes).
-// Confirms the substrate for the M11 staking milestone BEFORE any @flare-kit/contracts
+// Confirms the substrate for the M11 staking milestone BEFORE any @flarekit-dev/contracts
 // registry entry or adapter exists. M11 mirrors EXISTING Coston2 P-chain stake back
 // onto the C-chain (no deploy), so this run:
 //   1) resolves + ASSERTS the three EVM contracts from FlareContractRegistry
@@ -30,7 +30,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { createPublicClient, http, getAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import { Network } from '@flarenetwork/flare-tx-sdk'
-import { chainFor } from '@flare-kit/contracts'
+import { chainFor } from '@flarekit-dev/contracts'
 
 const ROOT = '/Users/abu/dev/hackathon/flare'
 const EV_PATH = `${ROOT}/.thoughts/verification/2026-08-12-m11-probe.json`

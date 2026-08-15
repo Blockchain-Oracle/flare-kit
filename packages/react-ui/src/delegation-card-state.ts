@@ -7,7 +7,7 @@ import type {
   DelegationPlanResult,
   DelegationPositionView,
   OperationRecord,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 
 /**
@@ -25,7 +25,7 @@ export type DelegationOperation = OperationRecord<DelegationIntent, unknown, Del
  *
  * The load-bearing ones (M10): an `unavailable` position is a `—`, NEVER a confident
  * zero-delegation and NEVER collapsed into `no-balance`; a delegation-mode conflict reads
- * "undelegate first", never a silent no-op; and a delegate with zero provider rows is
+ * that the style is fixed for the account, never a silent no-op; and a delegate with zero provider rows is
  * never submittable — the composer refuses to emit a no-op `batchDelegate([],[])`.
  */
 
@@ -128,10 +128,10 @@ const ERROR_NOTE: Record<DelegationError['kind'], (error: DelegationError) => { 
         : '',
   }),
   'mode-conflict': (error) => ({
-    title: 'Undelegate first',
+    title: 'Delegation style is fixed for this account',
     body:
       error.kind === 'mode-conflict'
-        ? `This account is in ${error.current.toUpperCase()} mode. The other delegation style is ignored until you undelegate first, so switching needs a clean slate.`
+        ? `This account is in ${error.current.toUpperCase()} mode. The chain never resets an account's delegation mode — not even after undelegating — so the other style stays refused here. Delegate the other way from an account that has not used this one.`
         : '',
   }),
   'insufficient-wrapped': (error) => ({
@@ -143,7 +143,7 @@ const ERROR_NOTE: Record<DelegationError['kind'], (error: DelegationError) => { 
   }),
 }
 
-/** The honest note for a refused plan. `mode-conflict` reads "undelegate first". */
+/** The honest note for a refused plan. `mode-conflict` states the style is fixed. */
 export function delegationErrorNote(error: DelegationError): CardNote {
   const copy = ERROR_NOTE[error.kind](error)
   // Over-100 and too-many are correctable composer mistakes; the rest are hard stops.
@@ -178,7 +178,7 @@ export function ctaForDelegation({ state, planResult, emptyDelegate }: Delegatio
     case 'bips-over-100':
       return { label: 'Over 100%', disabled: true }
     case 'mode-conflict':
-      return { label: 'Undelegate first', disabled: true }
+      return { label: 'Delegation style fixed', disabled: true }
     case 'unavailable':
       return { label: 'Position unavailable', disabled: true }
     case 'needs-wrap':

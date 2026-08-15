@@ -1,5 +1,5 @@
-import type { FamilyRow, FamilyStatus, Observation } from '@flare-kit/core'
-import { isObserved } from '@flare-kit/core'
+import type { FamilyRow, FamilyStatus, Observation } from '@flarekit-dev/core'
+import { isObserved } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { SourceChip } from './primitives/SourceChip.js'

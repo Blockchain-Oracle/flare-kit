@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, within } from '@testing-library/react'
-import { amount } from '@flare-kit/core'
+import { amount } from '@flarekit-dev/core'
 import { TokenSelector, type TokenChoice } from '../src/TokenSelector.js'
 
 /**

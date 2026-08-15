@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Address } from 'viem'
-import { type StakingDeployment, stakingFor } from '@flare-kit/contracts'
+import { type StakingDeployment, stakingFor } from '@flarekit-dev/contracts'
 import type { StakeIntent, StakeLimits } from '../src/stake-adapter.js'
 import type { ValidatorInfo } from '../src/pchain-rpc.js'
 import { planStake } from '../src/staking.js'

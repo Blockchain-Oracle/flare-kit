@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { truncateAddress, truncateHash } from '@flare-kit/core'
+import { truncateAddress, truncateHash } from '@flarekit-dev/core'
 import { ExplorerLink } from '../src/primitives/ExplorerLink.js'
 
 /**

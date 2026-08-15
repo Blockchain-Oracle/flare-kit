@@ -1,0 +1,143 @@
+---
+title: IncentiveComposer
+description: The Fast Update incentive composer — the exact offer amount, what it buys, for how long, and who pays, before anything is signed.
+breadcrumb: ['Docs', 'Components', 'IncentiveComposer']
+importLine: "import { IncentiveComposer } from '@flarekit-dev/react-ui'"
+---
+
+`IncentiveComposer` prices one Fast Update incentive and puts every term of it on
+screen: the exact amount in wei, the range increase it buys, how long the
+widening lasts, and who signs. It is the only FTSO surface that spends, so
+nothing that would change a signing decision sits behind a disclosure.
+
+The quote is for **this offer and no other**. The amount is
+`rangeIncrease × rangeIncreasePrice ÷ (precision × 64)`, and the composer shows
+that arithmetic rather than asserting the result.
+
+## Live
+
+The preview mounts the gallery's own `ftso-05` cases. Their offer amount is not
+typed in — it is computed by `priceFor` from the constants bisected against the
+live Coston2 contract on 2026-08-04, where a range increase of
+`2433889152438200450873670154321` was accepted at `366210937499999999` wei and
+rejected one wei below. Nothing is submitted here, and no chain is read.
+
+<IncentiveComposerDemo />
+
+## Usage
+
+The composer takes a quote and renders it. Quoting needs no key; submitting is
+the host's own wallet flow, which is why `onSubmit` is a callback and not a
+transaction.
+
+```tsx
+import { useIncentiveOffer } from '@flarekit-dev/react'
+import { IncentiveComposer } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Incentive({ reader, payer, onOffer }) {
+  const quote = useIncentiveOffer({
+    reader,
+    chainId: 114,
+    rangeIncrease: 608472288109550112718417538580n,
+  })
+
+  return (
+    <IncentiveComposer
+      quote={quote.data}
+      loading={quote.loading}
+      payer={payer}
+      nativeAsset="C2FLR"
+      now={Date.now()}
+      onRequote={quote.refresh}
+      onSubmit={onOffer}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'nativeAsset', type: 'string', required: true, description: "The network's own token — C2FLR on Coston2, FLR on mainnet. Named rather than inferred, because the amount is exact and an amount without its asset is not." },
+  { name: 'now', type: 'number', required: true, description: 'The clock the evidence chip stamps its observation with.' },
+  { name: 'quote', type: 'IncentiveQuote', description: 'The price for the exact offer about to be made. Absent, the composer renders no terms and cannot submit.' },
+  { name: 'eligible', type: 'boolean', defaultValue: 'true', description: 'Whether this deployment will take an offer at all.' },
+  { name: 'ineligibleReason', type: 'string', description: "Why not, in the deployment's own terms. Required when eligible is false — otherwise the surface reports that the incentive manager gave no reason." },
+  { name: 'quoteStale', type: 'boolean', defaultValue: 'false', description: 'Past its freshness budget. The offer amount is a function of the range and the range moves, so a stale price is the wrong value rather than an old one.' },
+  { name: 'payer', type: 'string', description: 'Who signs and funds the offer. Absent means no payer is connected and nothing can be sent.' },
+  { name: 'state', type: 'OperationState', description: "The submission's lifecycle state, once one exists. Submitted and confirming render as accepted, never as succeeded." },
+  { name: 'transactionHash', type: 'string', description: 'The offer transaction, shown as an evidence chip once it exists.' },
+  { name: 'effect', type: 'IncentiveEffect', description: 'What the chain says the offer bought. Supplying it mounts IncentiveEffectPanel beneath the terms.' },
+  { name: 'effectExpired', type: 'boolean', defaultValue: 'false', description: "Whether the widening's duration has elapsed. Computed by the caller against a clock." },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the quote is still being fetched. Shows a busy region rather than an empty offer.' },
+  { name: 'onSubmit', type: '() => void', description: 'Called when the reader submits a quoted, in-limit, fresh offer with a payer connected. Omit it and the composer is read-only.' },
+  { name: 'onRequote', type: '() => void', description: 'Re-prices the offer. Also becomes the action inside the stale-quote notice.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer panel, so a host layout can place it.' },
+]} />
+
+## What it renders
+
+One panel holding the offer: what you would pay in both `C2FLR` and wei, the
+range increase against the contract's limit and the current range, the expected
+sample size, the duration, the pricing expression with its precision, and the
+payer. Submission is refused with the reason named — a stale quote and an
+over-limit increase are different states needing different actions, so they are
+never collapsed into one disabled button. The panel signs nothing; `onSubmit` is
+where the host's wallet flow begins.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the quote is still being fetched.
+- **PLAN, quoted, no signer connected** — the terms are legible, and the panel
+  says what quoting costs (nothing) against what submitting moves.
+- **AUTH, payer connected** — quoted, in limit, fresh, with a payer. The only
+  state that can submit.
+- **AVAIL, not accepting offers** — the deployment refuses, in its own words.
+  The quote still renders, so the price stays legible.
+- **fee stale** — the range moved under the quote. Submitting on it sends the
+  wrong value and the contract rejects it one wei short, so it offers a re-quote
+  instead.
+- **above the contract limit** — the call would revert, so it is refused here
+  rather than sent.
+- **OP submitted** — accepted, and never rendered as succeeded. The offer is on
+  chain; what it bought is a separate reading of a separate block.
+- **effect confirmed** — with `sampleSizeIncrease` at zero, rendered as exactly
+  that. An incentive widens the range; it does not necessarily buy a larger
+  sample.
+- **effect expired** — a decayed widening, which is the purchase ending rather
+  than the offer failing.
+- **effect could not be attributed** — an unknown, not a failure. See
+  [IncentiveEffectPanel](/docs/components/incentive-effect-panel).
+
+## Mock to live
+
+The composer takes a quote, not a chain, so going live swaps the reader behind
+it and nothing on this screen changes. The Fast Update incentive manager's
+address is resolved from `@flarekit-dev/contracts` by chain id; network is
+configuration.
+
+```tsx
+// From a mock reader in a test or a preview…
+const quote = useIncentiveOffer({ reader: mockReader, chainId: 114, rangeIncrease })
+
+// …to a live client. The component does not change.
+const quote = useIncentiveOffer({ reader: publicClient, chainId: 114, rangeIncrease })
+```
+
+`createMockFtsoReader()` answers feed reads, not the incentive manager's, so the
+preview above is priced from the measured constants rather than from a mock
+read. A mock that answered a call it never observed is the thing this kit exists
+not to do.
+
+## What it will not do
+
+It will not submit an offer above the contract's limit or on a stale price, and
+it will not present a submitted transaction as a succeeded one. It does not
+sign, broadcast or hold a key — quoting needs none, and the one action that
+moves value is handed back to the host.

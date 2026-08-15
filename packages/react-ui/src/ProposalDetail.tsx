@@ -1,5 +1,5 @@
-import type { ProposalDetailView, ProposalSource, ProposalUnknown } from '@flare-kit/core'
-import { amount } from '@flare-kit/core'
+import type { ProposalDetailView, ProposalSource, ProposalUnknown } from '@flarekit-dev/core'
+import { amount } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

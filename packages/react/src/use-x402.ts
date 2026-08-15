@@ -1,4 +1,4 @@
-import type { OperationRecord } from '@flare-kit/core'
+import type { OperationRecord } from '@flarekit-dev/core'
 import { useBridge, type UseBridgeInput, type UseBridgeResult } from './use-bridge.js'
 
 /**

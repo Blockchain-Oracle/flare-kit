@@ -1,0 +1,322 @@
+/* ============================================================
+   The site shell — nav and footer.
+   Tokens only. Controls come from the kit (.fk-btn); this file
+   styles the frame around them, never a second button.
+   ============================================================ */
+
+:root {
+  --shell-nav-h: 60px;
+}
+
+/* ---------- Brand lockup ---------- */
+/* The glyph and wordmark rules moved into @flarekit-dev/react-ui with
+   BrandLockup, because two apps draw this mark. Only the frame that positions
+   it in this shell stays here. */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+/* ---------- Nav ---------- */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in oklab, var(--fk-bg) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--fk-border);
+}
+.nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  height: var(--shell-nav-h);
+  width: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-inline: 28px;
+}
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--fk-text-muted);
+}
+.nav-links a:hover {
+  color: var(--fk-text);
+}
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+/* ---------- Search ---------- */
+.nav-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: var(--fk-surface);
+  color: var(--fk-text-faint);
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+.nav-search-btn:hover {
+  color: var(--fk-text-muted);
+  border-color: var(--fk-border-control);
+}
+.nav-search-btn kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--fk-border);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  background: var(--fk-card);
+}
+
+.search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding-top: 12vh;
+  background: var(--fk-tint);
+  backdrop-filter: blur(3px);
+}
+.search-dialog {
+  /* Content-sized, anchored to the top. Without this the dialog is a stretched
+     grid item, and because it sets overflow:hidden its automatic minimum size
+     resolves to 0 — it collapses to its own 2px of border with the input and
+     results clipped out of view. */
+  align-self: start;
+  width: min(640px, calc(100vw - 32px));
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-lg);
+  background: var(--fk-card);
+  box-shadow: var(--fk-sh-3);
+  overflow: hidden;
+}
+.search-input {
+  width: 100%;
+  padding: 16px 18px;
+  border: 0;
+  border-bottom: 1px solid var(--fk-border);
+  background: transparent;
+  color: var(--fk-text);
+  font-family: var(--fk-font-sans);
+  font-size: 1rem;
+}
+.search-input:focus {
+  outline: none;
+}
+.search-results {
+  max-height: 56vh;
+  overflow-y: auto;
+  padding: 8px;
+}
+.search-note {
+  padding: 16px 12px;
+  color: var(--fk-text-muted);
+  font-size: 0.9rem;
+}
+.search-note code {
+  font-family: var(--fk-font-mono);
+  font-size: 0.85em;
+  padding: 1px 5px;
+  border-radius: var(--fk-r-sm);
+  background: var(--fk-surface);
+}
+.search-hit {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border-radius: var(--fk-r-md);
+}
+.search-hit:hover {
+  background: var(--fk-surface);
+}
+.search-hit-title {
+  font-weight: 600;
+  color: var(--fk-text);
+  font-size: 0.94rem;
+}
+.search-hit-excerpt {
+  font-size: 0.86rem;
+  color: var(--fk-text-muted);
+  line-height: 1.5;
+}
+.search-hit-excerpt mark {
+  background: var(--fk-primary-soft);
+  color: var(--fk-text);
+  border-radius: 3px;
+}
+
+@media (max-width: 900px) {
+  .nav-search-label,
+  .nav-search-btn kbd {
+    display: none;
+  }
+}
+.nav-icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--fk-r-md);
+  color: var(--fk-text-muted);
+}
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+}
+.nav-icon:hover {
+  color: var(--fk-text);
+  background: var(--fk-tint);
+}
+
+/* ---------- Burger and drawer ---------- */
+.nav-burger {
+  display: none;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--fk-border);
+  border-radius: var(--fk-r-md);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  place-items: center;
+}
+.burger {
+  display: grid;
+  gap: 4px;
+  width: 16px;
+}
+.burger i {
+  display: block;
+  height: 1.5px;
+  background: var(--fk-text);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+.burger.open i:nth-child(1) {
+  transform: translateY(5.5px) rotate(45deg);
+}
+.burger.open i:nth-child(2) {
+  opacity: 0;
+}
+.burger.open i:nth-child(3) {
+  transform: translateY(-5.5px) rotate(-45deg);
+}
+
+.nav-drawer {
+  display: none;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 28px 26px;
+  border-top: 1px solid var(--fk-border);
+  background: var(--fk-bg);
+}
+.nav-drawer.open {
+  display: flex;
+}
+.nav-drawer-links {
+  display: flex;
+  flex-direction: column;
+}
+.nav-drawer-links a {
+  padding: 12px 0;
+  font-size: 1.02rem;
+  font-weight: 500;
+  border-bottom: 1px solid var(--fk-border);
+}
+.nav-drawer-foot {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  padding-top: 16px;
+  font-size: 0.9rem;
+  color: var(--fk-text-muted);
+}
+.nav-drawer-foot a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.nav-drawer-foot svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 900px) {
+  .nav-links,
+  .nav-cta {
+    display: none;
+  }
+  .nav-burger {
+    display: grid;
+  }
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  border-top: 1px solid var(--fk-border);
+  margin-top: clamp(56px, 9vw, 116px);
+  padding-block: 52px 26px;
+}
+.footer-inner {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(3, 1fr);
+  gap: 36px;
+}
+.footer-blurb {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  max-width: 34ch;
+}
+.footer h3 {
+  font-family: var(--fk-font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fk-text-faint);
+  margin-bottom: 12px;
+}
+.footer ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+  font-size: 0.92rem;
+  color: var(--fk-text-muted);
+}
+.footer li a:hover {
+  color: var(--fk-text);
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--fk-border);
+  font-size: 0.78rem;
+  color: var(--fk-text-faint);
+}
+
+@media (max-width: 760px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}

@@ -9,9 +9,9 @@ import {
   type RnatState,
   MOCK_EPOCH,
   MOCK_REWARDS_OBSERVED,
-} from '@flare-kit/core'
-import { ClaimCard, type RewardsClaimOperation } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import { ClaimCard, type RewardsClaimOperation } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every required state of the M10 ClaimCard, in both themes. The THREE claim

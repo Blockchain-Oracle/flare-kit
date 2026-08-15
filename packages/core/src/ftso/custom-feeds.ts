@@ -4,7 +4,7 @@ import {
   chainFor,
   decodeFeedId,
   isCustomFeedId,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { type Observation, observe } from '../observation.js'
 import type { RoundReader } from '../voting-round.js'
 import { listSupportedFeedIds } from './feeds.js'

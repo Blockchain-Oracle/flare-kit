@@ -1,4 +1,4 @@
-import { type ClaimPlanResult, type DexToken, type RewardsReads, amount, formatExact, truncateAddress } from '@flare-kit/core'
+import { type ClaimPlanResult, type DexToken, type RewardsReads, amount, formatExact, truncateAddress } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

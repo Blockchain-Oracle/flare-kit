@@ -1,4 +1,4 @@
-import type { ChainFamily } from '@flare-kit/core'
+import type { ChainFamily } from '@flarekit-dev/core'
 import { Modal } from './primitives/Modal.js'
 import { NetworkLogo } from './primitives/NetworkLogo.js'
 

@@ -1,5 +1,5 @@
-import type { CustomFeedSet, FeedReadResult, Observation } from '@flare-kit/core'
-import { CUSTOM_FEED_CREATION, formatExact, isObserved, truncateHash } from '@flare-kit/core'
+import type { CustomFeedSet, FeedReadResult, Observation } from '@flarekit-dev/core'
+import { CUSTOM_FEED_CREATION, formatExact, isObserved, truncateHash } from '@flarekit-dev/core'
 import { DataTable, EmptyRow, SkeletonRows } from './primitives/DataTable.js'
 import { Note } from './primitives/Note.js'
 import { Panel } from './primitives/Panel.js'

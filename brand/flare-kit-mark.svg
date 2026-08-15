@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" fill="#e62058" role="img" aria-label="flare-kit">
+  <rect x="4" y="8" width="40" height="7" rx="3.5"/>
+  <rect x="4" y="20.5" width="28" height="7" rx="3.5"/>
+  <rect x="4" y="33" width="16" height="7" rx="3.5"/>
+  <circle cx="37.5" cy="36.5" r="6.5"/>
+</svg>

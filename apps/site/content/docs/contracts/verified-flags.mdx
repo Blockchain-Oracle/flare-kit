@@ -1,0 +1,128 @@
+---
+title: Verified flags
+description: Every capability in the registry carries a boolean saying whether it has been driven live with transaction evidence. false means not proven — never broken, and never quietly rendered as proven.
+breadcrumb: ['Docs', 'Contracts', 'Verified flags']
+importLine: "import { vaultsFor, stakingFor } from '@flarekit-dev/contracts'"
+---
+
+A registry entry says an address exists and what shape the call takes. It does
+not say anyone has ever made that call successfully on that network. Those are
+different facts, and flare-kit keeps them apart: every capability carries a
+`*Verified` boolean that is `true` only where a recorded live run confirmed the
+path on chain.
+
+## Live
+
+The table below reads the registries at render time. Nothing in it is typed into
+this page — these are the same booleans the kit itself branches on, so if a flag
+flips after a live run, this page flips with it.
+
+<VerifiedFlagsDemo />
+
+## What `true` means
+
+A flag is flipped by a live run and nothing else. Not a passing test, not a
+successful simulation, not a green typecheck — a real transaction, on the
+network the flag is keyed to, whose *outcome was read back from chain* and
+recorded with its hashes, block numbers and amounts.
+
+The bar is the round trip, not the send. The cross-chain flags flipped only
+after reading the delivery on the destination chain, not after the source
+transaction was accepted. The compose-redeem route reached `succeeded` only from
+the XRP Ledger settlement read, because the money arriving on the XRPL is the
+outcome and everything before it is progress. The gasless flag flipped only
+after reading the on-chain payment event with the payer's own gas balance
+unchanged across it.
+
+## What `false` means
+
+`false` means **not proven**. It does not mean broken, failed, or unsupported.
+It means no live run has recorded this path on this network yet, so the kit
+declines to emit a plan for it.
+
+That refusal is the point. A plan spends real value — an approval, a
+cross-chain fee, a locked stake — on the assumption that the call shape is
+right. Emitting one against an unconfirmed shape means the user pays for the
+approvals and then watches the transaction revert. So an unverified capability
+renders as a declared-unbuilt affordance: the reads are shown, the action is
+visibly not offered, and the surface says why. It is never a disabled button
+with no explanation, and never an action that looks live and is not.
+
+## Why a flag stays false
+
+The reasons are recorded next to each flag in the registry source, and they are
+not all the same reason.
+
+**The signature is venue-specific.** `addLiquidityVerified` is set only where a
+router's `addLiquidity` was confirmed on chain. The verified venue carries a
+non-standard signature with two extra fee-tolerance parameters; a router using
+the standard signature would revert against that calldata. So the flag is not
+inherited across networks by analogy — it is earned per network.
+
+**The run has not happened on that network.** The mainnet vault entry is
+configured for reads only. Its addresses were probed live, so the balances and
+share token it shows are real, but its withdraw model has not been driven on
+mainnet, and a testnet round trip does not vouch for one.
+
+**A false flag can even under-claim.** The Firelight vault on Coston2 is the
+sharp case: its request→claim round trip *did* land live, receiving `0.003000 FXRP`
+on 2026-08-13. The flag has still not been flipped, because that entry is the
+suite's canonical declared-unbuilt fixture across the contracts, core and
+react-ui tests, the mock and the gallery — flipping it is a migration that needs
+its own review and its own browser re-verification. Until that happens the
+registry keeps the safe, understated value. Under-claiming is a bug worth
+fixing; over-claiming is a lie, and the two are not symmetric.
+
+**There is nothing to claim yet.** `rewardsVerified` is carried false past the
+milestone that built the claim surface, because the account that was driven
+earned nothing across the epoch range and no official reward proof API exists on
+that testnet — the registry's own proof source is marked `official: false`, so
+its data is never rendered as protocol truth. A claim cannot be settled, so the
+flag cannot be earned. The surface shows the honest empty states the probe read,
+including the two calls that revert by design, rather than a faked zero.
+
+**The commitment is long-lived.** `stakeVerified` flips only when a real stake
+position is read back from chain — the delayed P-chain to C-chain return
+reaching `succeeded`. That return is locked for at least fourteen days, so the
+proof cannot be manufactured on demand; it has to be waited out. The probe that
+established the addresses read a blank-slate account, zero mirrored and zero
+staked, which is exactly the state the flag reports.
+
+## Not configured is a third answer
+
+A capability with no deployment on a network is not an unverified capability.
+Its accessor returns `undefined` — or, for cross-chain, an empty route list —
+and the table above says `not configured` rather than `false`. Mainnet
+cross-chain, gasless, x402, delegation, rewards and staking are all in that
+state: no address is carried, because the registry will not hold an address that
+has not been read on chain. There is nothing there to prove yet, which is a
+different sentence from *this has not been proven*.
+
+## Reading a flag in your own code
+
+Check the flag before you offer the action, in the same expression that builds
+it. The values are plain constants, so this costs nothing and works without a
+provider, a wallet or a network call.
+
+```ts
+import { routesFor, stakingFor } from '@flarekit-dev/contracts'
+
+const staking = stakingFor('coston2')
+if (staking?.stakeVerified) {
+  // Only here may a stake plan be emitted.
+}
+
+// A route that has not delivered on its destination chain is shown, not offered.
+const offerable = routesFor('coston2').filter((route) => route.bridgeVerified)
+```
+
+The widgets already do this for you. A capability whose flag is not set renders
+its reads and a declared-unbuilt affordance in place of the action, so you get
+the refusal without writing the branch yourself.
+
+## The discipline in one line
+
+Configured is not verified, and verified is not a promise about the future — it
+is a record of the past, with hashes. The registry would rather say *we have not
+proven this* than let a surface imply otherwise, which is why these booleans
+exist at all instead of being an assumption spread across the codebase.

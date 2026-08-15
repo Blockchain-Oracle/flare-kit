@@ -1,0 +1,115 @@
+---
+title: RouteCatalogue
+description: One row per configured cross-chain route — source and destination, the primitive, the live quoted fee — where a route whose delivery has never been confirmed shows its config and no bridge action.
+breadcrumb: ['Docs', 'Components', 'RouteCatalogue']
+importLine: "import { RouteCatalogue } from '@flarekit-dev/react-ui'"
+---
+
+`RouteCatalogue` lists the cross-chain routes configured for the active network:
+the chain pair, the primitive that moves the value, the live cross-chain fee and
+whether delivery on the destination has actually been confirmed. It exists to keep
+one distinction visible — a route can be fully configured and still never have been
+proven to deliver, and those are not the same thing.
+
+## Live
+
+The preview runs the gallery's own states. The state switcher walks the cases the
+surface was verified against, so nothing here shows a state the catalogue never
+actually reaches.
+
+<RouteCatalogueDemo />
+
+## Usage
+
+Hand it the routes for a network and a clock. It holds no state and fetches
+nothing; the fee is a read you own, and a fee you have not read yet is `null`.
+
+```tsx
+import { type Amount, routesFor } from '@flarekit-dev/core'
+import { RouteCatalogue, type RouteRow } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Routes({ fees }: { fees: Record<string, Amount | null> }) {
+  const rows: RouteRow[] = routesFor('coston2').map((route) => ({
+    route,
+    reads: { fee: fees[route.key] ?? null },
+  }))
+
+  return (
+    <RouteCatalogue
+      rows={rows}
+      now={Math.floor(Date.now() / 1000)}
+      networkLabel="Coston2"
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'rows', type: 'readonly RouteRow[]', required: true, description: 'One entry per route: the `BridgeRoute` itself, its optional live `reads` and the `Observation` behind them. Omit `reads` entirely and the row says the read failed; pass `{ fee: null }` and the fee renders as an em dash. Neither is ever a zero.' },
+  { name: 'now', type: 'number', required: true, description: 'The host clock in unix seconds, used to age the source chip. A prop, never `Date.now()` inside the component — a clock read during render is not reachable from a test or a gallery case.' },
+  { name: 'networkLabel', type: 'string', description: 'The network named under the panel title, e.g. `Coston2`.' },
+  { name: 'mockLabel', type: 'string', description: 'Names the mock driving the rows. Present only when the host is explicitly in mock mode; the catalogue never labels itself mock as a fallback.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the catalogue.' },
+]} />
+
+## What it renders
+
+One panel, one section per route. Each row leads with the asset and the chain pair
+(`Coston2 → Sepolia`), then names the primitive — `OFT bridge` for a plain send, or
+`Compose redeem → native XRP` for the route that carries a compose message on to
+the FAssets redemption. Beside it sits the route's standing, `Verified` or
+`Configured`, and a source chip carrying where the reads came from and how old they
+are.
+
+Under the head are the three terms worth checking before you send: the asset, the
+cross-chain fee (quoted by the OFT before signing, and paid in the source chain's
+native token), and the destination contract the message is delivered to. A route
+with no reads at all renders `Couldn't read this route` — stated as a read that did
+not answer, never as a fee of zero.
+
+With no routes configured for the network, the catalogue says exactly that rather
+than rendering an empty panel.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **both routes live-verified** — the bridge and the redeem, each with the fee that
+  was actually quoted and a source chip naming the read behind it.
+- **declared-unbuilt** — a route whose delivery has not been driven live here. Its
+  configuration and fee still read normally; below them the row states that the
+  bridge is not built for this route, and why. Nothing downstream will spend a real
+  cross-chain fee on a message no run has confirmed delivered.
+- **read unavailable** — the fee could not be read. The row says so. It is not a
+  zero fee, and it is not a broken route.
+
+## Mock to live
+
+The catalogue takes rows; it never reaches for a network itself. Whatever produced
+the reads — `createMockBridgeAdapter`, an offline reader of what the live run
+observed, or the same `makeBridgeAdapter` over real clients — the component is the
+same, and the routes come from `@flarekit-dev/contracts` either way.
+
+```tsx
+// From this…
+const adapter = createMockBridgeAdapter('coston2-sepolia')
+
+// …to this. The catalogue does not change.
+const adapter = makeBridgeAdapter(sourceClient, destinationClient, route)
+```
+
+## What it will not do
+
+It will not read `Configured` as broken. A route without `bridgeVerified` has not
+been proven to deliver on its destination in this build; that is a statement about
+evidence, not about the route's health, and the catalogue never upgrades it to
+`Verified` from configuration alone. It will not render an unread fee as `0`, and
+it will not let an unverified route pass as bridgeable — the row carries a
+disabled, reasoned statement in place of the send, which is the same refusal
+`buildBridgePlan` makes before it reads anything.

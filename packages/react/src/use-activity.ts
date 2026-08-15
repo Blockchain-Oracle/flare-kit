@@ -8,7 +8,7 @@ import {
   filterActivity,
   isTerminal,
   networkName,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
 import { useFlareContext } from './provider.js'
 

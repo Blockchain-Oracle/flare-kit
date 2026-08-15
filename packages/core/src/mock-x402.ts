@@ -1,6 +1,6 @@
 // packages/core/src/mock-x402.ts
 import type { Hex } from 'viem'
-import { type FlareNetworkKey, x402For } from '@flare-kit/contracts'
+import { type FlareNetworkKey, x402For } from '@flarekit-dev/contracts'
 import type { X402Challenge, X402Outcome } from './x402-client.js'
 
 /**

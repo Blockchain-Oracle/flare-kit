@@ -1,0 +1,151 @@
+---
+title: ProofDetail
+description: The FDC proof itself — every attested value at full precision, whether the chain verified it, and whether anything deployed will take it.
+breadcrumb: ['Docs', 'Components', 'ProofDetail']
+importLine: "import { ProofDetail } from '@flarekit-dev/react-ui'"
+---
+
+`ProofDetail` renders one FDC proof and the two facts that are easy to conflate:
+whether the chain **verified** it, and whether anything deployed **consumes**
+it. They are different questions with different answers, so the surface answers
+them separately rather than collapsing both into one badge.
+
+Every attested value renders in the mono face at full precision. The response
+body carries `uint64` fields whose entire purpose is surviving intact — a
+rounded or abbreviated rendering here would hide exactly the corruption the kit
+exists to prevent.
+
+## Live
+
+The preview runs the gallery's own states against the labelled mock. The state
+switcher walks the cases FDC-04 was verified against, so nothing here shows a
+state the surface never actually reached.
+
+<ProofDetailDemo />
+
+## Usage
+
+`ProofDetail` is presentational: it holds no state, fetches nothing and signs
+nothing. Hand it the catalogue row for the family and the proof you fetched, and
+it renders the rest.
+
+```tsx
+import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { ProofDetail } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Proof({ proof, verified, account }) {
+  const { rows } = useAttestationFamilies({ load: async () => mockCatalogue() })
+  const row = rows.find((entry) => entry.family.name === 'XRPPayment')
+  if (!row) return null
+
+  return (
+    <ProofDetail
+      row={row}
+      proof={proof}
+      verified={verified}
+      proofOwner={proof.data.requestBody.proofOwner}
+      sender={account}
+      onConsume={() => consume(proof)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'row', type: 'FamilyRow', required: true, description: 'The catalogue row for this proof’s family. It carries the family name, what consumes a verified proof, and whether anything deployed does — which is where the verifier-only state comes from.' },
+  { name: 'proof', type: 'AttestationProof<unknown, object>', required: true, description: 'Any family’s proof. The response body is typed `object` rather than a mapped type, which is what lets one screen serve every family without knowing its fields.' },
+  { name: 'verified', type: 'boolean', description: 'The chain’s own boolean, from FdcVerification. Undefined means verification has not run — which is not the same as false, and does not render as one.' },
+  { name: 'relayRootPresent', type: 'boolean', description: 'Whether the Relay still holds the merkle root for this proof’s voting round. `false` is the expired state. Undefined means nobody checked, which is not “still valid”.' },
+  { name: 'source', type: '{ nativeUnit?: { asset: string; decimals: number } }', description: 'The source this proof was attested from, when the caller knows it. Carries the native unit an amount on that source is denominated in; without it an amount renders as a bare integer rather than risking the wrong ticker.' },
+  { name: 'proofOwner', type: 'string', description: 'The address bound to the proof, when the family binds one. Absent, the surface says the family binds no owner rather than implying one.' },
+  { name: 'proofOwnerExplorerUrl', type: 'string', description: 'The proof owner’s explorer page, when the host resolves one. This surface holds no chain id, so the host builds the link. Absent, the address degrades to copy-only — never a guessed URL.' },
+  { name: 'sender', type: 'string', description: 'The connected account, for the ownership rule. A mismatch against `proofOwner` is stated before you can spend gas on a revert.' },
+  { name: 'abiStruct', type: 'unknown', description: 'The ABI-ready struct, from the family module’s `toProofStruct`. Supplied by the caller because only it holds the family implementation. When present, the handoff panel renders.' },
+  { name: 'consumptionTxHash', type: 'string', description: 'Set when this proof has already been consumed. Its presence is what makes “already consumed” a state rather than an inference.' },
+  { name: 'consumptionExplorerUrl', type: 'string', description: 'The consuming transaction’s explorer page, when the host resolves one.' },
+  { name: 'consumptionError', type: 'string', description: 'Why a consumption attempt failed, when one did. A reverted consumption is its own state — without it, a failure is indistinguishable from a proof still waiting.' },
+  { name: 'consuming', type: 'boolean', defaultValue: 'false', description: 'True while the consuming transaction is in flight.' },
+  { name: 'onConsume', type: '() => void', description: 'Called when the reader presents the proof. Omit it and the screen says consumption is not wired up here — which is deliberately different from saying none exists.' },
+  { name: 'onDownload', type: '() => void', description: 'Called when the reader downloads the proof. Omit it and no download control renders.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the panel.' },
+]} />
+
+## What it renders
+
+Three parts. A header panel with the proof's identity — source, voting round,
+lowest used timestamp, proof owner, merkle proof size — where the padded
+`bytes32` source id sits under its decoded name, because the protocol carries
+one and a person can only check the other. Then the attested response, every
+field at full precision. Then the notes that apply to this proof, and the
+actions that are genuinely available.
+
+When `abiStruct` is passed, the [ProofHandoff](/docs/components/proof-handoff)
+panel renders beneath, so a proof nothing deployed consumes still ends
+somewhere.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **verified, consumable** — the chain returned true, the bound owner matches
+  the connected account, and presenting the proof is offered.
+- **not verified yet** — nobody has run `FdcVerification` against it. The
+  outcome is not confirmed yet; it is not rendered as a failure.
+- **verifier-only, with the handoff** — `EVMTransaction`, whose consumer is your
+  own contract by design. The handoff panel carries the next step's inputs.
+- **EVM value, with its source unit** — three EVM sources sit on one family row,
+  so the family declares no asset. Passing the source's native unit is what
+  turns a bare integer into a readable amount.
+- **expired** — the Relay no longer holds the merkle root for this voting round,
+  and `FdcVerification` checks against exactly that root. No account can verify
+  it now or later. This is an end state, not a fault: what the proof said is
+  still in the response above.
+- **uint64-max sentinel** — `18446744073709551615` rendered whole. If this ever
+  shows `18446744073709552000`, a `Number` has touched the proof.
+- **proof did not verify** — the chain returned false. A fact about the proof,
+  not about the data it describes.
+- **already consumed** — presenting it again would revert. That is the same
+  execution, not a second one.
+- **consumption failed** — the transaction reverted, with the reason. The proof
+  is unchanged and can be presented again.
+- **bound to another address** — the proof's owner is not the connected account,
+  so presenting it from here reverts with `OnlyProofOwner()`. Said before the
+  gas is spent.
+
+## Mock to live
+
+Nothing about this component changes between the mock and a live network. It
+takes a row and a proof; where those come from is the host's business. Swap the
+loader and the read, not the screen.
+
+```tsx
+// From the labelled mock…
+useAttestationFamilies({ load: async () => mockCatalogue() })
+
+// …to the live catalogue. The component does not change.
+useAttestationFamilies({ load: (input) => loadCatalogue({ ...input, services, chainId }) })
+```
+
+## What it will not do
+
+It will not offer consumption for a family nothing deployed consumes. That is
+read from `row.family.hasDeployedConsumer`, never from whether you happened to
+pass `onConsume` — a screen that simply has not wired the button says so, rather
+than claiming no consumer exists. For `EVMTransaction` and `Web2Json` the
+consumer is your own contract by design, recorded in
+`.thoughts/decisions/2026-08-04-no-first-party-proof-consumer.md`; this project
+ships no demo consumer, because deploying one would invent meaning the protocol
+deliberately leaves open.
+
+It will not render an unverified proof as unverifiable. `verified` being
+undefined means the check has not run, and that is shown as an open question
+rather than a negative result. It will not present an expired proof as merely
+unverified either: the round's root being gone is permanent, observable, and
+true for everyone at once.

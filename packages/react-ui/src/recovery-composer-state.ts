@@ -1,5 +1,5 @@
 // packages/react-ui/src/recovery-composer-state.ts
-import type { MemoRecoveryKind, MemoRecoveryRefusalCode } from '@flare-kit/core'
+import type { MemoRecoveryKind, MemoRecoveryRefusalCode } from '@flarekit-dev/core'
 import type { CardNote } from './card-chrome.js'
 
 /**

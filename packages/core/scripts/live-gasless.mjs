@@ -11,13 +11,13 @@
  * from the relayer's HTTP response.
  *
  * Requires the relayer running (operator key) at the registry relayerUrl:
- *   RELAYER_PRIVATE_KEY=… pnpm --filter @flare-kit/relayer start   # in another shell
+ *   RELAYER_PRIVATE_KEY=… pnpm --filter @flarekit-dev/relayer start   # in another shell
  *   node packages/core/scripts/live-gasless.mjs
  */
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http, erc20Abi, maxUint256, formatUnits, formatEther } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { gaslessFor } from '@flare-kit/contracts'
+import { gaslessFor } from '@flarekit-dev/contracts'
 import {
   makeGaslessAdapter,
   buildGaslessPlan,

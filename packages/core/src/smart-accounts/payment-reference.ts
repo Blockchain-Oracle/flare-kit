@@ -2,7 +2,7 @@ import {
   type BuiltInInstruction,
   type ValueDenomination,
   builtInInstruction,
-} from '@flare-kit/contracts'
+} from '@flarekit-dev/contracts'
 import { FlareKitError } from '../errors.js'
 
 /**

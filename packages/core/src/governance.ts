@@ -1,6 +1,6 @@
 // packages/core/src/governance.ts
 import { isAddress, zeroAddress } from 'viem'
-import type { GovernanceDeployment } from '@flare-kit/contracts'
+import type { GovernanceDeployment } from '@flarekit-dev/contracts'
 import type { OperationRecord, OperationStep } from './operation.js'
 import { buildDelegateCall, buildUndelegateCall, type GovernanceVoteReads } from './governance-adapter.js'
 

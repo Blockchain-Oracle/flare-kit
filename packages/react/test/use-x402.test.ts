@@ -6,7 +6,7 @@ import {
   mockX402Outcome,
   reconcileX402,
   type X402Operation,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { useX402 } from '../src/use-x402.js'

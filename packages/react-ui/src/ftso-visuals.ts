@@ -1,4 +1,4 @@
-import type { HistoryPointStatus, VerificationOutcome } from '@flare-kit/core'
+import type { HistoryPointStatus, VerificationOutcome } from '@flarekit-dev/core'
 import type { Glyph, Tone } from './state-visuals.js'
 
 /**

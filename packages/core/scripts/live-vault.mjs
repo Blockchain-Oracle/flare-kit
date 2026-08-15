@@ -19,7 +19,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createPublicClient, createWalletClient, http } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { chainFor, vaultByKey } from '@flare-kit/contracts'
+import { chainFor, vaultByKey } from '@flarekit-dev/contracts'
 import {
   makeVaultAdapter, vaultAbiFor, withdrawalPhase, firelightClaimRef,
   buildDepositPlan, buildWithdrawPlan, buildClaimPlan,

@@ -1,0 +1,48 @@
+---
+title: MCP server
+description: A stdio transport over the shared tool definitions, with no protocol logic of its own. Planned, not built — scoped by the agent-surfaces decision, which ships in the repository.
+breadcrumb: ['Docs', 'Agent Kit', 'MCP server']
+---
+
+The Model Context Protocol is how an agent host is handed a set of tools, so it
+is how this kit intends to reach agent hosts.
+
+**Planned.** This surface is scoped and not yet built. The decision that scoped
+it is `.thoughts/decisions/2026-08-03-agent-facing-surfaces.md`; decisions ship
+in the repository, so you can read the reasoning before any of this exists.
+There is no server to install and no command to run today.
+
+## What it will be
+
+A transport wrapper, and nothing more. The server contains no protocol logic
+and defines no tools of its own — it exposes the [shared tool
+definitions](/docs/agent-kit/tools) with a name, a description and a JSON
+Schema input schema, as the Model Context Protocol specifies.
+
+Stdio is the supported transport for local hosts. Any remote transport needs
+authentication and separate operational acceptance; hosted multi-tenant MCP is
+explicitly out of scope.
+
+Failures split the way the protocol expects: an execution failure returns
+`isError: true` with actionable text, so a model can correct itself, while a
+protocol failure is a JSON-RPC error. Version and help must succeed with no
+wallet, no network and no key configured. Configuration — network, RPC, key —
+comes from the environment, and a secret is never written to disk or to logs.
+
+## Why the surface stays small
+
+An MCP server injects every tool schema into the host's context at startup,
+which costs materially more than a skill does. So the exposed surface is
+deliberately composed around user intents rather than one tool per protocol
+call.
+
+The documentation knowledge surface ships separately from the transaction tool
+surface, so a host can adopt what the kit knows without adopting what it can
+do.
+
+## What exists today
+
+The headless operation contract the server would expose. It is already the
+layer the React hooks and widgets sit on — see the
+[quickstart](/docs/quickstart), and [mock mode](/docs/mock-mode) for driving it
+with no chain and no key.

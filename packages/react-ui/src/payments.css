@@ -1,5 +1,5 @@
 /* ============================================================
-   @flare-kit/react-ui — the payments surfaces (M9).
+   @flarekit-dev/react-ui — the payments surfaces (M9).
 
    GaslessCard and X402Card reuse SwapLeg, the OperationTimeline
    spine and the shared Panel/Note/DetailRow/StateChip/card-chrome,

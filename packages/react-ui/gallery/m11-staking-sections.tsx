@@ -16,9 +16,9 @@ import {
   mockStakingDeployment,
   planStake,
   stakePosition,
-} from '@flare-kit/core'
-import { ClaimCard, StakeCard } from '../src/index.js'
-import type { Section } from './sections.js'
+} from '@flarekit-dev/core'
+import { ClaimCard, StakeCard } from '@flarekit-dev/react-ui'
+import type { Section } from './sections'
 
 /**
  * Dev-only. Every state of the M11 StakeCard + the ClaimCard staking (4th) kind that the

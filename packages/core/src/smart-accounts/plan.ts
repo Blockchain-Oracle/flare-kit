@@ -1,4 +1,4 @@
-import { builtInInstruction, requiredVaultType } from '@flare-kit/contracts'
+import { builtInInstruction, requiredVaultType } from '@flarekit-dev/contracts'
 import { type InstructionRow, instructionRow } from './catalogue.js'
 import { encodePaymentReference } from './payment-reference.js'
 import { instructionSpine } from './states.js'

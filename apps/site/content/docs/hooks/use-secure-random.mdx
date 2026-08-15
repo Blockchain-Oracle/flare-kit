@@ -1,0 +1,133 @@
+---
+title: useSecureRandom
+description: The protocol's randomness, current or historical, with one policy option — and when a secure value was required and the protocol reports an insecure one, a refusal that carries no number at all.
+breadcrumb: ['Docs', 'Hooks', 'useSecureRandom']
+importLine: "import { useSecureRandom } from '@flarekit-dev/react'"
+---
+
+`useSecureRandom` reads randomness from the **Relay** — the contract registry
+lists `RandomNumberV2` at the Relay's own address on both networks — either the
+current value or a specific voting round's.
+
+`isSecureRandom = false` genuinely occurs. Sampling 401 rounds across the full
+retained range on Coston2 found four insecure ones — `872874`, `882520`,
+`951420` and `1167766`, roughly 1%. A surface that assumed secure would
+eventually lie about the one property anybody reads this for.
+
+`requireSecure` is the whole policy surface: one option on one read. When it
+refuses, the result carries the reason and **no value**, so a component cannot
+reach past a flag to the number.
+
+## Live
+
+The readout is the hook's actual return value, running the real
+`readSecureRandom` against round `872874` — a round Coston2 genuinely reports as
+not secure — with `requireSecure` set. What comes back is an observed refusal:
+its reason, the round it refused, and the timestamp of the reading it was taken
+against. There is no number anywhere in it.
+
+<UseSecureRandomDemo />
+
+## Usage
+
+```tsx
+import type { RoundReader } from '@flarekit-dev/core'
+import { isObserved, isRefusal } from '@flarekit-dev/core'
+import { useSecureRandom } from '@flarekit-dev/react'
+import { SecureRandomPanel } from '@flarekit-dev/react-ui'
+
+export function Random({ reader }: { reader: RoundReader }) {
+  const { data, loading, error, refresh } = useSecureRandom({
+    reader,
+    chainId: 114,
+    requireSecure: true,
+  })
+
+  if (error) return <p>The Relay could not be read: {error}</p>
+  if (data && isObserved(data) && isRefusal(data.value)) return <p>{data.value.reason}</p>
+
+  return (
+    <SecureRandomPanel
+      requireSecure
+      loading={loading}
+      now={Date.now()}
+      onRefresh={refresh}
+      {...(data ? { random: data } : {})}
+    />
+  )
+}
+```
+
+A refusal is a value-shaped answer rather than an exception, and deliberately
+so. A caller that asked for a secure random and got an insecure one has received
+a complete, correct answer to its question — "no, and here is why". Throwing
+would make that indistinguishable from the RPC being down, and would invite a
+`catch` that quietly proceeds with the insecure value.
+
+## Parameters
+
+<PropsTable rows={[
+  { name: 'reader', type: 'RoundReader', required: true, description: 'Reads the Relay. Named Relay (RandomNumberV2) on the observation, after the contract rather than the registry alias, so it matches an explorer.' },
+  { name: 'chainId', type: 'number', required: true, description: 'Which deployment. The Relay address comes from @flarekit-dev/contracts.' },
+  { name: 'votingRoundId', type: 'bigint', required: false, description: 'Omit for the current random. Given, it reads getRandomNumberHistorical, which reaches back to about round 864606 on Coston2 — far past the anchor-feed floor, so a round can have retrievable randomness and an unretrievable price at the same time.' },
+  { name: 'requireSecure', type: 'boolean', required: false, description: 'Refuse an insecure value rather than returning it with a flag. The flag alone is not enough: isSecure sitting beside a usable value is an invitation to use it.' },
+]} />
+
+## Return type
+
+`ObservedRead<Observation<RandomResult>>` — from
+[useObservedRead](/docs/hooks/use-observed-read) — where `RandomResult` is a
+reading or a refusal, and `isRefusal` is how you tell.
+
+<PropsTable rows={[
+  { name: 'data', type: 'Observation<RandomResult> | undefined', description: 'undefined until the read lands. A refusal is an observed result, not an absent one — the read succeeded and the answer was no.' },
+  { name: 'loading', type: 'boolean', description: 'True only while no result has arrived. Never how a refusal is expressed.' },
+  { name: 'error', type: 'string | undefined', description: 'The Relay call itself failed. Distinct from a refusal in every way that matters: nothing was read.' },
+  { name: 'refresh', type: '() => void', description: 'Read again. The current random moves; a historical round does not.' },
+]} />
+
+A `RandomReading` carries `value` as a `bigint`, `isSecure`,
+`timestampSeconds`, and `votingRoundId` when a round was asked for. A
+`RandomRefusal` carries `refused: true`, `reason`, `timestampSeconds` and the
+`votingRoundId` it refused — so the "no" names something checkable — and it has
+no value field to read.
+
+## States
+
+- **loading** — no read has landed.
+- **secure reading** — a value with `isSecure: true`.
+- **insecure reading** — a value with `isSecure: false`, returned because
+  nothing was required. It is flagged, and the flag is the headline rather than
+  a footnote.
+- **refusal** — `requireSecure` was set and the protocol reported this round as
+  not secure. No value is returned, and there is nothing on the result that
+  could reach the underlying number.
+- **error** — the Relay could not be read. No value is inferred from a previous
+  read.
+
+## Mock to live
+
+```tsx
+import { chainFor } from '@flarekit-dev/contracts'
+import { MOCK_INSECURE_ROUNDS, createMockFtsoReader } from '@flarekit-dev/core'
+import { createPublicClient, http } from 'viem'
+
+// The mock reports the four rounds that genuinely are insecure as insecure, so
+// a requireSecure refusal is exercised rather than shipped untested.
+const reader = createMockFtsoReader()
+const round = MOCK_INSECURE_ROUNDS[0]
+
+// Live. Nothing else changes.
+const reader = createPublicClient({ transport: http(chainFor(114).rpcUrl) })
+```
+
+## What it will not do
+
+It will not return a value that a required-secure read refused, and it will not
+keep one to one side for a caller to reach. It will not hardcode `secure`, and
+it will not treat "the Relay did not answer" as "the randomness is not secure".
+
+It will not enforce any policy beyond `requireSecure` — there is no policy
+engine here, deliberately — and it will not carry a compiled-in floor for how
+far `getRandomNumberHistorical` reaches back, because that moves. It will not
+poll.

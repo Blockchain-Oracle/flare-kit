@@ -1,0 +1,123 @@
+---
+title: AttestationCatalogue
+description: The attestation families table, compared row by row against what the live verifier answers — with "the verifier disagreed" and "we could not reach the verifier" kept as two different answers.
+breadcrumb: ['Docs', 'Components', 'AttestationCatalogue']
+importLine: "import { AttestationCatalogue } from '@flarekit-dev/react-ui'"
+---
+
+`AttestationCatalogue` lists the Flare Data Connector families a deployment
+serves. A built-in table of families is a claim about the day it was written, so
+every row here is that claim compared against the verifier's own OpenAPI
+document, and where the two differ the deployment wins and the row says so.
+
+The three outcomes stay three. *The verifier disagreed*, *we could not reach the
+verifier* and *this family is not served here* render differently, because
+collapsing the middle one turns a network blip into a false statement about the
+protocol.
+
+## Live
+
+The preview runs the gallery's own states against the labelled mock. The
+provenance chip reads `Simulated`, which is the point — a catalogue that looked
+live would be exactly the confusion the mock rules exist to prevent.
+
+<AttestationCatalogueDemo />
+
+## Usage
+
+The component renders an `Observation`, not a plain array. That is deliberate:
+an unwrapped `FamilyRow[]` would make "we could not ask" look identical to "the
+answer was empty", and the only route to the rows is through `isObserved`.
+
+```tsx
+import { mockCatalogue } from '@flarekit-dev/core'
+import { useAttestationFamilies } from '@flarekit-dev/react'
+import { AttestationCatalogue } from '@flarekit-dev/react-ui'
+import '@flarekit-dev/react-ui/styles.css'
+
+export function Families() {
+  const { catalogue, loading, stale, refresh } = useAttestationFamilies({
+    load: async () => mockCatalogue(),
+  })
+
+  return (
+    <AttestationCatalogue
+      catalogue={catalogue}
+      loading={loading}
+      stale={stale}
+      now={Date.now()}
+      onRefresh={refresh}
+      onSelect={(family) => console.log('build a request for', family)}
+    />
+  )
+}
+```
+
+## Props
+
+<PropsTable rows={[
+  { name: 'catalogue', type: 'Observation<readonly FamilyRow[]>', description: 'The comparison result, carrying its own source and the moment it was read. Undefined means no answer has landed — never an empty list standing in for one.' },
+  { name: 'loading', type: 'boolean', defaultValue: 'false', description: 'True while the verifier is being asked. The absence of an answer, not an answer of zero families.' },
+  { name: 'now', type: 'number', required: true, description: 'The wall clock the provenance chip evaluates its own freshness against. Required, because a surface that guessed the time would be inventing one.' },
+  { name: 'stale', type: 'boolean', defaultValue: 'false', description: "True when the reading is older than its source class's freshness budget. The protocol can add or withdraw a family between reads." },
+  { name: 'onSelect', type: '(familyName: string) => void', description: 'Called with the family name when a row is chosen. Only supported rows are selectable, so a family the deployment does not serve cannot be clicked into a builder.' },
+  { name: 'onRefresh', type: '() => void', description: 'Called when the reader asks again. Offered on an unreadable catalogue and on a stale one; omit it and both render read-only.' },
+  { name: 'theme', type: "'light' | 'dark'", description: 'Overrides the inherited theme. Normally left unset — the widget follows data-theme.' },
+  { name: 'className', type: 'string', description: 'Extra class on the outer element, so a host layout can place the table.' },
+]} />
+
+## What it renders
+
+Three columns — family, status, and the verifier group and source id pair —
+above notes that carry the prose. The family's summary, its consumer, its
+deprecation note and its proof-owner binding sit under the name where they have
+the width of a paragraph, rather than in a narrow cell that would clip them.
+
+Status is never colour alone: each one carries a glyph and a word.
+`Supported` means qualified real behaviour, `Planned` means served here with no
+builder shipped in this kit, `Withdrawn` carries the deprecation note, and
+`Not served here` is reserved for evidenced upstream absence.
+
+Below the table, disagreements and unchecked rows are called out separately and
+never hidden.
+
+## States
+
+Every state in the switcher above is imported from
+`packages/react-ui/gallery/`, one source of truth for both the gallery and these
+docs:
+
+- **loading** — the verifier is being asked; no rows yet.
+- **all live** — the full family list, each row agreeing with the deployment.
+- **docs/verifier disagreement** — the built-in table claims a route this
+  verifier serves under none of its groups, or serves one the table never
+  listed. The note names both sides.
+- **a group unreachable** — a verifier group did not answer, so those rows were
+  not checked. They are the built-in table's claim, marked as such. Silence is
+  not a denial.
+- **no current family list** — no group answered at all. Nothing is shown above
+  the note rather than the unchecked table, which would look identical to a
+  verified one.
+- **stale** — the list was read at a moment now past its freshness budget, and
+  offers a fresh read.
+
+## Mock to live
+
+The mock and the live loader return the same `Observation`, so moving networks
+swaps the loader, not the table. Addresses and verifier hosts come from
+`@flarekit-dev/contracts`; network is configuration.
+
+```tsx
+// From this…
+useAttestationFamilies({ load: async () => mockCatalogue() })
+
+// …to this. The component does not change.
+useAttestationFamilies({ load: ({ now }) => loadFamilyCatalogue({ services, chainId, now }) })
+```
+
+## What it will not do
+
+It will not present the built-in table as though it had been checked, and it
+will not turn an unreachable verifier into an empty catalogue or into a list of
+unavailable families. A row nobody could check says so, in those words.
+

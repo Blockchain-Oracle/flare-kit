@@ -12,7 +12,7 @@ import {
   isTerminal,
   reconcileDelegation,
   toSerializedError,
-} from '@flare-kit/core'
+} from '@flarekit-dev/core'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**

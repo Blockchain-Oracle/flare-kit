@@ -1,5 +1,5 @@
-import { type Amount, evidence, formatExact } from '@flare-kit/core'
-import { useFlareKit, useRedeem } from '@flare-kit/react'
+import { type Amount, evidence, formatExact } from '@flarekit-dev/core'
+import { useFlareKit, useRedeem } from '@flarekit-dev/react'
 import { useId, useMemo, useState } from 'react'
 import { AssetLogo } from './primitives/AssetLogo.js'
 import { Button } from './primitives/Button.js'

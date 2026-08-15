@@ -1,4 +1,4 @@
-import type { DirectMintingDelayState } from '@flare-kit/contracts'
+import type { DirectMintingDelayState } from '@flarekit-dev/contracts'
 import type { RecoveryAction } from '../recovery.js'
 import type { OperationState, StepActor } from '../states.js'
 

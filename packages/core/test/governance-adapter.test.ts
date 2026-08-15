@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { zeroAddress, type Address, type PublicClient } from 'viem'
-import { governanceFor, GOVERNANCE_VOTE_POWER_ABI } from '@flare-kit/contracts'
+import { governanceFor, GOVERNANCE_VOTE_POWER_ABI } from '@flarekit-dev/contracts'
 import { buildDelegateCall, buildUndelegateCall, readEligibility, readGovernanceVotes } from '../src/governance-adapter.js'
 
 const DEPLOYMENT = governanceFor('coston2')

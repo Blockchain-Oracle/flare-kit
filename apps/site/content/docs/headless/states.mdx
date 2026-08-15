@@ -1,0 +1,199 @@
+---
+title: States and transitions
+description: Sixteen canonical states, one transition table, and the rendering invariants that follow from it — submitted is never success, an unknown outcome is never failure.
+breadcrumb: ['Docs', 'Headless', 'States and transitions']
+importLine: "import { OPERATION_STATES, canTransition, pathTo } from '@flarekit-dev/core'"
+---
+
+Every surface — widget, hook, headless client and agent — reports exactly these
+identifiers. There is no per-capability vocabulary, and no display state that
+exists only in a component.
+
+```ts
+// The full set, as `OPERATION_STATES` exports it from '@flarekit-dev/core':
+const STATES = [
+  'draft',
+  'discovering',
+  'quoting',
+  'awaiting_input',
+  'awaiting_approval',
+  'ready',
+  'executing',
+  'submitted',
+  'confirming',
+  'awaiting_external',
+  'action_required',
+  'partially_succeeded',
+  'succeeded',
+  'failed',
+  'cancelled',
+  'expired',
+] as const
+```
+
+## The states
+
+| State | What it means |
+| --- | --- |
+| `draft` | The intent exists. Nothing has been priced. |
+| `discovering` | Finding routes, venues or protocol settings. |
+| `quoting` | Terms are being computed or re-computed. |
+| `awaiting_input` | The operation needs something more from the caller. |
+| `awaiting_approval` | Terms are on screen, unsigned, waiting on exact approval. |
+| `ready` | Approved terms, nothing handed to a wallet yet. |
+| `executing` | Signing and submitting are in progress. |
+| `submitted` | Something was broadcast. Not an outcome. |
+| `confirming` | The chain is confirming what was broadcast. |
+| `awaiting_external` | Waiting on a named actor: XRPL, FDC, Flare, an executor, a relayer, an agent. |
+| `action_required` | A safe action exists, or a named operator must resolve something. |
+| `partially_succeeded` | Some value moved and some did not. Both are stated. |
+| `succeeded` | The value-final success. |
+| `failed` | An observed, value-final failure. |
+| `cancelled` | Ended before value moved. |
+| `expired` | Terms lapsed. Re-quotable. |
+
+Three of these are terminal — `succeeded`, `failed`, `cancelled`. `expired` is
+deliberately not: a quote that expired is re-quotable, and only value-final
+states are dead ends.
+
+```ts
+import { isTerminal, isSuccess } from '@flarekit-dev/core'
+
+isTerminal('expired') // false — expired transitions to 'quoting' or 'cancelled'
+isSuccess('submitted') // false. Only 'succeeded' is success.
+```
+
+## The transition table
+
+`canTransition` answers from one table, and that table is the contract:
+
+```ts
+import { canTransition } from '@flarekit-dev/core'
+
+canTransition('ready', 'executing') // true
+canTransition('submitted', 'succeeded') // true
+canTransition('executing', 'succeeded') // false — nothing skips submission
+canTransition('succeeded', 'failed') // false — terminal states are dead ends
+```
+
+Two shapes are worth reading directly off it. `executing` cannot reach any
+success state: it goes to `submitted`, `awaiting_external` or
+`action_required`, or it ends in `failed`, `cancelled` or `expired`. And
+`submitted` has no direct edge back to `executing` — though a recovery can
+route there through `awaiting_external` or `action_required`, which is exactly
+how a recovery action re-executes. What no path does is pretend the broadcast
+did not happen.
+
+## Steps and actors
+
+The spine that renders under the state is a list of `OperationStep`, each with
+a `StepState` and the `StepActor` that owns it.
+
+```ts
+type StepState = 'pending' | 'active' | 'blocked' | 'done' | 'skipped' | 'failed'
+
+type StepActor =
+  | 'you' | 'your_wallet' | 'host_app'
+  | 'xrpl' | 'fdc' | 'flare'
+  | 'executor' | 'agent' | 'relayer' | 'provider'
+  | 'policy' | 'operator'
+```
+
+The actor is what turns a wait into a sentence a person can act on. A UI
+renders the proper noun; `AwaitingDescriptor` carries the actor, the reason,
+`since`, an optional `expectedRange` of type `DurationRange`, and `availableAt`
+when the protocol states an exact end.
+
+## applyTransition is the one way state moves
+
+```ts
+import { applyTransition } from '@flarekit-dev/core'
+
+const result = applyTransition(record, {
+  to: 'confirming',
+  at: now,
+  evidence: observed,
+  patch: { steps, awaiting },
+})
+
+result.record // always a record — the move may or may not have been taken
+result.stateChanged // boolean
+result.rejection // 'same_state' | 'not_allowed' | 'terminal' | undefined
+```
+
+Three refusals, and they behave differently:
+
+- **`terminal`** — the record is already `succeeded`, `failed` or `cancelled`.
+  Evidence is absorbed; the patch is dropped.
+- **`not_allowed`** — the table has no edge from here to there. Evidence is
+  absorbed; **the patch is dropped**.
+- **`same_state`** — the target equals the current state *and the record is
+  not terminal*. Evidence and the patch are applied, which is what makes a
+  repeated reconcile of an in-flight record idempotent rather than inert. The
+  terminal check runs first: a same-target call on a settled record returns
+  `terminal` and drops its patch, so a reconciler must finish the spine and
+  clear `awaiting` in the same call that lands the terminal state — there is
+  no second pass.
+
+The middle case is the one that bites. On an illegal hop `applyTransition`
+returns a record with the new evidence and none of the `steps`, `recovery` or
+`awaiting` the caller passed. `rejection` says so, but a caller that reads only
+`.record` gets a plausible-looking record with a stranded spine and no error.
+
+## Which is why reconcilers walk the table
+
+`pathTo` is homed beside the table for exactly this reason. It is a
+breadth-first search for the shortest legal sequence of states, excluding the
+starting one:
+
+```ts
+import { pathTo } from '@flarekit-dev/core'
+
+pathTo('ready', 'succeeded') // the states to walk, in order, ending with the target
+pathTo('succeeded', 'ready') // [] — unreachable, so the record stays put
+```
+
+A page opened after everything already happened observes several stages at
+once. A reconciler that jumped straight to the observed state would lose every
+patch on the way; instead it walks, applying the patch at each hop. That is
+what `reconcileTo` does, and it is the single implementation every capability
+shares — see [Storage and reconcile](/docs/headless/storage).
+
+## The rendering invariants
+
+These are properties of the state machine, not conventions a component is
+trusted to follow.
+
+**`submitted` is never rendered as succeeded.** `isSuccess` returns true for
+one state. Any future analytics must treat `submitted` as a funnel boundary,
+never a conversion — that requirement is scoped (R-OBS-004) and unbuilt, like
+everything else it would measure. The direct mint reaches `succeeded` only from
+`alreadySettled` — the AssetManager confirming the payment — and a bridge
+redeem reaches it only from the XRPL settlement read, never from the
+destination-chain event alone.
+
+**An unknown outcome is never rendered as failed.** Copy says
+`Outcome not confirmed yet`; it does not substitute `Failed`. In the direct
+mint's recovery matrix, no branch returns `failed` at all: every branch is
+settled, a wait on a named actor, or an action that reuses evidence already
+held. The XRP has already left the payer's account by the time any of it runs,
+so a guessed failure would be a lie about their money. Likewise, an absent
+cross-chain delivery read means in-flight, not failed.
+
+**Unavailable never succeeds on silence.** A named configuration gap resolves
+to `action_required` with `operator` as the awaited actor and an empty action
+list — the payment and its proof remain valid, nobody can safely act yet, and
+the surface says exactly that. Silence from a relayer is not success either: a
+relay receipt marked `accepted` means the job was taken, and `succeeded` comes
+only from the on-chain payment read.
+
+**A partial state leads with what moved.** `partially_succeeded` is a real
+state with its own transitions, not a shade of failure, and it can still reach
+`succeeded`.
+
+## What it will not do
+
+The transition table will not let a capability invent a state of its own, and
+`applyTransition` will not resurrect a terminal record. It will not raise on an
+illegal hop either — it refuses and reports, which is why capability code
+should walk with `pathTo` or `reconcileTo` rather than assert a jump is legal.

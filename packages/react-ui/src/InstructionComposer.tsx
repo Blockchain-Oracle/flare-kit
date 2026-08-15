@@ -1,5 +1,5 @@
 // packages/react-ui/src/InstructionComposer.tsx
-import type { InstructionIntent, InstructionPlanResult, OperationRecord } from '@flare-kit/core'
+import type { InstructionIntent, InstructionPlanResult, OperationRecord } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { Note } from './primitives/Note.js'
 import { Panel } from './primitives/Panel.js'

@@ -1,6 +1,6 @@
 // packages/react-ui/src/stake-card-state.ts
-import type { StakeInvariantError, StakeOperation, StakePlanResult, StakePositionView } from '@flare-kit/core'
-import { STAKE_RETURN_CAPABILITY } from '@flare-kit/core'
+import type { StakeInvariantError, StakeOperation, StakePlanResult, StakePositionView } from '@flarekit-dev/core'
+import { STAKE_RETURN_CAPABILITY } from '@flarekit-dev/core'
 import type { Cta, CardNote } from './card-chrome.js'
 import type { Leg } from './primitives/LegTimeline.js'
 

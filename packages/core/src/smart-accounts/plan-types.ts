@@ -1,4 +1,4 @@
-import type { SmartAccountsDeployment } from '@flare-kit/contracts'
+import type { SmartAccountsDeployment } from '@flarekit-dev/contracts'
 import type { OperationStep } from '../operation.js'
 import type { DeploymentSettings } from './adapter.js'
 import type { InstructionRow } from './catalogue.js'

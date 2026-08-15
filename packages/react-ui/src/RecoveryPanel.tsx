@@ -1,5 +1,5 @@
-import type { OperationRecord, RecoveryAction } from '@flare-kit/core'
-import { availableActions, isTerminal } from '@flare-kit/core'
+import type { OperationRecord, RecoveryAction } from '@flarekit-dev/core'
+import { availableActions, isTerminal } from '@flarekit-dev/core'
 import { Button } from './primitives/Button.js'
 import { DetailRow, Details } from './primitives/DetailRow.js'
 import { Note } from './primitives/Note.js'

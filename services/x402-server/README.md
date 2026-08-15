@@ -1,4 +1,4 @@
-# @flare-kit/x402-server
+# @flarekit-dev/x402-server
 
 The flare-kit reference x402 server — a **single-endpoint fixture**, not a marketplace
 (none exists on Flare or in the kit). `GET /api/demo` returns `402 Payment Required`;
@@ -13,7 +13,7 @@ with an `X-Payment` header it verifies + settles the EIP-3009 authorization via 
   `X-Payment-Response`) and the resource (HTTP 200 + body) are two independent facts.
 - The resource is **synthetic with no fabricated data** — the tutorial's made-up
   `flarePrice` is deliberately not copied.
-- The auth crypto is imported from `@flare-kit/core` (`recoverAuthorizationSigner`,
+- The auth crypto is imported from `@flarekit-dev/core` (`recoverAuthorizationSigner`,
   `eip3009Domain`) — no re-declaration.
 
 ## Endpoints
@@ -25,7 +25,7 @@ with an `X-Payment` header it verifies + settles the EIP-3009 authorization via 
 
 ```bash
 X402_PRIVATE_KEY=0x... X402_NETWORK=coston2 X402_PORT=8789 \
-  pnpm --filter @flare-kit/x402-server start
+  pnpm --filter @flarekit-dev/x402-server start
 ```
 
 The operator key is read from `X402_PRIVATE_KEY` only — never logged, never in a

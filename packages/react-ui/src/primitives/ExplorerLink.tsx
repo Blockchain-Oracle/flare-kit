@@ -1,4 +1,4 @@
-import { truncateAddress, truncateHash } from '@flare-kit/core'
+import { truncateAddress, truncateHash } from '@flarekit-dev/core'
 
 /**
  * The one link anatomy: a shortened identifier that opens its explorer, with a

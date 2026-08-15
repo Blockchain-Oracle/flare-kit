@@ -1,4 +1,4 @@
-import { FEED_CATEGORY, encodeFeedId } from '@flare-kit/contracts'
+import { FEED_CATEGORY, encodeFeedId } from '@flarekit-dev/contracts'
 
 /**
  * A labelled mock of the FTSO deployment.
