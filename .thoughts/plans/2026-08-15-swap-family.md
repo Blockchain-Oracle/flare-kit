@@ -163,23 +163,44 @@ describe('the swap panel', () => {
 
 ---
 
-### Task 3: The read-lens refusal
+### Task 3: The pair gate
+
+**CORRECTED 2026-08-15, before implementation.** This task originally assumed a
+`dexVerified` boolean and there is no such flag. Read
+`packages/contracts/src/dex.ts`: the only flag is **`addLiquidityVerified`**, and
+it is specific to the `addLiquidity` signature — BlazeSwap/Coston2 carries a
+non-standard `feeBips` signature, and a mainnet router using the standard one
+would revert against the calldata this kit builds. It says nothing about swap.
+
+Swap's honesty mechanism is **stronger than a flag**: `canonicalPair` is the pair
+the R1 probe verified holds liquidity, and *"every other pair is still gated by a
+live `getPair` check before it quotes."* So the guarantee is per-pair and live,
+not per-network and remembered.
+
+The task is therefore to render THAT truth, not a fabricated flag.
 
 **Files:**
 - Test: `apps/app/test/swap-panel.test.tsx` (extend)
 
-- [ ] **Step 1: Write the failing test** — on a network whose dex is not verified, the panel renders its reads and **states why it will not compose**, rather than silently disabling a button.
+- [ ] **Step 1: Write the failing test** — a pair whose `getPair` check has not
+  come back must not present a quote, and the panel must say which pair it is
+  offering by default and why.
 
 ```tsx
-it('on an unverified network, says why it will not compose', () => {
-  render(<SwapPanel network="flare" />)
-  expect(screen.getByText(/not.*verified|read lens/i)).toBeInTheDocument()
+it('offers the probe-verified canonical pair by default', () => {
+  render(<SwapPanel />)
+  // From dexFor(chainId).canonicalPair — never a hardcoded symbol.
+  expect(screen.getByText(/USD₮0|FXRP/)).toBeInTheDocument()
+})
+
+it('presents no quote for a pair whose liquidity has not been read', () => {
+  render(<SwapPanel />)
+  expect(screen.queryByText(/minimum received/i)).toBeNull()
 })
 ```
 
-Read `packages/contracts/src/dex.ts` for the real flag name before writing this;
-if the flag is `dexVerified`, use it, and if it is named otherwise, use the real
-one and say so.
+Read `packages/core/src/swap-quote.ts` and the M5 verification evidence for the
+real behaviour before asserting on copy.
 
 - [ ] **Step 2-4: red, green, gate. Step 5: Commit.**
 
