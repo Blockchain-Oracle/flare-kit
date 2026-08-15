@@ -338,6 +338,16 @@ loses money that a plausible-looking implementation would not prevent.
 - **M14-AC7 — gate green, mock honest, reviewed** by the four-lens review gate, with every
   Critical and Important fixed and mutation-checked.
 
+  **Partially met, 2026-08-15, and the shortfall is stated rather than papered over.** The
+  gate ran and its findings are fixed (five untested refusals — four reachable and now
+  tested, one pinned as unreachable; `memo-plan.ts` split back under the size rule; secrets,
+  dead code and builder-duplication all cleared). But **the four review subagents each
+  truncated after ~10 tool calls without producing findings**, so the lenses were run by the
+  same agent that wrote the code. Self-review is weakest exactly where this milestone has
+  been weakest — confident claims that passed their own checks — so M14 should not be
+  treated as having had independent review. Re-running the gate with working reviewers is
+  worth doing before or shortly after merge.
+
 ## Verification
 
 Coston2 (114), reusing the M8–M13 signer and the XRPL testnet account M13 drove. Reads keyless.
